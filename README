@@ -10,4 +10,4 @@ step4: For pp, get D0 trigger efficiency for Jet triggers. Jettrig_pp_D0eff.C is
 
 step5: Calcualte correction factor from simulation and apply the correction to data spectrum. Spectrum_Recoeff_D0_ppPbPb.C calculates the reco efficiency correction and applies correction factors to raw data spectrum to get data MB spectrum
 
-step6: Get RAA of D0. Dmeson_RAA.C calculates the RAA of D0.
+step6: Get RAA of D0. Dmeson_RAA.C calculates the RAA of D0. 
