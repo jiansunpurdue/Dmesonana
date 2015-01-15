@@ -18,6 +18,8 @@
 using namespace std;
 
 const int ffls3dcut = 2.0;
+const int cfg_N_row = 3;
+const int cfg_N_column = 3;
 
 TH1F* hfg_minbias[NPT];  //for D0
 TH1F* hfg_Jet20[NPT];
@@ -32,6 +34,7 @@ float cut_m_high = 2.05;
 int massbin = 35;
 
 bool isMC = false;
+bool ispPb = true;
 
 void book_hist()
 {
@@ -97,7 +100,7 @@ int decideptbin( float dpt )
     return ipt;
 }
 
-void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1F * counts, float lowrange, float highrange)
+void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float lowrange, float highrange)
 {
 
 	ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(100000); 
@@ -235,7 +238,8 @@ void FillSpectrum_pp()
 	book_hist();
 
 //	TFile * input = new TFile("Dmesonana_hiforest_D0embedded_Hydjet1p8_2760GeV_D0pt4_pthat15305080_1119_all.root");
-    TFile * input = new TFile("Dmesonana_PPJet_Jettrig_obj_pt0p5_d0dstar_alpha1p0_highpurity_1209_all.root");
+    TFile * input = new TFile("Dmesonana_pPb_Forest_minbiasUPC_cuts.root");
+//    TFile * input = new TFile("Dmesonana_pPb_Forest_highPt_cuts.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
     
     int MinBias;
@@ -294,7 +298,7 @@ void FillSpectrum_pp()
    {
 	   recodmesontree->GetEntry(entry);
 	   if( entry % 1000000 == 0 )  cout << entry+1 << "st event" << endl;
-	   if( !Jet20 && !Jet40 && !Jet60 && !Jet80 && !Jet100 )  {  cout << "error!!!!!!!!!" << endl;  continue;}
+	   if( !MinBias && !Jet20 && !Jet40 && !Jet60 && !Jet80 && !Jet100 )  {  cout << "error!!!!!!!!!" << endl;  continue;}
 	   if( ndcand != dtype->size() || ndcand != passingcuts->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )    
 		   cout << "Error!!!!!!!!" << endl;
 	   for( int icand = 0; icand < ndcand; icand++ )
@@ -308,17 +312,21 @@ void FillSpectrum_pp()
 		   int ipt = decideptbin( dcandpt->at(icand) );
 		   if( ipt < 0 ) continue;
 //		   cout << " pt: " << dcandpt->at(icand) << "  ipt: " << ipt << endl;
-           double weight = 0.0;
-           if( !isMC )
-               weight = trigweight;           
-		   hfg_Jettrigcombo[ipt]->Fill(dcandmass->at(icand), weight);
+           if( MinBias )  hfg_minbias[ipt]->Fill( dcandmass->at(icand), MinBias_Prescl );
+           
+		   if( trigweight > 0.5 )   // Jet trigger histogram
+		   {
+               double weight = 0.0;
+               if( !isMC )
+                   weight = trigweight;           
+		       hfg_Jettrigcombo[ipt]->Fill(dcandmass->at(icand), weight);
 
-		   if( Jet20 )  hfg_Jet20[ipt]->Fill(dcandmass->at(icand), Jet20_Prescl );
-		   if( Jet40 )  hfg_Jet40[ipt]->Fill(dcandmass->at(icand), Jet40_Prescl );
-		   if( Jet60 )  hfg_Jet60[ipt]->Fill(dcandmass->at(icand), Jet60_Prescl );
-		   if( Jet80 )  hfg_Jet80[ipt]->Fill(dcandmass->at(icand), Jet80_Prescl );
-		   if( Jet100 )  hfg_Jet100[ipt]->Fill(dcandmass->at(icand), Jet100_Prescl );
-
+		       if( Jet20 )  hfg_Jet20[ipt]->Fill(dcandmass->at(icand), Jet20_Prescl );
+		       if( Jet40 )  hfg_Jet40[ipt]->Fill(dcandmass->at(icand), Jet40_Prescl );
+		       if( Jet60 )  hfg_Jet60[ipt]->Fill(dcandmass->at(icand), Jet60_Prescl );
+		       if( Jet80 )  hfg_Jet80[ipt]->Fill(dcandmass->at(icand), Jet80_Prescl );
+		       if( Jet100 )  hfg_Jet100[ipt]->Fill(dcandmass->at(icand), Jet100_Prescl );
+		   }
 
 	   }
    }
@@ -327,57 +335,70 @@ void FillSpectrum_pp()
    gStyle->SetOptStat(0);
 //   gStyle->SetHistMinimumZero(kTRUE);
 
-   TH1F * N_Jettrig = new TH1F("N_Jettrig","N_Jettrig",NPT,ptbins);
+   TH1D * N_mb = new TH1D("N_mb","N_mb",NPT,ptbins);
+   N_mb->Sumw2();
+   TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 1000, 1000);
+   cfg_mb->Divide(cfg_N_column, cfg_N_row);
+
+   for ( int i = 1; i < NPT-1; i++)
+	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, 4.0, 55.0);
+   
+   TH1D * N_Jettrig = new TH1D("N_Jettrig","N_Jettrig",NPT,ptbins);
    N_Jettrig->Sumw2();
    TCanvas* cfg_Jettrig = new TCanvas("cfg_Jettrig", "cfg_Jettrig", 1000, 1000);
-   cfg_Jettrig->Divide(3, 3);
+   cfg_Jettrig->Divide(cfg_N_column, cfg_N_row);
 
    for ( int i = 1; i < NPT-1; i++)
 	   fit_hist( hfg_Jettrigcombo[i], cfg_Jettrig, i, N_Jettrig, 4.0, 55.0);
 
-   TH1F * N_Jet20 = new TH1F("N_Jet20","N_Jet20",NPT,ptbins);
+   TH1D * N_Jet20 = new TH1D("N_Jet20","N_Jet20",NPT,ptbins);
    N_Jet20->Sumw2();
    TCanvas* cfg_Jet20 = new TCanvas("cfg_Jet20", "cfg_Jet20", 1000, 1000);
-   cfg_Jet20->Divide(3, 3);
+   cfg_Jet20->Divide(cfg_N_column, cfg_N_row);
 
    for ( int i = 1; i < NPT-1; i++)
 	   fit_hist( hfg_Jet20[i], cfg_Jet20, i, N_Jet20, 4.0, 55.0);
 
-   TH1F * N_Jet40 = new TH1F("N_Jet40","N_Jet40",NPT,ptbins);
+   TH1D * N_Jet40 = new TH1D("N_Jet40","N_Jet40",NPT,ptbins);
    N_Jet40->Sumw2();
    TCanvas* cfg_Jet40 = new TCanvas("cfg_Jet40", "cfg_Jet40", 1000, 1000);
-   cfg_Jet40->Divide(3, 3);
+   cfg_Jet40->Divide(cfg_N_column, cfg_N_row);
 
    for ( int i = 1; i < NPT-1; i++)
 	   fit_hist( hfg_Jet40[i], cfg_Jet40, i, N_Jet40, 4.0, 55.0);
 
-   TH1F * N_Jet60 = new TH1F("N_Jet60","N_Jet60",NPT,ptbins);
+   TH1D * N_Jet60 = new TH1D("N_Jet60","N_Jet60",NPT,ptbins);
    N_Jet60->Sumw2();
    TCanvas* cfg_Jet60 = new TCanvas("cfg_Jet60", "cfg_Jet60", 1000, 1000);
-   cfg_Jet60->Divide(3, 3);
+   cfg_Jet60->Divide(cfg_N_column, cfg_N_row);
 
    for ( int i = 1; i < NPT-1; i++)
 	   fit_hist( hfg_Jet60[i], cfg_Jet60, i, N_Jet60, 4.0, 55.0);
 
-   TH1F * N_Jet80 = new TH1F("N_Jet80","N_Jet80",NPT,ptbins);
+   TH1D * N_Jet80 = new TH1D("N_Jet80","N_Jet80",NPT,ptbins);
    N_Jet80->Sumw2();
    TCanvas* cfg_Jet80 = new TCanvas("cfg_Jet80", "cfg_Jet80", 1000, 1000);
-   cfg_Jet80->Divide(3, 3);
+   cfg_Jet80->Divide(cfg_N_column, cfg_N_row);
 
    for ( int i = 1; i < NPT-1; i++)
 	   fit_hist( hfg_Jet80[i], cfg_Jet80, i, N_Jet80, 4.0, 55.0);
 
-   TH1F * N_Jet100 = new TH1F("N_Jet100","N_Jet100",NPT,ptbins);
+   TH1D * N_Jet100 = new TH1D("N_Jet100","N_Jet100",NPT,ptbins);
    N_Jet100->Sumw2();
    TCanvas* cfg_Jet100 = new TCanvas("cfg_Jet100", "cfg_Jet100", 1000, 1000);
-   cfg_Jet100->Divide(3, 3);
+   cfg_Jet100->Divide(cfg_N_column, cfg_N_row);
 
    for ( int i = 1; i < NPT-1; i++)
 	   fit_hist( hfg_Jet100[i], cfg_Jet100, i, N_Jet100, 4.0, 55.0);
    
    char outputfile[200];
-   sprintf(outputfile,"Dspectrum_pp_histo_ptbin_%d.root", NPT);
+   if(!ispPb)
+       sprintf(outputfile,"Dspectrum_pp_histo_ptbin_%d.root", NPT);
+   else
+	   sprintf(outputfile,"Dspectrum_pPb_histo_ptbin_%d.root", NPT);
    TFile * output = new TFile(outputfile,"RECREATE");
+   N_mb->Write();
+   cfg_mb->Write();
    N_Jettrig->Write();
    cfg_Jettrig->Write();
    N_Jet20->Write();

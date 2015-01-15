@@ -3,7 +3,7 @@ step 1: Produce hiforest with crab jobs
 
 step 2: Produce reduced ntuples for analysis. Dmesonana.cc, Dmesonana.hh, run_Dmesonana.C, run_Dmesonana.sh and sub_Dmesonana.pl are used to run condor jobs on forest files to produce reduced ntuples for analysis
 
-step 3: Fill histogram and mass spectrum fit. FillSpectrum.C (for pbpb data), FillSpectrum_MC.C (for pbpb simulation), FillSpectrum_pp.C (for pp data) and FillSpectrum_MC_pp.C (for pp simulation) run on the reduced ntuples, fill the histograms, fitting mass spectrum, etc
+step 3: Fill histogram and mass spectrum fit. FillSpectrum.C (for pbpb data), FillSpectrum_MC.C (for pbpb simulation), FillSpectrum_pp.C (for pp data and pPb data) and FillSpectrum_MC_pp.C (for pp simulation and pPb simulation) run on the reduced ntuples, fill the histograms, fitting mass spectrum, etc
    ps: These four codes are similar. I didn't merge them because it may mess up the code
 
 step4: For pp, get D0 trigger efficiency for Jet triggers. Jettrig_pp_D0eff.C is used to get the Jet trigger efficiency correction for pp from simulation and input is the output of FillSpectrum_MC_pp.C . Another way is to get trigger efficiency from pPb data.
