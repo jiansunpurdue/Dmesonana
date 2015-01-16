@@ -21,6 +21,7 @@ How to run Dmesonana.cc to produce reduced Ntuples:
 
 cmsrel CMSSW_5_3_20
 cd CMSSW_5_3_20/src
+cmsenv
 git cms-merge-topic -u CmsHI:forest_$CMSSW_VERSION
 git clone https://github.com/jiansunpurdue/UserCode.git
 scram b -j20
