@@ -11,12 +11,13 @@
 #include <TF1.h>
 #include "Dmesonana.hh"
 #include <iomanip>
-#include "./../interface/hfcand_v1.hh"
+//#include "./../interface/hfcand_v1.hh"
+#include "UserCode/OpenHF/interface/hfcand_v1.hh"
 
 bool savealldcand = false;
 bool isMC = false;
-bool isPbPb = false;
-bool ispppPbMB = true;
+bool isPbPb = true;
+bool ispppPbMB = false;
 bool ispPbJettrig = false;
 
 //////for D0 Hydjet samples

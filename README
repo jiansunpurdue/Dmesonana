@@ -11,3 +11,52 @@ step4: For pp, get D0 trigger efficiency for Jet triggers. Jettrig_pp_D0eff.C is
 step5: Calcualte correction factor from simulation and apply the correction to data spectrum. Spectrum_Recoeff_D0_ppPbPb.C calculates the reco efficiency correction and applies correction factors to raw data spectrum to get data MB spectrum
 
 step6: Get RAA of D0. Dmeson_RAA.C calculates the RAA of D0.
+
+
+
+
+How to run Dmesonana.cc to produce reduced Ntuples:
+
+1, In the forest, the D meson candidates are saved in class object, so we need to load the library to compile the code. You need to download the D meson reconstruction package in CMSSW_5_3_20 (and also hiforest setup because D meson package uses HeavyIonsAnalysis/TrackAnalysis/interface/TrkAnalyzerUtils.h in HFTree to do the gen match)
+
+cmsrel CMSSW_5_3_20
+cd CMSSW_5_3_20/src
+git cms-merge-topic -u CmsHI:forest_$CMSSW_VERSION
+git clone https://github.com/jiansunpurdue/UserCode.git
+scram b -j20
+
+2, Then you need to download the D meson analysis code.
+(I usually put it in UserCode/OpenHF/)
+
+cd UserCode/OpenHF/
+git clone https://github.com/jiansunpurdue/Dmesonana.git
+cd Dmesonana
+
+3, In Dmesonana.cc, you need to decide to what forests you want to run. At the beginning, you can see, savealldcand, isMC, isPbPb, ispppPbMB, ispPbJettrig.
+
+Suppose all flags are false now.
+
+savealldcand: true: if you want to save all D candidates whether passing cuts or not
+              false: just save D candidates passing cuts
+
+for other flags:
+
+PbPb data: isPbPb = true, others false
+PbPb MC:   isPbPb = true, isMC = true, other false
+pp jet triggers data: all false
+pp jet triggers MC: isMC = true
+pp and pPb MB data: ispppPbMB = true (does not work for pp MB now), others false
+pPb jet triggers: ispPbJettrig = true, others false
+
+
+4, To run Dmesonana.cc locally, you can use run_Dmesonana.sh to do that. First you need have a filelist to include the direcotry of forest files.
+
+First you need to change the working directory in run_Dmesonana.sh and change the environment setup depending on your site (if you just want to run locally, you can comment out these stuffs and skip the setup!!!)
+
+./run_Dmesonana.sh 0 10 filelist 2
+
+The last varialbe is not useful now. By doing this, you will run 1 to 10 files in the filelist.
+
+5, if you want to run condor jobs, you need to have your condor script. sub_Dmesonana.pl is the one I used at Purdue site.
+
+Let me know if there are questions.
