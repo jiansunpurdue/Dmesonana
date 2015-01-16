@@ -13,7 +13,6 @@ endFile=$2
 filelist=$3
 decaychannel=$4
 
-#gSystem->Load("../../../../lib/slc6_amd64_gcc472/libUserCodeOpenHF.so");
 
 root -b<<EOF
 gSystem->Load("$CMSSW_BASE/lib/slc6_amd64_gcc472/libUserCodeOpenHF.so");

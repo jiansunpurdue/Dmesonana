@@ -51,7 +51,7 @@ pPb jet triggers: ispPbJettrig = true, others false
 
 4, To run Dmesonana.cc locally, you can use run_Dmesonana.sh to do that. First you need have a filelist to include the direcotry of forest files.
 
-First you need to change the working directory in run_Dmesonana.sh and change the environment setup depending on your site (if you just want to run locally, you can comment out these stuffs and skip the setup!!!)
+If you want to run condor jobs, you need add setup lines in run_Dmesonana.sh, which are something like commented out in present file at the begining
 
 ./run_Dmesonana.sh 0 10 filelist 2
 
