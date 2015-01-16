@@ -12,7 +12,7 @@
 #include <TTree.h>
 #include <TCanvas.h>
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
-#include "./../interface/hfcand_v1.hh"
+#include "UserCode/OpenHF/interface/hfcand_v1.hh"
 
 #define MAXPARTICLES 50000
 #define nch 3
