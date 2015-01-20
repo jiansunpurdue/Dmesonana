@@ -11,11 +11,14 @@
 #include <TF1.h>
 #include "Dmesonana.hh"
 #include <iomanip>
-#include "./../interface/hfcand_v1.hh"
+//#include "./../interface/hfcand_v1.hh"
+#include "UserCode/OpenHF/interface/hfcand_v1.hh"
 
-bool savealldcand = true;
-bool isMC = true;
-bool isPbPb = false;
+bool savealldcand = false;
+bool isMC = false;
+bool isPbPb = true;
+bool ispppPbMB = false;
+bool ispPbJettrig = false;
 
 //////for D0 Hydjet samples
 //#define NPTHATBIN 5
@@ -228,7 +231,7 @@ void Dmesonana::get_tree_info()
 	        HltTree->SetBranchAddress("HLT_HIMinBiasHfOrBSC_v1_Prescl",&MinBias_Prescl);
 	    }
 	}
-	else  // for pp
+	else  // for pp and pPb
 	{
         HltTree->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1",&MinBias);
         HltTree->SetBranchAddress("HLT_PAZeroBiasPixel_SingleTrack_v1_Prescl",&MinBias_Prescl);
@@ -314,7 +317,7 @@ void Dmesonana::LoopOverFile(int startFile, int endFile, char *filelist, int dec
 		if( isMC )
 		{
 			if(!hftree || !HltTree || !jetObjTree ) {
-				cout<<"==> empty tree <=="<<endl;
+				cout<<"===> empty tree <==="<<endl;
 				continue;
 			}
 		}
@@ -401,10 +404,17 @@ void Dmesonana::LoopOverEvt()
 			Jet100_Prescl = Jet100_Prescl * L1_SingleJet36_Prescl;
 		}
 
-		if( isPbPb && !isMC && !MinBias)   cout << "Error!!!!!!!!!!!" << endl;
-		if( !isPbPb && !isMC && !Jet20 && !Jet40 && !Jet60 && !Jet80 && !Jet100)    cout << "Error!!!!!!!!!!!" << endl;
+        // for pp and PbPb data forest, trigger filter is added at forest level. But not for pPb data
+		
+		if( isPbPb && !isMC && !ispppPbMB  && !ispPbJettrig && !MinBias)   
+			cout << "Error!!!!!!!!!!!" << endl;   //PbPb MB data
+		if( !isPbPb && !isMC && !ispppPbMB && !ispPbJettrig && !Jet20 && !Jet40 && !Jet60 && !Jet80 && !Jet100)    
+			cout << "Error!!!!!!!!!!!" << endl;   // pp Jet trigger data
 
-//		if( isPbPb && !MinBias && !Jet55 && !Jet65 && !Jet80 )   continue;
+        if( ispPbJettrig && !Jet20 && !Jet40 && !Jet60 && !Jet80 && !Jet100 ) continue;      //pPb Jet trigger data
+		if( ispppPbMB && !MinBias ) continue;   //pPb MB trigger data
+
+//		if( isPbPb && !MinBias && !Jet55 && !Jet65 && !Jet80 )   continue;       //PbPb Jet trigger data
 
 		pthatweight = 0.0;   // for data, always be 0
 		ndcand = 0;

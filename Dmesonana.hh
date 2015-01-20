@@ -11,15 +11,15 @@
 #include <TNtuple.h>
 #include <TTree.h>
 #include <TCanvas.h>
-#include "DataFormats/HLTReco/interface/TriggerObject.h"
-#include "./../interface/hfcand_v1.hh"
+//#include "DataFormats/HLTReco/interface/TriggerObject.h"
+#include "UserCode/OpenHF/interface/hfcand_v1.hh"
 
 #define MAXPARTICLES 50000
 #define nch 3
 
 #define MAXGENDMESON 100
 
-typedef std::vector<trigger::TriggerObject> trigO;
+//typedef std::vector<trigger::TriggerObject> trigO;
 using namespace std;
 
 class Dmesonana 
