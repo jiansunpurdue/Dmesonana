@@ -1,63 +1,55 @@
-Present D meson analysis workflow
-step 1: Produce hiforest with crab jobs
+# Instructions for running D meson analysis code
 
-step 2: Produce reduced ntuples for analysis. Dmesonana.cc, Dmesonana.hh, run_Dmesonana.C, run_Dmesonana.sh and sub_Dmesonana.pl are used to run condor jobs on forest files to produce reduced ntuples for analysis
+In this repository you can find the instructions to run the D-meson analysis code 
+on top of the HiForest files. The analysis framework works in two steps.
+The first step runs on the HiForest file and produce a reduced ntuple. 
+The second step runs on the reduced ntuple and produce fitted spectra, efficiency
+correction and cross sections.
 
-step 3: Fill histogram and mass spectrum fit. FillSpectrum.C (for pbpb data), FillSpectrum_MC.C (for pbpb simulation), FillSpectrum_pp.C (for pp data and pPb data) and FillSpectrum_MC_pp.C (for pp simulation and pPb simulation) run on the reduced ntuples, fill the histograms, fitting mass spectrum, etc
-   ps: These four codes are similar. I didn't merge them because it may mess up the code
+**Set your environment**:
 
-step4: For pp, get D0 trigger efficiency for Jet triggers. Jettrig_pp_D0eff.C is used to get the Jet trigger efficiency correction for pp from simulation and input is the output of FillSpectrum_MC_pp.C . Another way is to get trigger efficiency from pPb data.
+ * cmsrel CMSSW_5_3_24
+ * cd CMSSW_5_3_24/src
+ * cmsenv
+ * git cms-merge-topic -u CmsHI:forest_CMSSW_5_3_20
+ * git clone https://github.com/jiansunpurdue/UserCode.git
+ * scram b -j20
+ * cd UserCode
+ * git clone https://github.com/jiansunpurdue/Dmesonana.git
+ * cd ..
+ 
+**Produce reduced ntuples**:
 
-step5: Calcualte correction factor from simulation and apply the correction to data spectrum. Spectrum_Recoeff_D0_ppPbPb.C calculates the reco efficiency correction and applies correction factors to raw data spectrum to get data MB spectrum
+This step makes use of Dmesonana.cc and Dmesonana.hh. This code DOES NOT need to be compiled.
+In Dmesonana.cc you can set various options:
 
-step6: Get RAA of D0. Dmeson_RAA.C calculates the RAA of D0.
-
-
-
-
-How to run Dmesonana.cc to produce reduced Ntuples:
-
-1, In the forest, the D meson candidates are saved in class object, so we need to load the library to compile the code. You need to download the D meson reconstruction package in CMSSW_5_3_20 (and also hiforest setup because D meson package uses HeavyIonsAnalysis/TrackAnalysis/interface/TrkAnalyzerUtils.h in HFTree to do the gen match)
-
-cmsrel CMSSW_5_3_20
-cd CMSSW_5_3_20/src
-cmsenv
-git cms-merge-topic -u CmsHI:forest_$CMSSW_VERSION
-git clone https://github.com/jiansunpurdue/UserCode.git
-scram b -j20
-
-2, Then you need to download the D meson analysis code.
-(I usually put it in UserCode/OpenHF/)
-
-cd UserCode/OpenHF/
-git clone https://github.com/jiansunpurdue/Dmesonana.git
-cd Dmesonana
-
-3, In Dmesonana.cc, you need to decide to what forests you want to run. At the beginning, you can see, savealldcand, isMC, isPbPb, ispppPbMB, ispPbJettrig.
-
-Suppose all flags are false now.
-
-savealldcand: true: if you want to save all D candidates whether passing cuts or not
+ * savealldcand: true: if you want to save all D candidates whether passing cuts or not,
               false: just save D candidates passing cuts
+ * PbPb data: isPbPb = true, others false
+ * PbPb MC:   isPbPb = true, isMC = true, other false
+ * pp jet triggers data: all false
+ * pp jet triggers MC: isMC = true
+ * pp and pPb MB data: ispppPbMB = true (does not work for pp MB now), others false
+ * pPb jet triggers: ispPbJettrig = true, others false
 
-for other flags:
+To run it:
 
-PbPb data: isPbPb = true, others false
-PbPb MC:   isPbPb = true, isMC = true, other false
-pp jet triggers data: all false
-pp jet triggers MC: isMC = true
-pp and pPb MB data: ispppPbMB = true (does not work for pp MB now), others false
-pPb jet triggers: ispPbJettrig = true, others false
+ * In UserCode/Dmesonana create a list.lis file in which you write the list of Forest files you 
+   need to run on.
+ * Ready to run: ./run_Dmesonana.sh <firstfile> <lastfile> list.lis <DmesonID>
+   E.g. ./run_Dmesonana.sh 0 4 list.lis 2. In this case you run on the first 5 files (0-4) of 
+   the list file list.lis with the option D0 (index=2)
 
+**Extract spectra, efficiency, cross section ..**:
 
-4, To run Dmesonana.cc locally, you can use run_Dmesonana.sh to do that. First you need have a filelist to include the direcotry of forest files.
+This step performs yield extraction, efficiency and trigger correction, cross sections and RAA.
 
-If you want to run condor jobs, you need add setup lines in run_Dmesonana.sh, which are something like commented out in present file at the begining
+ * The macros FillSpectrum.C, FillSpectrum_MC.C, FillSpectrum_pp.C, FillSpectrum_MC_pp.C 
+   extract the yields in the PbPb case (data and MC) and pp case (data and MC) respectively.
 
-./run_Dmesonana.sh 0 10 filelist 2
+ * The macro Jettrig_pp_D0eff.C calculates trigger efficiency corrections for the pp analysis
+   (the PbPb analysis is ONLY done with MB events)
+   It uses the output of FillSpectrum_MC_pp.C as an input.
 
-The last varialbe is not useful now. By doing this, you will run 1 to 10 files in the filelist.
-
-5, if you want to run condor jobs, you need to have your condor script. sub_Dmesonana.pl is the one I used at Purdue site.
-
-Let me know if there are questions.
+ * The macro Spectrum_Recoeff_D0_ppPbPb.C calculates efficiency corrections and apply them to the 
+   uncorrected data spectrum.
