@@ -1,4 +1,4 @@
-# Instructions for running D meson analysis code
+# Instructions for running D meson analysis
 
 In this repository you can find the instructions to run the D-meson analysis code 
 on top of the HiForest files. The analysis framework works in two steps.
