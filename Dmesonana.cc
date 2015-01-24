@@ -9,23 +9,26 @@
 #include "TBranch.h"
 #include "TMath.h"
 #include <TF1.h>
+#include <TLorentzVector.h>
+
 #include "Dmesonana.hh"
 #include <iomanip>
-//#include "./../interface/hfcand_v1.hh"
 #include "UserCode/OpenHF/interface/hfcand_v1.hh"
 
-bool savealldcand = false;
-bool isMC = false;
+#define MASSD0 1.8645  //value from pythia
+
+bool savealldcand = true;
+bool isMC = true;
 bool isPbPb = true;
 bool ispppPbMB = false;
 bool ispPbJettrig = false;
 
-//////for D0 Hydjet samples
-//#define NPTHATBIN 5
-//int MCentries[NPTHATBIN] = { 19240, 19321, 18992, 20010, 22437};
-//int pthatbin[NPTHATBIN+1] = { 0, 15, 30, 50, 80, 1000};
-//double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
-//double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
+////for D0 Hydjet samples
+#define NPTHATBIN 5
+int MCentries[NPTHATBIN] = { 19240, 19321, 18992, 20010, 22437};
+int pthatbin[NPTHATBIN+1] = { 0, 15, 30, 50, 80, 1000};
+double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
+double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
 
 //////for D0 Hydjet samples, pthat from 5
 //#define NPTHATBIN 5
@@ -34,12 +37,12 @@ bool ispPbJettrig = false;
 //double pthatweight_xsection[NPTHATBIN+1] = {12.31, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
 //double filtereff[NPTHATBIN+1] = { 0.03716, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
 
-//for D0 pythia samples
-#define NPTHATBIN 6
-int MCentries[NPTHATBIN] = { 16429, 24025, 23931, 25301, 24302, 27877};
-int pthatbin[NPTHATBIN+1] = {0,15,30,50,80,120,1000};
-double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.121E-05, 1.756E-15};
-double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752,  0.15206, 0.1694, 0.17794, 0.0945};
+////for D0 pythia samples
+//#define NPTHATBIN 6
+//int MCentries[NPTHATBIN] = { 16429, 24025, 23931, 25301, 24302, 27877};
+//int pthatbin[NPTHATBIN+1] = {0,15,30,50,80,120,1000};
+//double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.121E-05, 1.756E-15};
+//double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752,  0.15206, 0.1694, 0.17794, 0.0945};
 
 TH1F * pthat_weighted = new TH1F("pthat_weighted","pthat_weighted",200,0,500.0);
 TH1F * gend0pt_weighted = new TH1F("gend0pt_weighted","gend0pt_weighted",100,0.0,100.0);
@@ -87,6 +90,7 @@ void Dmesonana::Init(int startFile, int endFile, char *filelist)
     	gendmesontree->Branch("weight_pthat",&weight_pthat, "weight_pthat/D");
     	gendmesontree->Branch("dpt", dpt, "dpt[ngend]/F");
     	gendmesontree->Branch("deta", deta, "deta[ngend]/F");
+		gendmesontree->Branch("dy", dy, "dy[ngend]/F");
     	gendmesontree->Branch("dphi", dphi, "dphi[ngend]/F");
     	gendmesontree->Branch("dpdg", dpdg, "dpdg[ngend]/I");
     	gendmesontree->Branch("pt_ddau", pt_ddau, "pt_ddau[ngend][3]/F");
@@ -138,6 +142,7 @@ void Dmesonana::Init(int startFile, int endFile, char *filelist)
 	recodmesontree->Branch("dcandmass", &dcandmass);
 	recodmesontree->Branch("dcandpt", &dcandpt);
 	recodmesontree->Branch("dcandeta", &dcandeta);
+	recodmesontree->Branch("dcandy", &dcandy);
 	recodmesontree->Branch("dcandphi", &dcandphi);
 	recodmesontree->Branch("dcandffls3d", &dcandffls3d);
 	recodmesontree->Branch("dcandalpha", &dcandalpha);
@@ -263,7 +268,6 @@ double Dmesonana::jettrigcomb()
 
 	if( isPbPb )
 	{
-//    	if( MinBias && maxJetTrgPt < 55 )  weight_trig = MinBias_Prescl;
     	if( Jet55 && maxJetTrgPt > 55 && maxJetTrgPt < 65 ) weight_trig = Jet55_Prescl;
     	if( Jet65 && maxJetTrgPt > 65 && maxJetTrgPt < 80 ) weight_trig = Jet65_Prescl;
     	if( Jet80 && maxJetTrgPt > 80 ) weight_trig = Jet80_Prescl;
@@ -404,17 +408,14 @@ void Dmesonana::LoopOverEvt()
 			Jet100_Prescl = Jet100_Prescl * L1_SingleJet36_Prescl;
 		}
 
-        // for pp and PbPb data forest, trigger filter is added at forest level. But not for pPb data
-		
+        // for pp and PbPb data forest, trigger filter is added at forest level. But not added for pPb data forest
 		if( isPbPb && !isMC && !ispppPbMB  && !ispPbJettrig && !MinBias)   
 			cout << "Error!!!!!!!!!!!" << endl;   //PbPb MB data
 		if( !isPbPb && !isMC && !ispppPbMB && !ispPbJettrig && !Jet20 && !Jet40 && !Jet60 && !Jet80 && !Jet100)    
 			cout << "Error!!!!!!!!!!!" << endl;   // pp Jet trigger data
-
         if( ispPbJettrig && !Jet20 && !Jet40 && !Jet60 && !Jet80 && !Jet100 ) continue;      //pPb Jet trigger data
 		if( ispppPbMB && !MinBias ) continue;   //pPb MB trigger data
-
-//		if( isPbPb && !MinBias && !Jet55 && !Jet65 && !Jet80 )   continue;       //PbPb Jet trigger data
+//		if( isPbPb && !Jet55 && !Jet65 && !Jet80 )   continue;       //PbPb Jet trigger data
 
 		pthatweight = 0.0;   // for data, always be 0
 		ndcand = 0;
@@ -442,7 +443,7 @@ void Dmesonana::LoopOverEvt()
 	     	gendmesontree->Fill();
 		}
 
-		trigweight = jettrigcomb();
+		trigweight = jettrigcomb();   //not needed for D0 with Minbias trigger, still do this to keep the code simpler
 		    
 		if( isMC ) pthat_weighted->Fill(pthat, weight_pthat); 
 
@@ -452,7 +453,7 @@ void Dmesonana::LoopOverEvt()
 		hfcandidate->Reset();
 
 		dtype.clear(); matchedtogen.clear(); passingcuts.clear();
-		dcandmass.clear(); dcandpt.clear(); dcandeta.clear(); dcandphi.clear(); dcandffls3d.clear(); dcandalpha.clear(); dcandfprob.clear(); dcandfchi2.clear();
+		dcandmass.clear(); dcandpt.clear(); dcandeta.clear(); dcandy.clear(); dcandphi.clear(); dcandffls3d.clear(); dcandalpha.clear(); dcandfprob.clear(); dcandfchi2.clear();
 		dcanddau1eta.clear();  dcanddau2eta.clear();
 		dcanddau1pt.clear();  dcanddau2pt.clear();
 		dcandmatchedpdg.clear();
@@ -496,7 +497,7 @@ void Dmesonana::LoopOvercandidate()
 	    	gIndex_dau2 = cand->get_gIndex_dau2();
 		}
 
-		if( feta < -2.0 || feta > 2.0 ) continue;
+//		if( feta < -2.0 || feta > 2.0 ) continue;
 		if( fpt < 3.5  )  continue;
 
 		bool passingtopocuts = false;
@@ -515,11 +516,15 @@ void Dmesonana::LoopOvercandidate()
 			matchedtogen.push_back(matchedtogend);
 		}
 
+		TLorentzVector d0cand;
+		d0cand.SetPtEtaPhiM(fpt, feta, fphi, mass);
+
 		dtype.push_back(type);
 		passingcuts.push_back(passingtopocuts);
 		dcandmass.push_back(mass);
 		dcandpt.push_back(fpt);
 		dcandeta.push_back(feta);
+		dcandy.push_back(d0cand.Rapidity());
 		dcandphi.push_back(fphi);
 		dcandffls3d.push_back(ffls3d);
 		dcandalpha.push_back(alpha);
@@ -543,7 +548,7 @@ void Dmesonana::FindGenDmeson()
 		if( abs(genpdg[particle]) == 421 ) //D0
 		{
 
-			if( geneta[particle] < -2.0 || geneta[particle] > 2.0 )  continue;
+//			if( geneta[particle] < -2.0 || geneta[particle] > 2.0 )  continue;
 			if( gennDaughters[particle] != 2 )   continue;
 			if( gensta[particle] != 2 )  continue;
 			int dau1 = gendaughterIdx[particle][0];
@@ -552,8 +557,12 @@ void Dmesonana::FindGenDmeson()
 			if( !( ( abs(genpdg[dau1]) == 321 && abs(genpdg[dau2]) == 211 ) || ( abs(genpdg[dau1]) == 211 && abs(genpdg[dau2]) == 321 ) ) )   continue;
 			if( genchg[dau1] * genchg[dau2]  > 0 ) continue;
 
+			TLorentzVector gend0;
+			gend0.SetPtEtaPhiM(genpt[particle], geneta[particle], genphi[particle], MASSD0);
+
 			dpt[ngend] = genpt[particle];
 			deta[ngend] = geneta[particle];
+			dy[ngend] = gend0.Rapidity();
 			dphi[ngend] = genphi[particle];
 			dpdg[ngend] = genpdg[particle];
 			dnofdau[ngend] = gennDaughters[particle];
@@ -587,12 +596,12 @@ void Dmesonana::FindGenDmeson()
 				pt_dmom[ngend] = -999;
 			}
 
+            // decide if the D0 is from B feed down
 			int pdg_Bmom_temp = -999;
 			float pt_Bmom_temp = -999;
-
 			int motherindex = -999;
 			int daughterindex = particle;
-
+			//loop up the decay chain to see if there is B meson
 			while( gennMothers[daughterindex] == 1 && pt_Bmom_temp < 0 )
 			{
 				motherindex = genmotherIdx[daughterindex][0];

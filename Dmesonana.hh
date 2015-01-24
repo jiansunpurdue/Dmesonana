@@ -55,7 +55,7 @@ class Dmesonana
         Int_t mult;
         Float_t genpt[MAXPARTICLES];
         Float_t geneta[MAXPARTICLES];
-        Float_t genphi[MAXPARTICLES];
+		Float_t genphi[MAXPARTICLES];
         Int_t genpdg[MAXPARTICLES];
         Int_t genchg[MAXPARTICLES];
         Int_t gensube[MAXPARTICLES];
@@ -143,6 +143,7 @@ class Dmesonana
 		double weight_pthat;
 		float dpt[MAXGENDMESON];
 		float deta[MAXGENDMESON];
+		float dy[MAXGENDMESON];
 		float dphi[MAXGENDMESON];
 		int    dpdg[MAXGENDMESON];
 		int    dnofdau[MAXGENDMESON];
@@ -161,7 +162,7 @@ class Dmesonana
 		double trigweight;
 		double pthatweight;
 		vector<int> dtype, passingcuts;
-		vector<float> dcandmass, dcandpt, dcandeta, dcandphi, dcandffls3d, dcandalpha, dcandfprob, dcandfchi2;
+		vector<float> dcandmass, dcandpt, dcandeta, dcandphi, dcandy, dcandffls3d, dcandalpha, dcandfprob, dcandfchi2;
 		vector<float> dcanddau1eta, dcanddau2eta;
 		vector<float> dcanddau1pt, dcanddau2pt;
 		vector<int>   matchedtogen, dcandmatchedpdg, nongendoublecounted;
