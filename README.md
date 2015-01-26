@@ -29,7 +29,7 @@ In Dmesonana.cc you can set various options:
  * PbPb MC:   isPbPb = true, isMC = true, other false
  * pp jet triggers data: all false
  * pp jet triggers MC: isMC = true
- * pp and pPb MB data: ispppPbMB = true (does not work for pp MB now), others false
+ * pp and pPb MB data: ispppPbMB = true, others false
  * pPb jet triggers: ispPbJettrig = true, others false
 
 To run it:
