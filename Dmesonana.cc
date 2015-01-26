@@ -18,7 +18,7 @@
 #define MASSD0 1.8645  //value from pythia
 
 bool savealldcand = true;
-bool isMC = true;
+bool isMC = false;
 bool isPbPb = false;
 bool ispppPbMB = false;
 bool ispPbJettrig = false;
@@ -383,10 +383,10 @@ void Dmesonana::LoopOverEvt()
 	{
 		hftree->GetEntry(entry);
 
-//		if( !isMC )
-//		{
-//			if(!pHBHENoiseFilter || !pcollisionEventSelection) continue;
-//		}
+		if( !isMC )
+		{
+			if(!pHBHENoiseFilter || !pcollisionEventSelection) continue;
+		}
 
 		if( isPbPb )
 		{
