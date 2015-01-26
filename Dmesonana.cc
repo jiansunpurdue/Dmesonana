@@ -19,7 +19,7 @@
 
 bool savealldcand = true;
 bool isMC = true;
-bool isPbPb = true;
+bool isPbPb = false;
 bool ispppPbMB = false;
 bool ispPbJettrig = false;
 
@@ -74,6 +74,7 @@ void Dmesonana::Init(int startFile, int endFile, char *filelist)
 	HltTree = 0;
 	jettree = 0;
 	skimtree = 0;
+	HiTree = 0;
 
 	hfcandidate = new hfcand_v1;
 
@@ -105,9 +106,9 @@ void Dmesonana::Init(int startFile, int endFile, char *filelist)
 	}
 
 	recodmesontree = new TTree("recodmesontree","recodmesontree");
-	//	recodmesontree->Branch("hiBin", &hiBin, "hiBin/D");
 	if( isPbPb )
 	{
+		recodmesontree->Branch("hiBin", &hiBin, "hiBin/I");
     	recodmesontree->Branch("MinBias", &MinBias, "MinBias/I");
     	recodmesontree->Branch("MinBias_Prescl", &MinBias_Prescl, "MinBias_Prescl/I");
     	recodmesontree->Branch("Jet55", &Jet55, "Jet55/I");
@@ -145,7 +146,7 @@ void Dmesonana::Init(int startFile, int endFile, char *filelist)
 	recodmesontree->Branch("dcandy", &dcandy);
 	recodmesontree->Branch("dcandphi", &dcandphi);
 	recodmesontree->Branch("dcandffls3d", &dcandffls3d);
-	recodmesontree->Branch("dcandalpha", &dcandalpha);
+	recodmesontree->Branch("dcandcosalpha", &dcandcosalpha);
 	recodmesontree->Branch("dcandfprob", &dcandfprob);
 	recodmesontree->Branch("dcandfchi2", &dcandfchi2);
 	recodmesontree->Branch("dcanddau1eta", &dcanddau1eta);
@@ -342,6 +343,14 @@ void Dmesonana::LoopOverFile(int startFile, int endFile, char *filelist, int dec
 		    hftree->AddFriend(jettree);
 		}
 
+		if( isPbPb )
+		{
+			HiTree = ( TTree * ) f->Get("hiEvtAnalyzer/HiTree");
+			if( !HiTree )  { cout << "==> empty HiTree <==" << endl; continue; }
+			HiTree->SetBranchAddress("hiBin", &hiBin);
+			hftree->AddFriend(HiTree);
+		}
+
 		hftree->AddFriend(HltTree);
 		hftree->AddFriend(jetObjTree);
 		hftree->AddFriend(skimtree);
@@ -374,10 +383,10 @@ void Dmesonana::LoopOverEvt()
 	{
 		hftree->GetEntry(entry);
 
-		if( !isMC )
-		{
-			if(!pHBHENoiseFilter || !pcollisionEventSelection) continue;
-		}
+//		if( !isMC )
+//		{
+//			if(!pHBHENoiseFilter || !pcollisionEventSelection) continue;
+//		}
 
 		if( isPbPb )
 		{
@@ -453,7 +462,7 @@ void Dmesonana::LoopOverEvt()
 		hfcandidate->Reset();
 
 		dtype.clear(); matchedtogen.clear(); passingcuts.clear();
-		dcandmass.clear(); dcandpt.clear(); dcandeta.clear(); dcandy.clear(); dcandphi.clear(); dcandffls3d.clear(); dcandalpha.clear(); dcandfprob.clear(); dcandfchi2.clear();
+		dcandmass.clear(); dcandpt.clear(); dcandeta.clear(); dcandy.clear(); dcandphi.clear(); dcandffls3d.clear(); dcandcosalpha.clear(); dcandfprob.clear(); dcandfchi2.clear();
 		dcanddau1eta.clear();  dcanddau2eta.clear();
 		dcanddau1pt.clear();  dcanddau2pt.clear();
 		dcandmatchedpdg.clear();
@@ -480,7 +489,7 @@ void Dmesonana::LoopOvercandidate()
 		feta = cand->get_feta();
 		fphi = cand->get_fphi();
 		ffls3d = cand->get_ffls3d();
-		alpha = cand->get_falpha0();
+		cosalpha = TMath::Cos(cand->get_falpha0());
 		fprob = cand->get_fprob();
 		fdr = cand->get_fdr();
 		fchi2 = cand->get_fchi2();
@@ -501,7 +510,7 @@ void Dmesonana::LoopOvercandidate()
 		if( fpt < 3.5  )  continue;
 
 		bool passingtopocuts = false;
-		if(mass > cut_m_low[1] && mass < cut_m_high[1] && ffls3d > cut_ffls3d[1] && alpha < cut_falpha0[1] && fprob > cut_fprob[1] && fdr < cut_fdr[1] && fchi2 < cut_fchi2[1]) 
+		if(mass > cut_m_low[1] && mass < cut_m_high[1] && ffls3d > cut_ffls3d[1] && cosalpha > cut_cosfalpha0[1] && fprob > cut_fprob[1] && fdr < cut_fdr[1] && fchi2 < cut_fchi2[1]) 
 			passingtopocuts =  true;
 		
 
@@ -527,7 +536,7 @@ void Dmesonana::LoopOvercandidate()
 		dcandy.push_back(d0cand.Rapidity());
 		dcandphi.push_back(fphi);
 		dcandffls3d.push_back(ffls3d);
-		dcandalpha.push_back(alpha);
+		dcandcosalpha.push_back(cosalpha);
 		dcandfprob.push_back(fprob);
 		dcandfchi2.push_back(fchi2);
 		dcanddau1eta.push_back(feta1);
@@ -770,7 +779,7 @@ void Dmesonana::define_cuts()
 	cut_m_dau_low[0] = 1.8;
 	cut_m_dau_high[0] = 1.92;
 	cut_ffls3d[0] = 2.0;
-	cut_falpha0[0] = 0.2;
+	cut_cosfalpha0[0] = 0.975;
 	cut_fprob[0] = 0.05;
 	cut_fdr[0] = 0.25;
 	cut_fchi2[0] = 3;
@@ -781,7 +790,7 @@ void Dmesonana::define_cuts()
 	cut_m_dau_low[1] = -1;
 	cut_m_dau_high[1] = 1;
 	cut_ffls3d[1] = 2.0;
-	cut_falpha0[1] = 0.2;
+	cut_cosfalpha0[1] = 0.975;
 	cut_fprob[1] = 0.08;
 	cut_fdr[1] = 0.25;
 	cut_fchi2[1] = 3;
@@ -792,7 +801,7 @@ void Dmesonana::define_cuts()
 	cut_m_dau_low[2] = 0.5;
 	cut_m_dau_high[2] = 2.05;
 	cut_ffls3d[2] = 2.0;
-	cut_falpha0[2] = 0.2;
+	cut_cosfalpha0[2] = 0.975;
 	cut_fprob[2] = 0.05;
 	cut_fdr[2] = 0.25;
 	cut_fchi2[2] = 3;

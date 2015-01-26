@@ -36,7 +36,7 @@ class Dmesonana
         float feta;
 		float fphi;
         float ffls3d;
-        float alpha;
+        float cosalpha;
         float fprob;
         float fdr;
         float fchi2;
@@ -132,6 +132,7 @@ class Dmesonana
 		TTree *jetObjTree;
 		TTree * jettree;
 		TTree * skimtree;
+		TTree * HiTree;
 		hfcand_v1* hfcandidate;
 
     private:
@@ -162,7 +163,7 @@ class Dmesonana
 		double trigweight;
 		double pthatweight;
 		vector<int> dtype, passingcuts;
-		vector<float> dcandmass, dcandpt, dcandeta, dcandphi, dcandy, dcandffls3d, dcandalpha, dcandfprob, dcandfchi2;
+		vector<float> dcandmass, dcandpt, dcandeta, dcandphi, dcandy, dcandffls3d, dcandcosalpha, dcandfprob, dcandfchi2;
 		vector<float> dcanddau1eta, dcanddau2eta;
 		vector<float> dcanddau1pt, dcanddau2pt;
 		vector<int>   matchedtogen, dcandmatchedpdg, nongendoublecounted;
@@ -177,7 +178,7 @@ class Dmesonana
         float cut_m_dau_low[nch]; //.. low end of the daughter mass cut
         float cut_m_dau_high[nch]; //.. high end of the daughter mass cut
         float cut_ffls3d[nch];
-        float cut_falpha0[nch];
+        float cut_cosfalpha0[nch];
         float cut_fprob[nch];
         float cut_fdr[nch];
         float cut_fchi2[nch];
