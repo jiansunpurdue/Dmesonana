@@ -198,7 +198,7 @@ void AcceptanceandRecoEff_match()
 		   d0genypt->Fill( dy[igend], dpt[igend], weight);
 
 		   if( pt_ddau[igend][0] > dautrackcut && pt_ddau[igend][1] > dautrackcut )
-			   if ( TMath::Abs( eta_ddau[igend][0] ) < 2.2 && TMath::Abs( eta_ddau[igend][1] ) < 2.2 )
+			   if ( TMath::Abs( eta_ddau[igend][0] ) < 2.4 && TMath::Abs( eta_ddau[igend][1] ) < 2.4 )
 			   {
 				   d0genpt_acceptance->Fill( dpt[igend], weight);
 				   d0geny_acceptance->Fill( dy[igend], weight);
@@ -219,7 +219,7 @@ void AcceptanceandRecoEff_match()
 		   if( dcandy->at(icand) < -2.0 || dcandy->at(icand) > 2.0 )   continue;
            if( dcandpt->at(icand) < lowptedge_d0 || dcandpt->at(icand) > highptedge_d0 )   continue;
 
-		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.2 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.2 )   continue;
+		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
 
 		   if( matchedtogen->at(icand) == 1 && nongendoublecounted->at(icand) == 1)
 		   {
