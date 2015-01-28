@@ -17,7 +17,7 @@
 #include "PtBins.h"
 using namespace std;
 
-const int ffls3dcut = 2.0;
+const int ffls3dcut = 4.0;
 
 TH1F* hfg_minbias[NPT];  //for D0
 TH1F* hfg_minbiasdiff[NPT];  //for D*
@@ -203,7 +203,7 @@ void FillSpectrum()
 	hf_mb->Sumw2();
 
 //	TFile * input = new TFile("Dmesonana_hiforest_D0embedded_Hydjet1p8_2760GeV_D0pt4_pthat15305080_1119_all.root");
-    TFile * input = new TFile("Dmesonana_Rereco_MBtrig_d0pt3p0_d1p8_pt1p5_v1_tight_1213_6lumi_cuts.root");
+    TFile * input = new TFile("Dmesonana_Rereco_MBtrig_d0pt3p0_d1p8_pt1p5_v1_tight_1213_6lumi_cuts_v1.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
     
 
@@ -215,7 +215,7 @@ void FillSpectrum()
     double pthatweight;
     double trigweight;
     vector<int> *dtype = 0, *passingcuts = 0;
-    vector<float> *dcandmass = 0, *dcandpt = 0, *dcandeta = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
+    vector<float> *dcandmass = 0, *dcandpt = 0, *dcandy = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandcosalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
     vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0;
 
     recodmesontree->SetBranchAddress("MinBias", &MinBias);
@@ -227,14 +227,14 @@ void FillSpectrum()
     recodmesontree->SetBranchAddress("passingcuts", &passingcuts);
     recodmesontree->SetBranchAddress("dcandmass", &dcandmass);
     recodmesontree->SetBranchAddress("dcandpt", &dcandpt);
-    recodmesontree->SetBranchAddress("dcandeta", &dcandeta);
+    recodmesontree->SetBranchAddress("dcandy", &dcandy);
     recodmesontree->SetBranchAddress("dcandphi", &dcandphi);
     recodmesontree->SetBranchAddress("dcandffls3d", &dcandffls3d);
-    recodmesontree->SetBranchAddress("dcandalpha", &dcandalpha);
+    recodmesontree->SetBranchAddress("dcandcosalpha", &dcandcosalpha);
     recodmesontree->SetBranchAddress("dcandfprob", &dcandfprob);
     recodmesontree->SetBranchAddress("dcandfchi2", &dcandfchi2);
-//    recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
-//    recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
+    recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
+    recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
     
 //   cout << " total number of event: " << recodmesontree->GetEntries() << endl;
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
@@ -248,12 +248,14 @@ void FillSpectrum()
 		   cout << "Error!!!!!!!!" << endl;
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
+		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
+		   
 		   if( !passingcuts->at(icand) )   continue;
 		   if( dcandffls3d->at(icand) < ffls3dcut )   continue;
-//		   if( dcandalpha->at(icand) > 0.5 )   continue;
-//		   if( dcandfprob->at(icand) < 0.05 )  continue;
-		   if( dcandeta->at(icand) < -2.0 || dcandeta->at(icand) > 2.0 )  continue;
-		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
+
+		   if( dcandy->at(icand) < -2.0 || dcandy->at(icand) > 2.0 )  continue;
+		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
+
 		   int ipt = decideptbin( dcandpt->at(icand) );
 		   if( ipt < 0 ) continue;
 //		   cout << " pt: " << dcandpt->at(icand) << "  ipt: " << ipt << endl;
