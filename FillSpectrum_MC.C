@@ -22,7 +22,7 @@
 
 using namespace std;
 
-const int ffls3dcut = 2.0;
+const int ffls3dcut = 4.0;
 
 //TH1::SetDefaultSumw2();
 
@@ -244,8 +244,7 @@ void FillSpectrum_MC()
     deltaR->Sumw2();
 	deltapt_overgen->Sumw2();
 
-    TFile * input = new TFile("Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all.root");
-//    TFile * input = new TFile("Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_pthat5.root");
+    TFile * input = new TFile("Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_v1.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
 	TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
 	recodmesontree->AddFriend(gendmesontree);
@@ -254,10 +253,12 @@ void FillSpectrum_MC()
 	int ngend;
 	float dpt[MAXGENDMESON];
 	float deta[MAXGENDMESON];
+	float dy[MAXGENDMESON];
 	gendmesontree->SetBranchAddress("pthat", &pthat);
 	gendmesontree->SetBranchAddress("ngend", &ngend);
 	gendmesontree->SetBranchAddress("dpt", dpt);
 	gendmesontree->SetBranchAddress("deta", deta);
+	gendmesontree->SetBranchAddress("dy", dy);
     
     int MinBias;
     int MinBias_Prescl;
@@ -267,7 +268,7 @@ void FillSpectrum_MC()
     double pthatweight;
     double trigweight;
     vector<int> *dtype = 0, *passingcuts = 0;
-    vector<float> *dcandmass = 0, *dcandpt = 0, *dcandeta = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
+    vector<float> *dcandmass = 0, *dcandpt = 0, *dcandeta = 0, *dcandy = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandcosalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
     vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0;
 	vector<int>   *matchedtogen = 0, *dcandmatchedpdg = 0, *nongendoublecounted = 0;
 	vector<float> *dcandmatchedpt = 0, *dcandmatchedeta = 0, *dcandmatchedphi = 0, *dcandmatchnofdau = 0;
@@ -282,9 +283,10 @@ void FillSpectrum_MC()
     recodmesontree->SetBranchAddress("dcandmass", &dcandmass);
     recodmesontree->SetBranchAddress("dcandpt", &dcandpt);
     recodmesontree->SetBranchAddress("dcandeta", &dcandeta);
+	recodmesontree->SetBranchAddress("dcandy", &dcandy);
     recodmesontree->SetBranchAddress("dcandphi", &dcandphi);
     recodmesontree->SetBranchAddress("dcandffls3d", &dcandffls3d);
-    recodmesontree->SetBranchAddress("dcandalpha", &dcandalpha);
+    recodmesontree->SetBranchAddress("dcandcosalpha", &dcandcosalpha);
     recodmesontree->SetBranchAddress("dcandfprob", &dcandfprob);
     recodmesontree->SetBranchAddress("dcandfchi2", &dcandfchi2);
 	recodmesontree->SetBranchAddress("matchedtogen", &matchedtogen);
@@ -292,8 +294,8 @@ void FillSpectrum_MC()
 	recodmesontree->SetBranchAddress("dcandmatchedpt", &dcandmatchedpt);
 	recodmesontree->SetBranchAddress("dcandmatchedeta", &dcandmatchedeta);
 	recodmesontree->SetBranchAddress("dcandmatchedphi", &dcandmatchedphi);
-//    recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
-//    recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
+    recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
+    recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
     
 //   cout << " total number of event: " << recodmesontree->GetEntries() << endl;
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
@@ -312,18 +314,21 @@ void FillSpectrum_MC()
            if( pthat < 15 && dpt[igend] > 9.0 ) continue;
 		   if( pthat > 15.0 && pthat < 30.0 && dpt[igend] > 16.0 ) continue;
 
-           if( deta[igend] < -2.0 || deta[igend] > 2.0 )   continue;
+           if( dy[igend] < -2.0 || dy[igend] > 2.0 )   continue;
 		   d0genpt->Fill( dpt[igend], pthatweight);
 	   }
 
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
+		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
 		   if( !passingcuts->at(icand) )   continue;
 		   if( dcandffls3d->at(icand) < ffls3dcut )   continue;
-//		   if( dcandalpha->at(icand) > 0.5 )   continue;
+//		   if( dcandcosalpha->at(icand) > 0.5 )   continue;
 //		   if( dcandfprob->at(icand) < 0.05 )  continue;
-		   if( dcandeta->at(icand) < -2.0 || dcandeta->at(icand) > 2.0 )  continue;
-		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
+		   
+		   if( dcandy->at(icand) < -2.0 || dcandy->at(icand) > 2.0 )  continue;
+		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
+
 		   int ipt = decideptbin( dcandpt->at(icand) );
 		   if( ipt < 0 ) continue;
 

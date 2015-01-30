@@ -34,7 +34,7 @@ float cut_m_high = 2.05;
 int massbin = 35;
 
 bool isMC = false;
-bool ispPb = true;
+bool ispPb = false;
 
 void book_hist()
 {
@@ -119,7 +119,6 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
     //.. fit with a Gaussian and pol
     TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol2(3)", cut_m_low, cut_m_high);
 //    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(3)", cut_m_low, cut_m_high);
-//    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(6)", cut_m_low, cut_m_high);
     float max = histo->GetMaximum();
 
     float p0 = 1000, p1 = 1.87, p2 = 0.02;
@@ -237,9 +236,9 @@ void FillSpectrum_pp()
 {
 	book_hist();
 
-//	TFile * input = new TFile("Dmesonana_hiforest_D0embedded_Hydjet1p8_2760GeV_D0pt4_pthat15305080_1119_all.root");
-    TFile * input = new TFile("Dmesonana_pPb_Forest_minbiasUPC_cuts.root");
-//    TFile * input = new TFile("Dmesonana_pPb_Forest_highPt_cuts.root");
+	TFile * input = new TFile("Dmesonana_PPJet_Jettrig_obj_pt0p5_d0dstar_alpha1p0_highpurity_1209_all.root");
+//    TFile * input = new TFile("rootfiles/Dmesonana_pPb_Forest_minbiasUPC_cuts.root");
+//    TFile * input = new TFile("rootfiles/Dmesonana_pPb_Forest_highPt_cuts.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
     
     int MinBias;
@@ -260,7 +259,7 @@ void FillSpectrum_pp()
     double trigweight;
 	float maxJetTrgPt;
     vector<int> *dtype = 0, *passingcuts = 0;
-    vector<float> *dcandmass = 0, *dcandpt = 0, *dcandeta = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
+    vector<float> *dcandmass = 0, *dcandpt = 0, *dcandy = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandcosalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
     vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0;
 
     recodmesontree->SetBranchAddress("MinBias", &MinBias);
@@ -283,14 +282,14 @@ void FillSpectrum_pp()
     recodmesontree->SetBranchAddress("passingcuts", &passingcuts);
     recodmesontree->SetBranchAddress("dcandmass", &dcandmass);
     recodmesontree->SetBranchAddress("dcandpt", &dcandpt);
-    recodmesontree->SetBranchAddress("dcandeta", &dcandeta);
+    recodmesontree->SetBranchAddress("dcandy", &dcandy);
     recodmesontree->SetBranchAddress("dcandphi", &dcandphi);
     recodmesontree->SetBranchAddress("dcandffls3d", &dcandffls3d);
-    recodmesontree->SetBranchAddress("dcandalpha", &dcandalpha);
+    recodmesontree->SetBranchAddress("dcandcosalpha", &dcandcosalpha);
     recodmesontree->SetBranchAddress("dcandfprob", &dcandfprob);
     recodmesontree->SetBranchAddress("dcandfchi2", &dcandfchi2);
-//    recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
-//    recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
+    recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
+    recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
     
 //   cout << " total number of event: " << recodmesontree->GetEntries() << endl;
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
@@ -303,15 +302,17 @@ void FillSpectrum_pp()
 		   cout << "Error!!!!!!!!" << endl;
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
+		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
+		   
 		   if( !passingcuts->at(icand) )   continue;
 		   if( dcandffls3d->at(icand) < ffls3dcut )   continue;
-//		   if( dcandalpha->at(icand) > 0.5 )   continue;
-//		   if( dcandfprob->at(icand) < 0.05 )  continue;
-		   if( dcandeta->at(icand) < -2.0 || dcandeta->at(icand) > 2.0 )  continue;
-		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
+//		   if( dcandcosalpha->at(icand) < 0.98006 )   continue;
+		  
+		   if( dcandy->at(icand) < -2.0 || dcandy->at(icand) > 2.0 )  continue;
+		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
+
 		   int ipt = decideptbin( dcandpt->at(icand) );
 		   if( ipt < 0 ) continue;
-//		   cout << " pt: " << dcandpt->at(icand) << "  ipt: " << ipt << endl;
            if( MinBias )  hfg_minbias[ipt]->Fill( dcandmass->at(icand), MinBias_Prescl );
            
 		   if( trigweight > 0.5 )   // Jet trigger histogram
