@@ -17,16 +17,20 @@
 #include "PtBins.h"
 using namespace std;
 
-const int ffls3dcut = 4.0;
-
-TH1F* hfg_minbias[NPT];  //for D0
-TH1F* hfg_minbiasdiff[NPT];  //for D*
+const float ffls3dcut = 2.0;
+bool unprescaleMBtrig = true;   //false to fit raw counts without unprescale MB trigger
+bool isMC = false;
 
 float cut_m_low = 1.70;
 float cut_m_high = 2.05;
 int massbin = 35;
 
-bool isMC = false;
+float hiBin_low = -0.5;
+float hiBin_high = 199.5;
+float rapidityrange = 2.0;
+
+TH1F* hfg_minbias[NPT];  //for D0
+TH1F* hfg_minbiasdiff[NPT];  //for D*
 
 void book_hist()
 {
@@ -220,6 +224,7 @@ void FillSpectrum()
 
     recodmesontree->SetBranchAddress("MinBias", &MinBias);
     recodmesontree->SetBranchAddress("MinBias_Prescl", &MinBias_Prescl);
+	recodmesontree->SetBranchAddress("hiBin", &hiBin);
     recodmesontree->SetBranchAddress("pthatweight", &pthatweight);
     recodmesontree->SetBranchAddress("trigweight", &trigweight);
     recodmesontree->SetBranchAddress("ndcand", &ndcand);
@@ -243,7 +248,9 @@ void FillSpectrum()
 	   recodmesontree->GetEntry(entry);
 	   if( entry % 1000000 == 0 )  cout << entry+1 << "st event" << endl;
 	   if( !MinBias ) continue;
-	   hf_mb->Fill(MinBias, MinBias_Prescl);
+	   if( hiBin < hiBin_low || hiBin > hiBin_high )   continue;
+
+       hf_mb->Fill(MinBias, MinBias_Prescl);
 	   if( ndcand != dtype->size() || ndcand != passingcuts->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )    
 		   cout << "Error!!!!!!!!" << endl;
 	   for( int icand = 0; icand < ndcand; icand++ )
@@ -253,7 +260,7 @@ void FillSpectrum()
 		   if( !passingcuts->at(icand) )   continue;
 		   if( dcandffls3d->at(icand) < ffls3dcut )   continue;
 
-		   if( dcandy->at(icand) < -2.0 || dcandy->at(icand) > 2.0 )  continue;
+		   if( TMath::Abs( dcandy->at(icand) ) > rapidityrange )  continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
 
 		   int ipt = decideptbin( dcandpt->at(icand) );
@@ -264,6 +271,7 @@ void FillSpectrum()
                weight = MinBias_Prescl;
            else
                weight = pthatweight;
+		   if( !unprescaleMBtrig )   weight = 1.0;
            hfg_minbias[ipt]->Fill(dcandmass->at(icand), weight);
 
 	   }
@@ -281,8 +289,14 @@ void FillSpectrum()
    for ( int i = 1; i < NPT -1 ; i++)
 	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, 4.0, 55.0);
    
+   char cfgname[200];
+   sprintf(cfgname,"plots/D0_PbPb_data_ptbin_%d_d%1.0f_unpreMBtrig_%d.pdf",NPT, ffls3dcut, unprescaleMBtrig);
+   cfg_mb->SaveAs(cfgname);
+   sprintf(cfgname,"plots/D0_PbPb_data_ptbin_%d_d%1.0f_unpreMBtrig_%d.png",NPT, ffls3dcut, unprescaleMBtrig);
+   cfg_mb->SaveAs(cfgname);
+   
    char outputfile[200];
-   sprintf(outputfile,"Dspectrum_pbpb_histo_ptbin_%d.root", NPT);
+   sprintf(outputfile,"Dspectrum_pbpb_histo_ptbin_%d_d%1.0f_unpreMBtrig_%d.root", NPT, ffls3dcut, unprescaleMBtrig);
    TFile * output = new TFile(outputfile,"RECREATE");
    hf_mb->Write();
    N_mb->Write();
