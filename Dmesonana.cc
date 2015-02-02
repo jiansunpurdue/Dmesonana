@@ -385,10 +385,10 @@ void Dmesonana::LoopOverEvt()
 	{
 		hftree->GetEntry(entry);
 
-//		if( !isMC )
-//		{
-//			if(!pHBHENoiseFilter || !pcollisionEventSelection) continue;
-//		}
+		if( !isMC )
+		{
+			if(!pHBHENoiseFilter || !pcollisionEventSelection) continue;
+		}
 
 		if( isPbPb )
 		{
