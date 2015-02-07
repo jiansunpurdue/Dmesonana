@@ -45,8 +45,8 @@ class Dmesonana
 		float fpt2;
 		float feta1;
 		float feta2;
-		int   fq1;
-		int   fq2;
+		float   fq1;    //it is float type in forest, which should be changed to int
+		float   fq2;
         
 		vector<int>  gIndex1;
 		vector<int>  gIndex2;

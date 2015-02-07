@@ -501,8 +501,8 @@ void Dmesonana::LoopOvercandidate()
 		fpt2 = cand->get_fpt2();
 		feta1 = cand->get_feta1();
 		feta2 = cand->get_feta2();
-		fq1 = ( int )cand->get_fq1();   //it is float type in forest, which should be changed to int
-		fq2 = ( int ) cand->get_fq2();
+		fq1 = cand->get_fq1();   //it is float type in forest, which should be changed to int
+		fq2 = cand->get_fq2();
 
         if( isMC )
 		{
@@ -511,11 +511,11 @@ void Dmesonana::LoopOvercandidate()
 	    	gIndex_dau2 = cand->get_gIndex_dau2();
 		}
 
-//		if( feta < -2.0 || feta > 2.0 ) continue;
 		if( fpt < 3.5  )  continue;
+        if( fq1 * fq2 > 0 )  continue;  //applied in forest level except for the test production (not a full producton) used to do tmva and Data/Mc comparison study
 
 		bool passingtopocuts = false;
-		if(mass > cut_m_low[1] && mass < cut_m_high[1] && ffls3d > cut_ffls3d[1] && cosalpha > cut_cosfalpha0[1] && fprob > cut_fprob[1] && fdr < cut_fdr[1] && fchi2 < cut_fchi2[1]) 
+		if(mass > cut_m_low[1] && mass < cut_m_high[1] && ffls3d > cut_ffls3d[1] && cosalpha > cut_cosfalpha0[1] && fdr < cut_fdr[1]) 
 			passingtopocuts =  true;
 		
 
