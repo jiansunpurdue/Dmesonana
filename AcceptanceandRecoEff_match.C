@@ -23,7 +23,6 @@ using namespace std;
 
 bool isPbPb = false;
 
-int ffls3dcut;
 double dautrackcut;
 
 double lowptedge_d0 = 4.5;
@@ -108,12 +107,10 @@ void AcceptanceandRecoEff_match()
     
 	if( isPbPb )
     {
-        ffls3dcut = 4.0;
         dautrackcut = 1.5;
     }
     else
     {
-    	ffls3dcut = 2.0;
     	dautrackcut = 0.5;
     }
 
@@ -229,9 +226,15 @@ void AcceptanceandRecoEff_match()
 			   d0candy_matched->Fill( dcandy->at(icand), weight);
 			   d0candypt_matched->Fill( dcandy->at(icand), dcandpt->at(icand), weight);
 		   }
-		   
-		   if( !passingcuts->at(icand) )   continue;
-		   if( dcandffls3d->at(icand) < ffls3dcut )   continue;
+
+           double effectiveffls3dcut = 100000.;
+           if( dcandpt->at(icand) < cut_pt_edge )
+               effectiveffls3dcut = ffls3dcut[0];
+           else
+               effectiveffls3dcut = ffls3dcut[1];
+
+           if( dcandffls3d->at(icand) < effectiveffls3dcut )   continue;
+           if( dcandcosalpha->at(icand) < cosalphacut || dcandfchi2->at(icand) > fchi2cut )  continue;		   
 
 		   if( matchedtogen->at(icand) == 1 && nongendoublecounted->at(icand) == 1)
 		   {
