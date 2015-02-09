@@ -7,18 +7,17 @@
 #include <TF1.h>
 #include <TLegend.h>
 
-TString inputdata="/afs/cern.ch/work/w/wangj/public/dmeson/candbase/Dmesonana_PPJet_Jettrig_obj_pt0p5_d0dstar_alpha1p0_highpurity_1209_all_Candbase.root";
-TString inputmc="/afs/cern.ch/work/w/wangj/public/dmeson/candbase/Dmesonana_hiforest_D0filtered_2760GeV_D0pt3_pthat015305080120_1220_1222_all_Candbase.root";
-
-TString cutdata="dcandeta>-2.0&&dcandeta<2.0&&dcanddau1pt>0.5&&dcanddau2pt>0.5&&abs(dcandmass-1.864)>0.1&&abs(dcandmass-1.864)<0.15";
-TString cutmc="dcandeta>-2.0&&dcandeta<2.0&&dcanddau1pt>0.5&&dcanddau2pt>0.5&&matchedtogen!=0";
+TString inputdata="/data/dmeson/Ntuple/Dmesonana_Rereco_MBtrig_d0pt4p5_nodalphacuts_pt1p5_tight_3lumi_0131_part1_fortmva.root";
+TString inputmc="/data/dmeson/Ntuple/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_v1.root";
+TString cutdata="dcandeta>-2.0&&dcandeta<2.0&&dcandpt>4.5&&dcanddau1pt>1.5&&dcanddau2pt>1.5&&abs(dcandmass-1.864)>0.1&&abs(dcandmass-1.864)<0.15";
+TString cutmc="MinBias&&dcandeta>-2.0&&dcandeta<2.0&&dcandpt>4.5&&dcanddau1pt>1.5&&dcanddau2pt>1.5&&(matchedtogen&&nongendoublecounted)";
 
 void variableLoop(TString var, TString vartitle, double min, double max, int i)
 {
   TFile *infData = new TFile(inputdata);
-  TTree *ntData = (TTree*) infData->Get("ntDzero");
+  TTree *ntData = (TTree*) infData->Get("recodmesontree");
   TFile *infMC = new TFile(inputmc);
-  TTree *ntMC = (TTree*) infMC->Get("ntDzero");
+  TTree *ntMC = (TTree*) infMC->Get("recodmesontree");
 
   TCanvas *c = new TCanvas(Form("c%i",i),"",600,600);
   
@@ -74,9 +73,8 @@ void variableLoop(TString var, TString vartitle, double min, double max, int i)
 
 void DataMCcomparison()
 {
-  variableLoop("dcandfchi2", "chi2", 0., 20., 1);
-  variableLoop("dcandffls3d", "decay length", 0., 50., 2);
-  variableLoop("dcandalpha", "pointing angle", 0., 1., 3);
-  variableLoop("dcandfprob", "dcandfprob", 0., 1., 4);
+  //variableLoop("dcandfchi2", "chi2", 0., 6., 1);
+  //variableLoop("dcandffls3d", "decay length", 0., 50., 2);
+  variableLoop("dcandcosalpha", "cos(#alpha)", -1, 1., 3);
+  //variableLoop("dcandfprob", "dcandfprob", 0., 1., 4);
 }
-
