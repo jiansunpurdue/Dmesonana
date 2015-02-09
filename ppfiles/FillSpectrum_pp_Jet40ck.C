@@ -17,18 +17,25 @@
 #include "PtBins.h"
 using namespace std;
 
-bool evtunprescaleMB = true;   //false to fit raw counts without unprescale MB trigger
-bool isMC = false;
+const int ffls3dcut = 2.0;
+const int cfg_N_row = 3;
+const int cfg_N_column = 3;
+
+TH1F* hfg_minbias[NPT];  //for D0
+TH1F* hfg_Jet20[NPT];
+TH1F* hfg_Jet40[NPT];
+TH1F* hfg_Jet60[NPT];
+TH1F* hfg_Jet80[NPT];
+TH1F* hfg_Jet100[NPT];
+TH1F* hfg_Jettrigcombo[NPT];
+TH1F* hfg_Jettrigcombo_Jet40[NPT];
 
 float cut_m_low = 1.70;
 float cut_m_high = 2.05;
 int massbin = 35;
 
-float hiBin_low = -0.5;
-float hiBin_high = 199.5;
-float rapidityrange = 2.0;
-
-TH1F* hfg_minbias[NPT];  //for D0
+bool isMC = false;
+bool ispPb = false;
 
 void book_hist()
 {
@@ -41,6 +48,34 @@ void book_hist()
 		sprintf(hname, "hfg_minbias_%d", i);
 		hfg_minbias[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
 		hfg_minbias[i]->Sumw2();
+
+		sprintf(hname, "hfg_Jet20_%d", i);
+		hfg_Jet20[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
+		hfg_Jet20[i]->Sumw2();
+
+		sprintf(hname, "hfg_Jet40_%d", i);
+		hfg_Jet40[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
+		hfg_Jet40[i]->Sumw2();
+
+		sprintf(hname, "hfg_Jet60_%d", i);
+		hfg_Jet60[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
+		hfg_Jet60[i]->Sumw2();
+
+		sprintf(hname, "hfg_Jet80_%d", i);
+		hfg_Jet80[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
+		hfg_Jet80[i]->Sumw2();
+
+		sprintf(hname, "hfg_Jet100_%d", i);
+		hfg_Jet100[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
+		hfg_Jet100[i]->Sumw2();
+
+		sprintf(hname, "hfg_Jettrigcombo_%d", i);
+		hfg_Jettrigcombo[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
+		hfg_Jettrigcombo[i]->Sumw2();
+		
+		sprintf(hname, "hfg_Jettrigcombo_Jet40_%d", i);
+		hfg_Jettrigcombo_Jet40[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
+		hfg_Jettrigcombo_Jet40[i]->Sumw2();
 	}
 }
 
@@ -49,6 +84,13 @@ void write_histo( TFile * output)
    for(int i = 0; i<NPT; i++)
    {
 	   hfg_minbias[i]->Write();
+	   hfg_Jet20[i]->Write();
+	   hfg_Jet40[i]->Write();
+	   hfg_Jet60[i]->Write();
+	   hfg_Jet80[i]->Write();
+	   hfg_Jet100[i]->Write();
+	   hfg_Jettrigcombo[i]->Write();
+	   hfg_Jettrigcombo_Jet40[i]->Write();
    }
    output->Close();
 }
@@ -83,7 +125,6 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
     //.. fit with a Gaussian and pol
     TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol2(3)", cut_m_low, cut_m_high);
 //    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(3)", cut_m_low, cut_m_high);
-//    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(6)", cut_m_low, cut_m_high);
     float max = histo->GetMaximum();
 
     float p0 = 1000, p1 = 1.87, p2 = 0.02;
@@ -197,33 +238,50 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
 
 }
 
-void FillSpectrum()
+void FillSpectrum_pp_Jet40ck()
 {
 	book_hist();
 
-	TH1D * hf_mb = new TH1D("hf_mb","hf_mb",10,-5,5);
-	hf_mb->Sumw2();
-
-//	TFile * input = new TFile("Dmesonana_hiforest_D0embedded_Hydjet1p8_2760GeV_D0pt4_pthat15305080_1119_all.root");
-    TFile * input = new TFile("Dmesonana_Rereco_MBtrig_d0pt3p0_d1p8_pt1p5_v1_tight_1213_6lumi_cuts_noprobchi2cut_v2.root");
+//	TFile * input = new TFile("Dmesonana_PPJet_Jettrig_obj_pt0p5_d0dstar_alpha1p0_highpurity_1209_all_v1.root");
+//    TFile * input = new TFile("rootfiles/Dmesonana_pPb_Forest_minbiasUPC_cuts.root");
+    TFile * input = new TFile("Dmesonana_PPJet_Jettrig_obj_pt0p5_d0dstar_alpha1p0_highpurity_1209_all_v1.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
     
-
     int MinBias;
     int MinBias_Prescl;
+    int Jet20;
+    int Jet20_Prescl;
+    int Jet40;
+    int Jet40_Prescl;
+    int Jet60;
+    int Jet60_Prescl;
+    int Jet80;        
+    int Jet80_Prescl;
+    int Jet100;
+    int Jet100_Prescl;
 
     int ndcand;
     int hiBin;
-    double pthatweight;
     double trigweight;
+	float maxJetTrgPt;
     vector<int> *dtype = 0, *passingcuts = 0;
     vector<float> *dcandmass = 0, *dcandpt = 0, *dcandy = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandcosalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
     vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0;
 
     recodmesontree->SetBranchAddress("MinBias", &MinBias);
     recodmesontree->SetBranchAddress("MinBias_Prescl", &MinBias_Prescl);
-	recodmesontree->SetBranchAddress("hiBin", &hiBin);
-    recodmesontree->SetBranchAddress("pthatweight", &pthatweight);
+    recodmesontree->SetBranchAddress("Jet20", &Jet20);
+	recodmesontree->SetBranchAddress("Jet20_Prescl", &Jet20_Prescl);
+	recodmesontree->SetBranchAddress("Jet40", &Jet40);
+	recodmesontree->SetBranchAddress("Jet40_Prescl", &Jet40_Prescl);
+	recodmesontree->SetBranchAddress("Jet60", &Jet60);
+	recodmesontree->SetBranchAddress("Jet60_Prescl", &Jet60_Prescl);
+	recodmesontree->SetBranchAddress("Jet80", &Jet80);
+	recodmesontree->SetBranchAddress("Jet80_Prescl", &Jet80_Prescl);
+	recodmesontree->SetBranchAddress("Jet100", &Jet100);
+	recodmesontree->SetBranchAddress("Jet100_Prescl", &Jet100_Prescl);
+
+	recodmesontree->SetBranchAddress("maxJetTrgPt", &maxJetTrgPt);
     recodmesontree->SetBranchAddress("trigweight", &trigweight);
     recodmesontree->SetBranchAddress("ndcand", &ndcand);
     recodmesontree->SetBranchAddress("dtype", &dtype);
@@ -241,42 +299,44 @@ void FillSpectrum()
     
 //   cout << " total number of event: " << recodmesontree->GetEntries() << endl;
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
-//   for ( unsigned int entry = 0; entry < 20000000; entry++ )
+//   for ( unsigned int entry = 0; entry < 200000; entry++ )
    {
 	   recodmesontree->GetEntry(entry);
 	   if( entry % 1000000 == 0 )  cout << entry+1 << "st event" << endl;
-	   if( !MinBias ) continue;
+	   if( !MinBias && !Jet20 && !Jet40 && !Jet60 && !Jet80 && !Jet100 )  {  cout << "error!!!!!!!!!" << endl;  continue;}
 	   if( ndcand != dtype->size() || ndcand != passingcuts->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )    
 		   cout << "Error!!!!!!!!" << endl;
-	   if( hiBin < hiBin_low || hiBin > hiBin_high )   continue;
-
-       hf_mb->Fill(MinBias, MinBias_Prescl);
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
 		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
 		   
-           double effectiveffls3dcut = 100000.;
-		   if( dcandpt->at(icand) < cut_pt_edge )   
-			   effectiveffls3dcut = ffls3dcut[0];
-		   else 
-			   effectiveffls3dcut = ffls3dcut[1];
+		   if( !passingcuts->at(icand) )   continue;
+		   if( dcandffls3d->at(icand) < ffls3dcut )   continue;
+//		   if( dcandcosalpha->at(icand) < 0.98006 )   continue;
+//		   if( dcandfprob->at(icand) < 0.05 )  continue;
 
-		   if( dcandffls3d->at(icand) < effectiveffls3dcut )   continue;
-		   if( dcandcosalpha->at(icand) < cosalphacut || dcandfchi2->at(icand) > fchi2cut )  continue;
-
-		   if( TMath::Abs( dcandy->at(icand) ) > rapidityrange )  continue;
+           if( dcandy->at(icand) < -2.0 || dcandy->at(icand) > 2.0 )  continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
 
 		   int ipt = decideptbin( dcandpt->at(icand) );
 		   if( ipt < 0 ) continue;
-//		   cout << " pt: " << dcandpt->at(icand) << "  ipt: " << ipt << endl;
-           double weight = 1.0;
-           if( !isMC )
-               weight = MinBias_Prescl;
-           else
-               weight = pthatweight;
-		   if( !evtunprescaleMB )   weight = 1.0;
-           hfg_minbias[ipt]->Fill(dcandmass->at(icand), weight);
+           if( MinBias )  hfg_minbias[ipt]->Fill( dcandmass->at(icand), MinBias_Prescl );
+           
+		   if( trigweight > 0.5 )   // Jet trigger histogram
+		   {
+               double weight = 0.0;
+               if( !isMC )
+                   weight = trigweight;           
+		       hfg_Jettrigcombo[ipt]->Fill(dcandmass->at(icand), weight);
+
+			   if( maxJetTrgPt >= 40 )   hfg_Jettrigcombo_Jet40[ipt]->Fill(dcandmass->at(icand), weight);
+
+		       if( Jet20 )  hfg_Jet20[ipt]->Fill(dcandmass->at(icand), Jet20_Prescl );
+		       if( Jet40 )  hfg_Jet40[ipt]->Fill(dcandmass->at(icand), Jet40_Prescl );
+		       if( Jet60 )  hfg_Jet60[ipt]->Fill(dcandmass->at(icand), Jet60_Prescl );
+		       if( Jet80 )  hfg_Jet80[ipt]->Fill(dcandmass->at(icand), Jet80_Prescl );
+		       if( Jet100 )  hfg_Jet100[ipt]->Fill(dcandmass->at(icand), Jet100_Prescl );
+		   }
 
 	   }
    }
@@ -288,23 +348,89 @@ void FillSpectrum()
    TH1D * N_mb = new TH1D("N_mb","N_mb",NPT,ptbins);
    N_mb->Sumw2();
    TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 1000, 1000);
-   cfg_mb->Divide(3, 3);
+   cfg_mb->Divide(cfg_N_column, cfg_N_row);
 
-   for ( int i = 1; i < NPT -1 ; i++)
+   for ( int i = 1; i < NPT-1; i++)
 	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, 4.0, 55.0);
    
-   char cfgname[200];
-   sprintf(cfgname,"plots/D0_PbPb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.pdf",NPT, evtunprescaleMB, hiBin_low, hiBin_high);
-   cfg_mb->SaveAs(cfgname);
-   sprintf(cfgname,"plots/D0_PbPb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.gif",NPT, evtunprescaleMB, hiBin_low, hiBin_high);
-   cfg_mb->SaveAs(cfgname);
-  
+   TH1D * N_Jettrig = new TH1D("N_Jettrig","N_Jettrig",NPT,ptbins);
+   N_Jettrig->Sumw2();
+   TCanvas* cfg_Jettrig = new TCanvas("cfg_Jettrig", "cfg_Jettrig", 1000, 1000);
+   cfg_Jettrig->Divide(cfg_N_column, cfg_N_row);
+
+   for ( int i = 1; i < NPT-1; i++)
+	   fit_hist( hfg_Jettrigcombo[i], cfg_Jettrig, i, N_Jettrig, 4.0, 55.0);
+
+   TH1D * N_Jettrig_Jet40 = new TH1D("N_Jettrig_Jet40","N_Jettrig_Jet40",NPT,ptbins);
+   N_Jettrig_Jet40->Sumw2();
+   TCanvas* cfg_Jettrig_Jet40 = new TCanvas("cfg_Jettrig_Jet40", "cfg_Jettrig_Jet40", 1000, 1000);
+   cfg_Jettrig_Jet40->Divide(cfg_N_column, cfg_N_row);
+
+   for ( int i = 1; i < NPT-1; i++)
+	   fit_hist( hfg_Jettrigcombo_Jet40[i], cfg_Jettrig_Jet40, i, N_Jettrig_Jet40, 4.0, 55.0);
+   
+   TH1D * N_Jet20 = new TH1D("N_Jet20","N_Jet20",NPT,ptbins);
+   N_Jet20->Sumw2();
+   TCanvas* cfg_Jet20 = new TCanvas("cfg_Jet20", "cfg_Jet20", 1000, 1000);
+   cfg_Jet20->Divide(cfg_N_column, cfg_N_row);
+
+   for ( int i = 1; i < NPT-1; i++)
+	   fit_hist( hfg_Jet20[i], cfg_Jet20, i, N_Jet20, 4.0, 55.0);
+
+   TH1D * N_Jet40 = new TH1D("N_Jet40","N_Jet40",NPT,ptbins);
+   N_Jet40->Sumw2();
+   TCanvas* cfg_Jet40 = new TCanvas("cfg_Jet40", "cfg_Jet40", 1000, 1000);
+   cfg_Jet40->Divide(cfg_N_column, cfg_N_row);
+
+   for ( int i = 1; i < NPT-1; i++)
+	   fit_hist( hfg_Jet40[i], cfg_Jet40, i, N_Jet40, 4.0, 55.0);
+
+   TH1D * N_Jet60 = new TH1D("N_Jet60","N_Jet60",NPT,ptbins);
+   N_Jet60->Sumw2();
+   TCanvas* cfg_Jet60 = new TCanvas("cfg_Jet60", "cfg_Jet60", 1000, 1000);
+   cfg_Jet60->Divide(cfg_N_column, cfg_N_row);
+
+   for ( int i = 1; i < NPT-1; i++)
+	   fit_hist( hfg_Jet60[i], cfg_Jet60, i, N_Jet60, 4.0, 55.0);
+
+   TH1D * N_Jet80 = new TH1D("N_Jet80","N_Jet80",NPT,ptbins);
+   N_Jet80->Sumw2();
+   TCanvas* cfg_Jet80 = new TCanvas("cfg_Jet80", "cfg_Jet80", 1000, 1000);
+   cfg_Jet80->Divide(cfg_N_column, cfg_N_row);
+
+   for ( int i = 1; i < NPT-1; i++)
+	   fit_hist( hfg_Jet80[i], cfg_Jet80, i, N_Jet80, 4.0, 55.0);
+
+   TH1D * N_Jet100 = new TH1D("N_Jet100","N_Jet100",NPT,ptbins);
+   N_Jet100->Sumw2();
+   TCanvas* cfg_Jet100 = new TCanvas("cfg_Jet100", "cfg_Jet100", 1000, 1000);
+   cfg_Jet100->Divide(cfg_N_column, cfg_N_row);
+
+   for ( int i = 1; i < NPT-1; i++)
+	   fit_hist( hfg_Jet100[i], cfg_Jet100, i, N_Jet100, 4.0, 55.0);
+   
    char outputfile[200];
-   sprintf(outputfile,"Dspectrum_pbpb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.root", NPT, evtunprescaleMB, hiBin_low, hiBin_high);
+   if(!ispPb)
+       sprintf(outputfile,"Dspectrum_pp_histo_ptbin_%d_Jet40.root", NPT);
+   else
+	   sprintf(outputfile,"Dspectrum_pPb_histo_ptbin_%d_Jet40.root", NPT);
    TFile * output = new TFile(outputfile,"RECREATE");
-   hf_mb->Write();
    N_mb->Write();
    cfg_mb->Write();
+   N_Jettrig->Write();
+   cfg_Jettrig->Write();
+   N_Jettrig_Jet40->Write();
+   cfg_Jettrig_Jet40->Write();
+   N_Jet20->Write();
+   cfg_Jet20->Write();
+   N_Jet40->Write();
+   cfg_Jet40->Write();
+   N_Jet60->Write();
+   cfg_Jet60->Write();
+   N_Jet80->Write();
+   cfg_Jet80->Write();
+   N_Jet100->Write();
+   cfg_Jet100->Write();
    write_histo( output );
 }
 

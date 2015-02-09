@@ -7,13 +7,14 @@ void Spectrum_Recoeff_D0_ppPbPb()
 	TH1::SetDefaultSumw2();
     if ( isPbPb )
 	{
-	   TFile * input_MC = new TFile("Dspectrum_pbpb_MC_genmatch_histo_ptbin_11_d4p0_nospike.root");
-	   TFile * input_data = new TFile("Dspectrum_pbpb_histo_ptbin_11_d4p0.root");
-	}
+	   TFile * input_MC = new TFile("Dspectrum_pbpb_MC_genmatch_histo_ptbin_11_d4p0.root");
+//       TFile * input_MC = new TFile("");
+       TFile * input_data = new TFile("Dspectrum_pbpb_histo_ptbin_11_d4p0.root");
+    }
 	else
 	{
-		TFile * input_MC = new TFile("Dspectrum_pp_MC_genmatch_histo_ptbin_11_recoeff_cuts2p0_nospike.root");
-		TFile * input_data = new TFile("Dspectrum_pp_histo_ptbin_11_d2p0.root");
+		TFile * input_MC = new TFile("Dspectrum_pp_MC_genmatch_histo_ptbin_11_y2p0_d2p0.root");
+		TFile * input_data = new TFile("Dspectrum_pp_histo_ptbin_11_y2p0_d2p0_Jet40.root");
 	}
 
 	TH1D * N_gendpt = ( TH1D * ) input_MC->Get("N_gendpt");
@@ -60,10 +61,16 @@ void Spectrum_Recoeff_D0_ppPbPb()
 
 	if( !isPbPb )
 	{   // corrected by trigger eff
-		TFile * input_trigeff = new TFile("Jettrig_eff_pp_ptbin_11_nocuts.root");
-		TH1D * Jettrig_eff_pp = ( TH1D * ) input_trigeff->Get("Jettrig_eff_pp");
+		TFile * input_trigeff = new TFile("Jettrig_eff_pp_nocuts_y2p0.root");
+        TH1D * Jettrig_eff_pp = ( TH1D * ) input_trigeff->Get("Jettrig_eff_pp");
+
+        TFile * input_trigeff = new TFile("eta_based_rootfiles/Jettrig_eff_ppb.root");
+		TH1D * Jettrig_eff_ppb = ( TH1D * ) input_trigeff->Get("Jettrig_eff_ppb");
 		TH1D * d0raw_data_overrecoeff = ( TH1D *) d0raw_data_overeff->Clone("d0raw_data_overrecoeff");
+		TH1D * d0raw_data_overeff_pPb = ( TH1D *) d0raw_data_overeff->Clone("d0raw_data_overeff_pPb");
+		
 		d0raw_data_overeff->Divide(Jettrig_eff_pp);
+		d0raw_data_overeff_pPb->Divide(Jettrig_eff_ppb);
 	}
 
 	TCanvas *d0spectrum_pbpb = new TCanvas("d0spectrum_pbpb","d0spectrum_pbpb");
@@ -78,6 +85,15 @@ void Spectrum_Recoeff_D0_ppPbPb()
     d0raw_data_overeff->SetMarkerColor(4.0);
     d0raw_data_overeff->Draw("ep");
 
+	if( !isPbPb ) 
+	{
+		d0raw_data_overeff_pPb->SetLineColor(1.0);
+		d0raw_data_overeff_pPb->SetMarkerSize(0.8);
+		d0raw_data_overeff_pPb->SetMarkerStyle(20);
+		d0raw_data_overeff_pPb->SetMarkerColor(1.0);
+		d0raw_data_overeff_pPb->Draw("epsame");
+	}
+
     TLatex Tl;
     Tl.SetNDC();
     Tl.SetTextAlign(12);
@@ -86,7 +102,7 @@ void Spectrum_Recoeff_D0_ppPbPb()
 		Tl.DrawLatex(0.3,0.8, "CMS Preliminary, 2011 PbPb, #sqrt{S_{NN}} = 2.76 TeV");
 	else
 		Tl.DrawLatex(0.3,0.8, "CMS Preliminary, 2013 pp, #sqrt{S_{NN}} = 2.76 TeV");
-    Tl.DrawLatex(0.5,0.7, "#left|#eta#right| < 2.0");
+    Tl.DrawLatex(0.5,0.7, "#left|y#right| < 2.0");
 
 // end data
 //

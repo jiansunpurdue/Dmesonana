@@ -22,9 +22,14 @@
 
 using namespace std;
 
-const int ffls3dcut = 4.0;
+float hiBin_low = -0.5;
+float hiBin_high = 199.5;
+float rapidityrange = 2.0;
 
-//TH1::SetDefaultSumw2();
+float cut_m_low = 1.70;
+float cut_m_high = 2.05;
+int massbin = 35;
+bool pthatweighted = true;
 
 TH1F* hfg_minbias[NPT];  //for D0
 TH1F* hfg_minbias_MCmatched[NPT];
@@ -32,11 +37,6 @@ TH1F* hfg_minbias_MCdoublecounted[NPT];
 TH1F* hfg_minbias_bkg[NPT]; 
 TH1F* hfg_minbiasdiff[NPT];  //for D*
 TH1D* d0genpt;
-
-float cut_m_low = 1.70;
-float cut_m_high = 2.05;
-int massbin = 35;
-bool isMC = true;
 
 
 void book_hist()
@@ -194,7 +194,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 
 		   cout << " fitchi2: " << fitchi2 << "   noffreepara: " << noffreepara << "  noffitpoints: " << noffitpoints << endl;
 
-           if( !isMC )
+           if( !pthatweighted )
 		       sprintf( sig_print,"N_{sig} = %7.1f #pm %7.1f", Nsig, err_Nsig);
 		   else
 			   sprintf( sig_print,"10^{6} * N_{sig} = %7.2f #pm %7.2f", 1000000 * Nsig, 1000000 * err_Nsig);
@@ -235,6 +235,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 
 void FillSpectrum_MC()
 {
+    TH1::SetDefaultSumw2();
 	book_hist();
 
     TH1F* deltapt = new TH1F("deltapt","deltapt",100,-2.0,2.0);
@@ -275,6 +276,7 @@ void FillSpectrum_MC()
 
     recodmesontree->SetBranchAddress("MinBias", &MinBias);
     recodmesontree->SetBranchAddress("MinBias_Prescl", &MinBias_Prescl);
+	recodmesontree->SetBranchAddress("hiBin", &hiBin);
     recodmesontree->SetBranchAddress("pthatweight", &pthatweight);
     recodmesontree->SetBranchAddress("trigweight", &trigweight);
     recodmesontree->SetBranchAddress("ndcand", &ndcand);
@@ -306,6 +308,11 @@ void FillSpectrum_MC()
 	   if( !MinBias ) continue;
 	   if( ndcand != dtype->size() || ndcand != passingcuts->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )    
 		   cout << "Error!!!!!!!!" << endl;
+       if( hiBin < hiBin_low || hiBin > hiBin_high )   continue;
+
+       double weight = 1.0;
+       weight = pthatweight;
+       if( !pthatweighted )   weight = 1.0;
 
 	   for( int igend = 0; igend < ngend; igend++ )
 	   {
@@ -314,19 +321,24 @@ void FillSpectrum_MC()
            if( pthat < 15 && dpt[igend] > 9.0 ) continue;
 		   if( pthat > 15.0 && pthat < 30.0 && dpt[igend] > 16.0 ) continue;
 
-           if( dy[igend] < -2.0 || dy[igend] > 2.0 )   continue;
-		   d0genpt->Fill( dpt[igend], pthatweight);
+           if( TMath::Abs( dy[igend] ) > rapidityrange )   continue;
+		   d0genpt->Fill( dpt[igend], weight);
 	   }
 
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
 		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
-		   if( !passingcuts->at(icand) )   continue;
-		   if( dcandffls3d->at(icand) < ffls3dcut )   continue;
-//		   if( dcandcosalpha->at(icand) > 0.5 )   continue;
-//		   if( dcandfprob->at(icand) < 0.05 )  continue;
-		   
-		   if( dcandy->at(icand) < -2.0 || dcandy->at(icand) > 2.0 )  continue;
+
+           double effectiveffls3dcut = 100000.;
+           if( dcandpt->at(icand) < cut_pt_edge )
+               effectiveffls3dcut = ffls3dcut[0];
+           else
+               effectiveffls3dcut = ffls3dcut[1];
+
+           if( dcandffls3d->at(icand) < effectiveffls3dcut )   continue;
+           if( dcandcosalpha->at(icand) < cosalphacut || dcandfchi2->at(icand) > fchi2cut )  continue;		   
+
+		   if( TMath::Abs( dcandy->at(icand) ) > rapidityrange )  continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
 
 		   int ipt = decideptbin( dcandpt->at(icand) );
@@ -337,12 +349,6 @@ void FillSpectrum_MC()
            if( pthat < 15 && dcandpt->at(icand) > 9.0 )   continue;
 		   if( pthat > 15.0 && pthat < 30.0 && dcandpt->at(icand) > 16.0 )   continue;
 
-           double weight = 1.0;
-           if( !isMC )
-			   weight = MinBias_Prescl;
-		   else
-			   weight = pthatweight;
-//		   weight = 1.0;
 		   hfg_minbias[ipt]->Fill(dcandmass->at(icand), weight);
 
 		   if( matchedtogen->at(icand) == 1 && nongendoublecounted->at(icand) == 1)
@@ -406,9 +412,15 @@ void FillSpectrum_MC()
 	   N_mb_matched->SetBinContent( i+1, hfg_minbias_MCmatched[i]->IntegralAndError(0,-1, error) / ( ptbinwidth ) );
 	   N_mb_matched->SetBinError( i+1, error/ptbinwidth );
    }
-   
+
+   char cfgname[200];
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f.pdf",NPT, hiBin_low, hiBin_high);
+//   cfg_mb->SaveAs(cfgname);
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f.png",NPT, hiBin_low, hiBin_high);
+//   cfg_mb->SaveAs(cfgname); 
+  
    char outputfile[200];
-   sprintf(outputfile,"Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d.root", NPT);
+   sprintf(outputfile,"Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f.root", NPT, hiBin_low, hiBin_high);
    TFile * output = new TFile(outputfile,"RECREATE");
    d0genpt->Write();
    N_gendpt->Write();

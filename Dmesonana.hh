@@ -45,8 +45,8 @@ class Dmesonana
 		float fpt2;
 		float feta1;
 		float feta2;
-		int   fq1;
-		int   fq2;
+		float   fq1;    //it is float type in forest, which should be changed to int
+		float   fq2;
         
 		vector<int>  gIndex1;
 		vector<int>  gIndex2;
@@ -166,6 +166,7 @@ class Dmesonana
 		vector<float> dcandmass, dcandpt, dcandeta, dcandphi, dcandy, dcandffls3d, dcandcosalpha, dcandfprob, dcandfchi2;
 		vector<float> dcanddau1eta, dcanddau2eta;
 		vector<float> dcanddau1pt, dcanddau2pt;
+		vector<int> dcanddau1q, dcanddau2q;
 		vector<int>   matchedtogen, dcandmatchedpdg, nongendoublecounted;
 		vector<float> dcandmatchedpt, dcandmatchedeta, dcandmatchedphi, dcandmatchnofdau;
 		vector<float> dcandmatcheddau1pt, dcandmatcheddau2pt;

@@ -3,8 +3,8 @@ void Jettrig_pp_D0eff()
 	gStyle->SetOptStat(0);
 	gStyle->SetOptTitle(0);
 	TH1::SetDefaultSumw2();
-//	TFile * input = new TFile("Dspectrum_pp_MC_genmatch_histo_ptbin_16_trigeff_nocuts_spike.root");
-    TFile * input = new TFile("Dspectrum_pp_MC_genmatch_histo_ptbin_11_trigeff_nocuts_spike.root");
+	TFile * input = new TFile("Dspectrum_pp_MC_genmatch_histo_ptbin_11_y2p0_d2p0_nocuts_spike.root");
+//    TFile * input = new TFile("rootfiles/Dspectrum_pp_MC_genmatch_histo_ptbin_11_trigeff_nocuts_spike.root");
 
 	TH1D * N_mb_matched = (TH1D *) input->Get("N_mb_matched");
 	TH1D * N_Jettrig_matched = (TH1D *) input->Get("N_Jettrig_matched");
@@ -85,9 +85,11 @@ void Jettrig_pp_D0eff()
 	N_Jettrig_matched->DrawCopy("ep");
 
 	TH1D * Jettrig_eff_pp = (TH1D *) N_Jettrig_matched->Clone("Jettrig_eff_pp");
+	TH1D * Jettrig_eff_pp_Jet40 = (TH1D *) N_Jet40_matched->Clone("Jettrig_eff_pp_Jet40");
 
 	TFile * output = new TFile("Jettrig_eff_pp.root","RECREATE");
 	Jettrig_eff_pp->Write();
 	jettrigeff->Write();
+	Jettrig_eff_pp_Jet40->Write();
 	cfg->Write();
 }

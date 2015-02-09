@@ -17,19 +17,19 @@
 
 #define MASSD0 1.8645  //value from pythia
 
-bool savealldcand = true;
+bool savealldcand = false;
 bool isMC = false;
-bool isPbPb = false;
+bool isPbPb = true;
 bool ispppPbMB = false;
 bool ispPbJettrig = false;
 
-////for D0 Hydjet samples
-#define NPTHATBIN 5
-int MCentries[NPTHATBIN] = { 19240, 19321, 18992, 20010, 22437};
-int pthatbin[NPTHATBIN+1] = { 0, 15, 30, 50, 80, 1000};
-double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
-double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
-
+//////for D0 Hydjet samples
+//#define NPTHATBIN 5
+//int MCentries[NPTHATBIN] = { 19240, 19321, 18992, 20010, 22437};
+//int pthatbin[NPTHATBIN+1] = { 0, 15, 30, 50, 80, 1000};
+//double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
+//double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
+//
 //////for D0 Hydjet samples, pthat from 5
 //#define NPTHATBIN 5
 //int MCentries[NPTHATBIN] = { 12906, 19321, 18992, 20010, 22437};
@@ -37,12 +37,12 @@ double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752, 0.15206, 0.1694, 0.
 //double pthatweight_xsection[NPTHATBIN+1] = {12.31, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
 //double filtereff[NPTHATBIN+1] = { 0.03716, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
 
-////for D0 pythia samples
-//#define NPTHATBIN 6
-//int MCentries[NPTHATBIN] = { 16429, 24025, 23931, 25301, 24302, 27877};
-//int pthatbin[NPTHATBIN+1] = {0,15,30,50,80,120,1000};
-//double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.121E-05, 1.756E-15};
-//double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752,  0.15206, 0.1694, 0.17794, 0.0945};
+//for D0 pythia samples
+#define NPTHATBIN 6
+int MCentries[NPTHATBIN] = { 16429, 24025, 23931, 25301, 24302, 27877};
+int pthatbin[NPTHATBIN+1] = {0,15,30,50,80,120,1000};
+double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.121E-05, 1.756E-15};
+double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752,  0.15206, 0.1694, 0.17794, 0.0945};
 
 TH1F * pthat_weighted = new TH1F("pthat_weighted","pthat_weighted",200,0,500.0);
 TH1F * gend0pt_weighted = new TH1F("gend0pt_weighted","gend0pt_weighted",100,0.0,100.0);
@@ -153,6 +153,8 @@ void Dmesonana::Init(int startFile, int endFile, char *filelist)
 	recodmesontree->Branch("dcanddau2eta", &dcanddau2eta);
 	recodmesontree->Branch("dcanddau1pt", &dcanddau1pt);
 	recodmesontree->Branch("dcanddau2pt", &dcanddau2pt);
+	recodmesontree->Branch("dcanddau1q", &dcanddau1q);
+	recodmesontree->Branch("dcanddau2q", &dcanddau2q);
 	if( isMC )
 	{
     	recodmesontree->Branch("matchedtogen", &matchedtogen);
@@ -465,6 +467,7 @@ void Dmesonana::LoopOverEvt()
 		dcandmass.clear(); dcandpt.clear(); dcandeta.clear(); dcandy.clear(); dcandphi.clear(); dcandffls3d.clear(); dcandcosalpha.clear(); dcandfprob.clear(); dcandfchi2.clear();
 		dcanddau1eta.clear();  dcanddau2eta.clear();
 		dcanddau1pt.clear();  dcanddau2pt.clear();
+		dcanddau1q.clear();  dcanddau2q.clear();
 		dcandmatchedpdg.clear();
 		nongendoublecounted.clear();
 		dcandmatchedpt.clear(); dcandmatchedeta.clear();  dcandmatchedphi.clear(); dcandmatchnofdau.clear();
@@ -498,6 +501,8 @@ void Dmesonana::LoopOvercandidate()
 		fpt2 = cand->get_fpt2();
 		feta1 = cand->get_feta1();
 		feta2 = cand->get_feta2();
+		fq1 = cand->get_fq1();   //it is float type in forest, which should be changed to int
+		fq2 = cand->get_fq2();
 
         if( isMC )
 		{
@@ -506,11 +511,11 @@ void Dmesonana::LoopOvercandidate()
 	    	gIndex_dau2 = cand->get_gIndex_dau2();
 		}
 
-//		if( feta < -2.0 || feta > 2.0 ) continue;
 		if( fpt < 3.5  )  continue;
+        if( fq1 * fq2 > 0 )  continue;  //applied in forest level except for the test production (not a full producton) used to do tmva and Data/Mc comparison study
 
 		bool passingtopocuts = false;
-		if(mass > cut_m_low[1] && mass < cut_m_high[1] && ffls3d > cut_ffls3d[1] && cosalpha > cut_cosfalpha0[1] && fprob > cut_fprob[1] && fdr < cut_fdr[1] && fchi2 < cut_fchi2[1]) 
+		if(mass > cut_m_low[1] && mass < cut_m_high[1] && ffls3d > cut_ffls3d[1] && cosalpha > cut_cosfalpha0[1] && fdr < cut_fdr[1]) 
 			passingtopocuts =  true;
 		
 
@@ -543,6 +548,8 @@ void Dmesonana::LoopOvercandidate()
 		dcanddau2eta.push_back(feta2);
 		dcanddau1pt.push_back(fpt1);
 		dcanddau2pt.push_back(fpt2);
+		dcanddau1q.push_back(fq1);
+		dcanddau2q.push_back(fq2);
 
 		ndcand++;
 
