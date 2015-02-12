@@ -17,7 +17,7 @@
 #include "PtBins.h"
 using namespace std;
 
-bool evtunprescaleMB = true;   //false to fit raw counts without unprescale MB trigger
+bool evtunprescaleMB = false;   //false to fit raw counts without unprescale MB trigger
 bool isMC = false;
 
 float cut_m_low = 1.70;
