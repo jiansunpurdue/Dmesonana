@@ -5,12 +5,18 @@
 double ptbins[NPT+1] = {0,4.5,5.5,7,9,11,13,16,20,28,40,100};
 //double ptbins[NPT+1] = {0,3.5,4.5,5.5,7,9,11,13,16,20,28,40};
 
+//#define NPT 6
+//double ptbins[NPT+1] = {0.,4.5,7.0,11.0,20.,40.,100.};
+
+//#define NPT 7
+//double ptbins[NPT+1] = {0.,4.5,7.0,11.0,20.,28.,40.,100.};
+
 //#define NY 12
 
 //double ybins[NY+1] = {-2.0, -1.8, -1.6, -1.2, -0.8, -0.4, 0, 0.4, 0.8, 1.2, 1.6, 1.8, 2.0};
 
-#define NY 6
-double ybins[NY+1] = {-2.0, -1.5, -0.7, 0, 0.7, 1.5, 2.0};
+//#define NY 6
+//double ybins[NY+1] = {-2.0, -1.5, -0.7, 0, 0.7, 1.5, 2.0};
 
 //pp triger efficiency
 //#define NPT  16
