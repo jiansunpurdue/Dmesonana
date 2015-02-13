@@ -22,8 +22,8 @@
 
 using namespace std;
 
-float hiBin_low = -0.5;
-float hiBin_high = 199.5;
+float hiBin_low = 79.5;
+float hiBin_high = 159.5;
 float rapidityrange = 2.0;
 
 const int cfg_N_row = 3;
@@ -32,7 +32,7 @@ const int cfg_N_column = 3;
 float cut_m_low = 1.70;
 float cut_m_high = 2.05;
 int massbin = 35;
-bool pthatweighted = true;
+bool pthatweighted = false;
 
 TH1F* hfg_minbias[NPT];  //for D0
 TH1F* hfg_minbias_MCmatched[NPT];
@@ -41,6 +41,7 @@ TH1F* hfg_minbias_MCdoublecounted[NPT];
 TH1F* hfg_minbias_bkg[NPT]; 
 TH1F* hfg_minbiasdiff[NPT];  //for D*
 TH1D* d0genpt;
+TH1D* d0genpt_fonllweighted;
 
 
 void book_hist()
@@ -48,6 +49,8 @@ void book_hist()
 	TH1::SetDefaultSumw2();
 	d0genpt = new TH1D("d0genpt","d0genpt", NPT, ptbins);
     d0genpt->Sumw2();
+	d0genpt_fonllweighted = new TH1D("d0genpt_fonllweighted","d0genpt_fonllweighted",392,2,100);
+	d0genpt_fonllweighted->Sumw2();
 	char hname[100], pt_range[1000];
 	for(int i = 0; i<NPT; i++)
 	{
@@ -242,7 +245,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 
 }
 
-void FillSpectrum_MC()
+void FillSpectrum_MC_FONLLweight()
 {
     TH1::SetDefaultSumw2();
 	book_hist();
@@ -253,6 +256,9 @@ void FillSpectrum_MC()
     deltapt->Sumw2();
     deltaR->Sumw2();
 	deltapt_overgen->Sumw2();
+
+	TFile * input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100.root");
+	TH1D * fonllweight = ( TH1D * ) input_fonllweight->Get("ratio_rawtofonll");
 
     TFile * input = new TFile("Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_v1.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
@@ -320,18 +326,15 @@ void FillSpectrum_MC()
        if( hiBin < hiBin_low || hiBin > hiBin_high )   continue;
 
        double weight = -999;
-       weight = pthatweight;
-       if( !pthatweighted )   weight = 1.0;
+//       weight = pthatweight;
+//       if( !pthatweighted )   weight = 1.0;
 
 	   for( int igend = 0; igend < ngend; igend++ )
 	   {
-           if( pthat < 15 && dpt[igend] > 9.0 ) continue;
-           if( pthat > 15.0 && pthat < 30.0 && dpt[igend] > 16.0 ) continue;
-//           if( dpt[igend] > 2 * pthat )  continue;
-           
-		   if( TMath::Abs( dy[igend] ) > rapidityrange )   continue;
-
+           if( TMath::Abs( dy[igend] ) > rapidityrange )   continue;
+		   weight = fonllweight->GetBinContent( fonllweight->FindBin( dpt[igend] ) );
 		   d0genpt->Fill( dpt[igend], weight);
+		   d0genpt_fonllweighted->Fill( dpt[igend], weight);
 	   }
 
 	   for( int icand = 0; icand < ndcand; icand++ )
@@ -350,13 +353,10 @@ void FillSpectrum_MC()
 		   if( TMath::Abs( dcandy->at(icand) ) > rapidityrange )  continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
 
+		   weight = fonllweight->GetBinContent( fonllweight->FindBin( dcandpt->at(icand) ) );
 
 		   int ipt = decideptbin( dcandpt->at(icand) );
 		   if( ipt < 0 ) continue;
-
-           if( pthat < 15 && dcandpt->at(icand) > 9.0 )   continue;
-           if( pthat > 15.0 && pthat < 30.0 && dcandpt->at(icand) > 16.0 )   continue;
-//           if( dcandpt->at(icand) > 2 * pthat )   continue;
 
 		   hfg_minbias[ipt]->Fill(dcandmass->at(icand), weight);
 
@@ -433,14 +433,15 @@ void FillSpectrum_MC()
    }
 
    char cfgname[200];
-   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_pthatweight.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    cfg_mb->SaveAs(cfgname);
-   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_pthatweight.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    cfg_mb->SaveAs(cfgname); 
   
    char outputfile[200];
-   sprintf(outputfile,"Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_pthatweight.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+   sprintf(outputfile,"Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    TFile * output = new TFile(outputfile,"RECREATE");
+   d0genpt_fonllweighted->Write();
    d0genpt->Write();
    N_gendpt->Write();
    N_mb_matched->Write();

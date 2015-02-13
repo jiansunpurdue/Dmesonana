@@ -6,8 +6,9 @@ void Draw_Recoeff_D0_PbPb( TFile * input_MC, TFile * input_data, bool evtunpresc
 	TH1::SetDefaultSumw2();
 
 	TH1D * N_gendpt = ( TH1D * ) input_MC->Get("N_gendpt");
-	TH1D * N_mb_matched = ( TH1D * ) input_MC->Get("N_mb_matched");
-	TH1D * N_mb = ( TH1D * ) input_MC->Get("N_mb");
+//	TH1D * N_mb_matched = ( TH1D * ) input_MC->Get("N_mb_matched");
+    TH1D * N_mb_matched = ( TH1D * ) input_MC->Get("N_mb_matched_genpt");
+    TH1D * N_mb = ( TH1D * ) input_MC->Get("N_mb");
 
 	TH1D * recoeff_matched = ( TH1D * ) N_mb_matched->Clone("recoeff_matched");
 	recoeff_matched->Divide(N_mb_matched, N_gendpt, 1.0, 1.0, "B");
