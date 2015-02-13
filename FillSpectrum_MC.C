@@ -40,6 +40,7 @@ TH1F* hfg_minbias_MCmatched_genpt[NPT];
 TH1F* hfg_minbias_MCdoublecounted[NPT];
 TH1F* hfg_minbias_bkg[NPT]; 
 TH1F* hfg_minbiasdiff[NPT];  //for D*
+TH1D* pthatweight_d0genpt[NPT];
 TH1D* d0genpt;
 
 
@@ -74,6 +75,10 @@ void book_hist()
 		sprintf(hname, "hfg_minbias_bkg%d", i);
 		hfg_minbias_bkg[i] = new TH1F(hname, pt_range, massbin, cut_m_low, cut_m_high);
 		hfg_minbias_bkg[i]->Sumw2();
+
+        sprintf(hname, "pthatweight_d0genpt%d", i);
+		pthatweight_d0genpt[i] = new TH1D(hname, pt_range, 100000, 0., 1e-4);
+		pthatweight_d0genpt[i]->Sumw2();
 	}
 }
 
@@ -86,6 +91,7 @@ void write_histo( TFile * output)
 	   hfg_minbias_MCmatched_genpt[i]->Write();
 	   hfg_minbias_MCdoublecounted[i]->Write();
 	   hfg_minbias_bkg[i]->Write();
+	   pthatweight_d0genpt[i]->Write();
    }
    output->Close();
 }
@@ -325,11 +331,15 @@ void FillSpectrum_MC()
 
 	   for( int igend = 0; igend < ngend; igend++ )
 	   {
-           if( pthat < 15 && dpt[igend] > 9.0 ) continue;
-           if( pthat > 15.0 && pthat < 30.0 && dpt[igend] > 16.0 ) continue;
-//           if( dpt[igend] > 2 * pthat )  continue;
-           
 		   if( TMath::Abs( dy[igend] ) > rapidityrange )   continue;
+
+           int iptbin = decideptbin( dpt[igend] ); 
+           if( dpt[igend] > 2 * pthat )  continue;
+           pthatweight_d0genpt[iptbin]->Fill(weight);
+
+		   if( pthat < 15 && dpt[igend] > 9.0 ) continue;
+//           if( pthat > 15.0 && pthat < 30.0 && dpt[igend] > 16.0 ) continue;
+           
 
 		   d0genpt->Fill( dpt[igend], weight);
 	   }
@@ -354,9 +364,9 @@ void FillSpectrum_MC()
 		   int ipt = decideptbin( dcandpt->at(icand) );
 		   if( ipt < 0 ) continue;
 
+           if( dcandpt->at(icand) > 2 * pthat )   continue;
            if( pthat < 15 && dcandpt->at(icand) > 9.0 )   continue;
-           if( pthat > 15.0 && pthat < 30.0 && dcandpt->at(icand) > 16.0 )   continue;
-//           if( dcandpt->at(icand) > 2 * pthat )   continue;
+//           if( pthat > 15.0 && pthat < 30.0 && dcandpt->at(icand) > 16.0 )   continue;
 
 		   hfg_minbias[ipt]->Fill(dcandmass->at(icand), weight);
 
@@ -437,6 +447,25 @@ void FillSpectrum_MC()
    cfg_mb->SaveAs(cfgname);
    sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_pthatweight.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    cfg_mb->SaveAs(cfgname); 
+
+   TCanvas* cfg_pthatweight = new TCanvas("cfg_pthatweight", "cfg_pthatweight", 1000, 1000);
+   cfg_pthatweight->Divide(cfg_N_row, cfg_N_column);
+   for ( int i = 1; i < NPT - 1; i++)
+   {
+	   cfg_pthatweight->cd(i);
+	   gPad->SetLogx();
+	   gPad->SetLogy();
+       pthatweight_d0genpt[i]->SetMarkerSize(0.8);
+       pthatweight_d0genpt[i]->SetLineColor(4);
+       pthatweight_d0genpt[i]->SetMarkerColor(4);
+	   pthatweight_d0genpt[i]->SetLineWidth(1.5);
+       pthatweight_d0genpt[i]->SetMarkerStyle(20);
+	   pthatweight_d0genpt[i]->GetYaxis()->SetLabelSize(0.05);
+	   pthatweight_d0genpt[i]->GetXaxis()->SetLabelSize(0.05);
+	   pthatweight_d0genpt[i]->Draw();
+	   pthatweight_d0genpt[i]->Draw("HISTsame");
+   }
+   cfg_pthatweight->SaveAs("plots/Pthat_weight_D0_PbPb_MC.gif");
   
    char outputfile[200];
    sprintf(outputfile,"Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_pthatweight.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
@@ -451,6 +480,7 @@ void FillSpectrum_MC()
    deltapt->Write();
    deltaR->Write();
    deltapt_overgen->Write();
+   cfg_pthatweight->Write();
    write_histo( output );
 }
 
