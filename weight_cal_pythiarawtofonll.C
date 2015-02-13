@@ -130,14 +130,14 @@ int weight_cal_pythiarawtofonll()
 
   D0_pythiaspectrum_weighted->Scale(0.5);
   D0_pythiaspectrum_weighted->SetLineColor(8.0);
-  D0_pythiaspectrum_weighted->Draw("HISTsame");
+//  D0_pythiaspectrum_weighted->Draw("HISTsame");
 
   TLegend * t = new TLegend(0.5, 0.7, 0.85, 0.85);
   t->SetFillColor(0);
   t->AddEntry(hpt,"FONLL Central Value");
   t->AddEntry(D0_pythiaspectrum, "Pythia Pthat Weighted");
   t->AddEntry(D0_pythiaspectrum_raw, "Pythia Raw Spectrum Shape");
-  t->AddEntry(D0_pythiaspectrum_weighted, "Pythia D0 Pt Weighted");
+//  t->AddEntry(D0_pythiaspectrum_weighted, "Pythia D0 Pt Weighted");
   t->Draw();
 
 
