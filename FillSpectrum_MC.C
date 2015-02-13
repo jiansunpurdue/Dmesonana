@@ -338,7 +338,7 @@ void FillSpectrum_MC()
            pthatweight_d0genpt[iptbin]->Fill(weight);
 
 		   if( pthat < 15 && dpt[igend] > 9.0 ) continue;
-//           if( pthat > 15.0 && pthat < 30.0 && dpt[igend] > 16.0 ) continue;
+           if( pthat > 15.0 && pthat < 30.0 && dpt[igend] > 20.0 ) continue;
            
 
 		   d0genpt->Fill( dpt[igend], weight);
@@ -366,7 +366,7 @@ void FillSpectrum_MC()
 
            if( dcandpt->at(icand) > 2 * pthat )   continue;
            if( pthat < 15 && dcandpt->at(icand) > 9.0 )   continue;
-//           if( pthat > 15.0 && pthat < 30.0 && dcandpt->at(icand) > 16.0 )   continue;
+           if( pthat > 15.0 && pthat < 30.0 && dcandpt->at(icand) > 20.0 )   continue;
 
 		   hfg_minbias[ipt]->Fill(dcandmass->at(icand), weight);
 
