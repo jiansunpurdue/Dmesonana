@@ -68,8 +68,14 @@ void Draw_RAFONLL( TFile * input_pbpb, TFile * fonllinput, int cent_low, int cen
 		D0_fonll_raa_errordata->SetPointEYlow(i, lowerror);
 
         D0_fonll_raa_errorfonll->GetY()[i] = D0_pbpb_spectrum_raa->GetBinContent(i+2) / d0fonllspectrum->GetY()[i];
-        higherror =  TMath::Sqrt( TMath::Power(d0fonllspectrum->GetErrorYhigh(i), 2 ) *TMath::Power( D0_pbpb_spectrum_raa->GetBinContent(i+2), 2) / TMath::Power( d0fonllspectrum->GetY()[i], 4 ) );
-        lowerror =  TMath::Sqrt( TMath::Power(d0fonllspectrum->GetErrorYlow(i), 2 ) *TMath::Power( D0_pbpb_spectrum_raa->GetBinContent(i+2), 2) / TMath::Power( d0fonllspectrum->GetY()[i], 4 ) );
+//wrong way
+//        lowerror =  TMath::Sqrt( TMath::Power(d0fonllspectrum->GetErrorYhigh(i), 2 ) *TMath::Power( D0_pbpb_spectrum_raa->GetBinContent(i+2), 2) / TMath::Power( d0fonllspectrum->GetY()[i], 4 ) );
+//        higherror =  TMath::Sqrt( TMath::Power(d0fonllspectrum->GetErrorYlow(i), 2 ) *TMath::Power( D0_pbpb_spectrum_raa->GetBinContent(i+2), 2) / TMath::Power( d0fonllspectrum->GetY()[i], 4 ) );
+//right way
+        double errorPer_low_fonll = d0fonllspectrum->GetErrorYlow(i)/d0fonllspectrum->GetY()[i];
+		double errorPer_high_fonll = d0fonllspectrum->GetErrorYhigh(i)/d0fonllspectrum->GetY()[i];
+		higherror = errorPer_low_fonll / (1. - errorPer_low_fonll ) * D0_fonll_raa_errordata->GetY()[i];
+		lowerror = errorPer_high_fonll / ( 1. + errorPer_high_fonll ) * D0_fonll_raa_errordata->GetY()[i];
         D0_fonll_raa_errorfonll->SetPointEYhigh(i, higherror);
         D0_fonll_raa_errorfonll->SetPointEYlow(i, lowerror);
 
@@ -136,7 +142,7 @@ void Dmeson_RAFONLL()
 	TFile * fonllinput;
 
    //centrality 0 to 100%
-      input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent0to100_ptbin9.root");
+      input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to100_ptbin9.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
 
 	  TAA = 5.67E-9;
@@ -150,7 +156,7 @@ void Dmeson_RAFONLL()
 	  fonllinput->Close();
 
    //centrality 0 to 20%
-      input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent0to20_ptbin8.root");
+      input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to20_ptbin8.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
 
 	  TAA = 18.84e-9;   //CMS
@@ -164,7 +170,7 @@ void Dmeson_RAFONLL()
 	  fonllinput->Close();
       
    //centrality 40% to 80% 
-	  input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent40to80_ptbin8.root");
+	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent40to80_ptbin8.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
 
       TAA = 1.20e-9;
@@ -178,7 +184,7 @@ void Dmeson_RAFONLL()
 	  fonllinput->Close();
       
    //centrality 10% to 30% 
-	  input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin8.root");
+	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin8.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
 
       TAA = 11.64e-9;
@@ -192,7 +198,7 @@ void Dmeson_RAFONLL()
 	  fonllinput->Close();
       
    //centrality 30% to 50% 
-	  input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin8.root");
+	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin8.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
 
       TAA = 3.92e-9;
@@ -206,7 +212,7 @@ void Dmeson_RAFONLL()
 	  fonllinput->Close();
       
    //centrality 50% to 100% 
-	  input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin8.root");
+	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin8.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
 
       TAA = 0.47e-9;
@@ -222,7 +228,7 @@ void Dmeson_RAFONLL()
 // 4 ptbins, used for RAA vs Npart
    
    //centrality 0% to 10% 
-	  input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent0to10_ptbin4.root");
+	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to10_ptbin4.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
 
       TAA = 23.20e-9; //error 0.99
@@ -236,7 +242,7 @@ void Dmeson_RAFONLL()
 	  fonllinput->Close();
    
    //centrality 10% to 30% 
-	  input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin4.root");
+	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin4.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
 
       TAA = 11.64e-9; //error 0.67
@@ -250,7 +256,7 @@ void Dmeson_RAFONLL()
 	  fonllinput->Close();
    
    //centrality 30% to 50% 
-	  input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin4.root");
+	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin4.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
 
       TAA = 3.92e-9;  //error 0.37
@@ -264,7 +270,7 @@ void Dmeson_RAFONLL()
 	  fonllinput->Close();
    
    //centrality 50% to 100% 
-	  input_pbpb = new TFile("Spectrum_Recoeff0to200_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin4.root");
+	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin4.root");
 	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
 
       TAA = 0.47e-9;  //error 0.07
