@@ -17,19 +17,19 @@
 
 #define MASSD0 1.8645  //value from pythia
 
-bool savealldcand = false;
-bool isMC = false;
+bool savealldcand = true;
+bool isMC = true;
 bool isPbPb = true;
 bool ispppPbMB = false;
 bool ispPbJettrig = false;
 
-//////for D0 Hydjet samples
-//#define NPTHATBIN 5
-//int MCentries[NPTHATBIN] = { 19240, 19321, 18992, 20010, 22437};
-//int pthatbin[NPTHATBIN+1] = { 0, 15, 30, 50, 80, 1000};
-//double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
-//double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
-//
+////for D0 Hydjet samples
+#define NPTHATBIN 5
+int MCentries[NPTHATBIN] = { 19240, 19321, 18992, 20010, 22437};
+int pthatbin[NPTHATBIN+1] = { 0, 15, 30, 50, 80, 1000};
+double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
+double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
+
 //////for D0 Hydjet samples, pthat from 5
 //#define NPTHATBIN 5
 //int MCentries[NPTHATBIN] = { 12906, 19321, 18992, 20010, 22437};
@@ -37,13 +37,13 @@ bool ispPbJettrig = false;
 //double pthatweight_xsection[NPTHATBIN+1] = {12.31, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
 //double filtereff[NPTHATBIN+1] = { 0.03716, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
 
-//for D0 pythia samples
-#define NPTHATBIN 6
-int MCentries[NPTHATBIN] = { 16429, 24025, 23931, 25301, 24302, 27877};
-int pthatbin[NPTHATBIN+1] = {0,15,30,50,80,120,1000};
-double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.121E-05, 1.756E-15};
-double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752,  0.15206, 0.1694, 0.17794, 0.0945};
-
+////for D0 pythia samples
+//#define NPTHATBIN 6
+//int MCentries[NPTHATBIN] = { 16429, 24025, 23931, 25301, 24302, 27877};
+//int pthatbin[NPTHATBIN+1] = {0,15,30,50,80,120,1000};
+//double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.121E-05, 1.756E-15};
+//double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752,  0.15206, 0.1694, 0.17794, 0.0945};
+//
 TH1F * pthat_weighted = new TH1F("pthat_weighted","pthat_weighted",200,0,500.0);
 TH1F * gend0pt_weighted = new TH1F("gend0pt_weighted","gend0pt_weighted",100,0.0,100.0);
 
@@ -109,6 +109,7 @@ void Dmesonana::Init(int startFile, int endFile, char *filelist)
 	if( isPbPb )
 	{
 		recodmesontree->Branch("hiBin", &hiBin, "hiBin/I");
+		recodmesontree->Branch("vz", &vz, "vz/F");
     	recodmesontree->Branch("MinBias", &MinBias, "MinBias/I");
     	recodmesontree->Branch("MinBias_Prescl", &MinBias_Prescl, "MinBias_Prescl/I");
     	recodmesontree->Branch("Jet55", &Jet55, "Jet55/I");
@@ -350,6 +351,7 @@ void Dmesonana::LoopOverFile(int startFile, int endFile, char *filelist, int dec
 			HiTree = ( TTree * ) f->Get("hiEvtAnalyzer/HiTree");
 			if( !HiTree )  { cout << "==> empty HiTree <==" << endl; continue; }
 			HiTree->SetBranchAddress("hiBin", &hiBin);
+			HiTree->SetBranchAddress("vz", &vz);
 			hftree->AddFriend(HiTree);
 		}
 

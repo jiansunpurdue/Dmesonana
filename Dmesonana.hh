@@ -76,6 +76,7 @@ class Dmesonana
         float maxJetTrgMass;
 
         float pthat;
+		float vz;
 
         //trig decison and trig Prescl, for pbpb
         int Jet55;
