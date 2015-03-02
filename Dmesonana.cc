@@ -167,6 +167,8 @@ void Dmesonana::Init(int startFile, int endFile, char *filelist)
     	recodmesontree->Branch("dcandmatchnofdau", &dcandmatchnofdau);
     	recodmesontree->Branch("dcandmatcheddau1pt", &dcandmatcheddau1pt);
     	recodmesontree->Branch("dcandmatcheddau2pt", &dcandmatcheddau2pt);
+		recodmesontree->Branch("matched_pdg_Bmom", &matched_pdg_Bmom);
+		recodmesontree->Branch("matched_pt_Bmom", &matched_pt_Bmom);
 	}
 
 }
@@ -474,6 +476,7 @@ void Dmesonana::LoopOverEvt()
 		nongendoublecounted.clear();
 		dcandmatchedpt.clear(); dcandmatchedeta.clear();  dcandmatchedphi.clear(); dcandmatchnofdau.clear();
 		dcandmatcheddau1pt.clear();  dcandmatcheddau2pt.clear();
+		matched_pdg_Bmom.clear();   matched_pt_Bmom.clear();
 	}
 }
 
@@ -623,7 +626,7 @@ void Dmesonana::FindGenDmeson()
 			while( gennMothers[daughterindex] == 1 && pt_Bmom_temp < 0 )
 			{
 				motherindex = genmotherIdx[daughterindex][0];
-				if( TMath::Abs( genpdg[motherindex] ) > 500 && TMath::Abs( genpdg[motherindex] ) < 600 )
+				if( ( TMath::Abs( genpdg[motherindex] ) > 500 && TMath::Abs( genpdg[motherindex] ) < 600 ) || ( TMath::Abs( genpdg[motherindex] ) > 5000 && TMath::Abs( genpdg[motherindex] ) < 6000 ) )   //decide if there is B mesons or B baryons in the decay chain
 				{
 					pt_Bmom_temp = genpt[motherindex];
 					pdg_Bmom_temp = genpdg[motherindex];
@@ -692,7 +695,7 @@ bool Dmesonana::Matchd0()
 				continue;
 
 			int allmotherindex = genmotherIdx[dau1][0];
-			//is D charged and just three daughters
+			//is D0 and just three daughters
 			if( ! (abs (genpdg[allmotherindex]) == 421 && gennDaughters[allmotherindex] == 2) )  continue;
 
 			nongendoublecounted.push_back(flag_nongendoublecounted);
@@ -703,6 +706,26 @@ bool Dmesonana::Matchd0()
 			dcandmatchnofdau.push_back(gennDaughters[allmotherindex]);
 			dcandmatcheddau1pt.push_back(genpt[dau1]);
 			dcandmatcheddau2pt.push_back(genpt[dau2]);
+
+            // decide if the D0 is from B feed down
+            int pdg_Bmom_temp = -999;
+            float pt_Bmom_temp = -999;
+            int motherindex = -999;
+            int daughterindex = allmotherindex;
+            //loop up the decay chain to see if there is B meson
+            while( gennMothers[daughterindex] == 1 && pt_Bmom_temp < 0 )
+            {
+                motherindex = genmotherIdx[daughterindex][0];
+                if( ( TMath::Abs( genpdg[motherindex] ) > 500 && TMath::Abs( genpdg[motherindex] ) < 600 ) || ( TMath::Abs( genpdg[motherindex] ) > 5000 && TMath::Abs( genpdg[motherindex] ) < 6000 ))   //decide if there is B mesons or B baryons in the decay chain
+                {
+                    pt_Bmom_temp = genpt[motherindex];
+                    pdg_Bmom_temp = genpdg[motherindex];
+                }
+                daughterindex = motherindex;
+            }
+
+            matched_pdg_Bmom.push_back( pdg_Bmom_temp );
+            matched_pt_Bmom.push_back( pt_Bmom_temp );;
 
 			return true;
 
@@ -719,6 +742,8 @@ bool Dmesonana::Matchd0()
 	   dcandmatchnofdau.push_back(-999);
 	   dcandmatcheddau1pt.push_back(-999);
 	   dcandmatcheddau2pt.push_back(-999);
+	   matched_pdg_Bmom.push_back(-999);
+	   matched_pt_Bmom.push_back(-999);
 	}
 
 	return false;

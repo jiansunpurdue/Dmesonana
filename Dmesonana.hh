@@ -171,6 +171,8 @@ class Dmesonana
 		vector<int>   matchedtogen, dcandmatchedpdg, nongendoublecounted;
 		vector<float> dcandmatchedpt, dcandmatchedeta, dcandmatchedphi, dcandmatchnofdau;
 		vector<float> dcandmatcheddau1pt, dcandmatcheddau2pt;
+		vector<int>   matched_pdg_Bmom;
+		vector<float> matched_pt_Bmom;
 
 
     private: //.. different cuts used to produce results.
