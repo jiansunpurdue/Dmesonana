@@ -24,6 +24,9 @@ float cut_m_low = 1.70;
 float cut_m_high = 2.05;
 int massbin = 35;
 
+const int cfg_N_row = 3;
+const int cfg_N_column = 4;
+
 float hiBin_low = -0.5;
 float hiBin_high = 199.5;
 float rapidityrange = 2.0;
@@ -62,6 +65,21 @@ int decideptbin( float dpt )
     }
     if ( dpt > ptbins[NPT] ) ipt = NPT-1;
     return ipt;
+}
+
+void decideeffectivecuts(double dpt, double &effectiveffls3dcut, double &effectivecosalphacut, double &effectiveprobcut)
+{
+	for( int i = 0; i < NCUTPT; i++ )
+	{
+		if( dpt >= cut_pt_edge[i] && dpt < cut_pt_edge[i+1] )
+		{
+			effectiveffls3dcut = ffls3dcut[i];
+			effectivecosalphacut = TMath::Cos(alphacut[i]);
+			effectiveprobcut = fprobcut[i];
+			break;
+		}
+	}
+	return;
 }
 
 void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float lowrange, float highrange)
@@ -205,7 +223,7 @@ void FillSpectrum()
 	hf_mb->Sumw2();
 
 //	TFile * input = new TFile("Dmesonana_hiforest_D0embedded_Hydjet1p8_2760GeV_D0pt4_pthat15305080_1119_all.root");
-    TFile * input = new TFile("Dmesonana_Rereco_MBtrig_d0pt3p0_d1p8_pt1p5_v1_tight_1213_6lumi_cuts_noprobchi2cut_v2.root");
+    TFile * input = new TFile("rootfiles/Dmesonana_Rereco_MBtrig_d0pt3p0_d1p8_pt1p5_v1_tight_1213_6lumi_cuts_noprobchi2cut_vz_v4.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
     
 
@@ -254,18 +272,20 @@ void FillSpectrum()
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
 		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
-		   
-           double effectiveffls3dcut = 100000.;
-		   if( dcandpt->at(icand) < cut_pt_edge )   
-			   effectiveffls3dcut = ffls3dcut[0];
-		   else 
-			   effectiveffls3dcut = ffls3dcut[1];
-
-		   if( dcandffls3d->at(icand) < effectiveffls3dcut )   continue;
-		   if( dcandcosalpha->at(icand) < cosalphacut || dcandfchi2->at(icand) > fchi2cut )  continue;
 
 		   if( TMath::Abs( dcandy->at(icand) ) > rapidityrange )  continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
+		   
+           double effectiveffls3dcut = 100000.;
+		   double effectivecosalphacut = 2.0;
+		   double effectiveprobcut = -1.0;
+           
+		   decideeffectivecuts(dcandpt->at(icand), effectiveffls3dcut, effectivecosalphacut, effectiveprobcut);
+//		   if( dcandpt->at(icand) > 7.0 )
+//		   cout << "dcandpt: " << dcandpt->at(icand) << "  " << effectiveffls3dcut << "  " << effectiveprobcut << endl;
+
+		   if( dcandffls3d->at(icand) < effectiveffls3dcut || dcandcosalpha->at(icand) < effectivecosalphacut || dcandfprob->at(icand) < effectiveprobcut )   
+			   continue;
 
 		   int ipt = decideptbin( dcandpt->at(icand) );
 		   if( ipt < 0 ) continue;
@@ -287,20 +307,21 @@ void FillSpectrum()
 
    TH1D * N_mb = new TH1D("N_mb","N_mb",NPT,ptbins);
    N_mb->Sumw2();
-   TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 1000, 1000);
-   cfg_mb->Divide(3, 3);
+   TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 800, 800);
+   cfg_mb->Divide(cfg_N_row, cfg_N_column);
 
-   for ( int i = 1; i < NPT -1 ; i++)
-	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, 4.0, 55.0);
+//   for ( int i = 1; i < NPT -1 ; i++)
+   for ( int i = 1; i < NPT ; i++)
+	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, 3.0, 55.0);
    
    char cfgname[200];
-   sprintf(cfgname,"plots/D0_PbPb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.pdf",NPT, evtunprescaleMB, hiBin_low, hiBin_high);
+   sprintf(cfgname,"plots/D0_PbPb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.pdf",NPT, evtunprescaleMB, hiBin_low * 0.5, hiBin_high * 0.5);
    cfg_mb->SaveAs(cfgname);
-   sprintf(cfgname,"plots/D0_PbPb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.gif",NPT, evtunprescaleMB, hiBin_low, hiBin_high);
+   sprintf(cfgname,"plots/D0_PbPb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.gif",NPT, evtunprescaleMB, hiBin_low * 0.5, hiBin_high * 0.5);
    cfg_mb->SaveAs(cfgname);
   
    char outputfile[200];
-   sprintf(outputfile,"Dspectrum_pbpb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.root", NPT, evtunprescaleMB, hiBin_low, hiBin_high);
+   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_data_ptbin_%d_ptd_unpreMBtrig_%d_cent%2.0fto%2.0f.root", NPT, evtunprescaleMB, hiBin_low * 0.5, hiBin_high * 0.5);
    TFile * output = new TFile(outputfile,"RECREATE");
    hf_mb->Write();
    N_mb->Write();
