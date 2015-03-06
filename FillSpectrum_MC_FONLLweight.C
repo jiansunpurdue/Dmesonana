@@ -22,12 +22,14 @@
 
 using namespace std;
 
-float hiBin_low = 79.5;
-float hiBin_high = 159.5;
+bool isPrompt = true;
+
+float hiBin_low = -0.5;
+float hiBin_high = 199.5;
 float rapidityrange = 2.0;
 
 const int cfg_N_row = 3;
-const int cfg_N_column = 3;
+const int cfg_N_column = 4;
 
 float cut_m_low = 1.70;
 float cut_m_high = 2.05;
@@ -102,6 +104,22 @@ int decideptbin( float dpt )
     }
     if ( dpt > ptbins[NPT] ) ipt = NPT-1;
     return ipt;
+}
+
+
+void decideeffectivecuts(double dpt, double &effectiveffls3dcut, double &effectivecosalphacut, double &effectiveprobcut)
+{
+    for( int i = 0; i < NCUTPT; i++ )
+    {
+        if( dpt >= cut_pt_edge[i] && dpt < cut_pt_edge[i+1] )
+        {
+            effectiveffls3dcut = ffls3dcut[i];
+            effectivecosalphacut = TMath::Cos(alphacut[i]);
+            effectiveprobcut = fprobcut[i];
+            break;
+        }
+    }
+    return;
 }
 
 void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_sig, float lowrange, float highrange)
@@ -257,10 +275,14 @@ void FillSpectrum_MC_FONLLweight()
     deltaR->Sumw2();
 	deltapt_overgen->Sumw2();
 
-	TFile * input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100.root");
+	TFile * input_fonllweight;
+    if( isPrompt )
+        input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100_prompt.root");
+    else
+        input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100_Bfeeddown.root");
 	TH1D * fonllweight = ( TH1D * ) input_fonllweight->Get("ratio_rawtofonll");
 
-    TFile * input = new TFile("Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_v1.root");
+    TFile * input = new TFile("rootfiles/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_Bmom_v3.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
 	TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
 	recodmesontree->AddFriend(gendmesontree);
@@ -270,11 +292,13 @@ void FillSpectrum_MC_FONLLweight()
 	float dpt[MAXGENDMESON];
 	float deta[MAXGENDMESON];
 	float dy[MAXGENDMESON];
+    float pt_Bmom[MAXGENDMESON];
 	gendmesontree->SetBranchAddress("pthat", &pthat);
 	gendmesontree->SetBranchAddress("ngend", &ngend);
 	gendmesontree->SetBranchAddress("dpt", dpt);
 	gendmesontree->SetBranchAddress("deta", deta);
 	gendmesontree->SetBranchAddress("dy", dy);
+    gendmesontree->SetBranchAddress("pt_Bmom", pt_Bmom);
     
     int MinBias;
     int MinBias_Prescl;
@@ -288,6 +312,7 @@ void FillSpectrum_MC_FONLLweight()
     vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0;
 	vector<int>   *matchedtogen = 0, *dcandmatchedpdg = 0, *nongendoublecounted = 0;
 	vector<float> *dcandmatchedpt = 0, *dcandmatchedeta = 0, *dcandmatchedphi = 0, *dcandmatchnofdau = 0;
+    vector<float> *matched_pt_Bmom = 0;
 
     recodmesontree->SetBranchAddress("MinBias", &MinBias);
     recodmesontree->SetBranchAddress("MinBias_Prescl", &MinBias_Prescl);
@@ -313,6 +338,7 @@ void FillSpectrum_MC_FONLLweight()
 	recodmesontree->SetBranchAddress("dcandmatchedphi", &dcandmatchedphi);
     recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
     recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
+    recodmesontree->SetBranchAddress("matched_pt_Bmom", &matched_pt_Bmom);
     
 //   cout << " total number of event: " << recodmesontree->GetEntries() << endl;
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
@@ -332,6 +358,12 @@ void FillSpectrum_MC_FONLLweight()
 	   for( int igend = 0; igend < ngend; igend++ )
 	   {
            if( TMath::Abs( dy[igend] ) > rapidityrange )   continue;
+
+           if( isPrompt )
+               { if( pt_Bmom[igend] > 0 )   continue; } //tell if is from B feed down or not
+           else
+               { if( pt_Bmom[igend] < 0 )   continue;  }
+
 		   weight = fonllweight->GetBinContent( fonllweight->FindBin( dpt[igend] ) );
 		   d0genpt->Fill( dpt[igend], weight);
 		   d0genpt_fonllweighted->Fill( dpt[igend], weight);
@@ -340,18 +372,24 @@ void FillSpectrum_MC_FONLLweight()
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
 		   if( dtype->at(icand) != 2 )   cout << " Error!!!!!!! Just working on D0 now" << endl;
-
-           double effectiveffls3dcut = 100000.;
-           if( dcandpt->at(icand) < cut_pt_edge )
-               effectiveffls3dcut = ffls3dcut[0];
-           else
-               effectiveffls3dcut = ffls3dcut[1];
-
-           if( dcandffls3d->at(icand) < effectiveffls3dcut )   continue;
-           if( dcandcosalpha->at(icand) < cosalphacut || dcandfchi2->at(icand) > fchi2cut )  continue;		   
-
 		   if( TMath::Abs( dcandy->at(icand) ) > rapidityrange )  continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
+
+           if( isPrompt )
+               { if( matched_pt_Bmom->at(icand) > 0 )   continue; }
+           else
+               { if( matched_pt_Bmom->at(icand) < 0 )   continue; }
+
+           double effectiveffls3dcut = 100000.;
+           double effectivecosalphacut = 2.0;
+           double effectiveprobcut = -1.0;
+
+           decideeffectivecuts(dcandpt->at(icand), effectiveffls3dcut, effectivecosalphacut, effectiveprobcut);
+//         if( dcandpt->at(icand) > 7.0 )
+//         cout << "dcandpt: " << dcandpt->at(icand) << "  " << effectiveffls3dcut << "  " << effectiveprobcut << endl;
+
+           if( dcandffls3d->at(icand) < effectiveffls3dcut || dcandcosalpha->at(icand) < effectivecosalphacut || dcandfprob->at(icand) < effectiveprobcut )
+               continue;
 
 		   weight = fonllweight->GetBinContent( fonllweight->FindBin( dcandpt->at(icand) ) );
 
@@ -406,9 +444,9 @@ void FillSpectrum_MC_FONLLweight()
    TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 1000, 1000);
    cfg_mb->Divide(cfg_N_row, cfg_N_column);
 
-   for ( int i = 1; i < NPT - 1; i++)
-	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, N_sig, 4.0, 55.0);
-   for ( int i = 1; i < NPT - 1; i++)
+   for ( int i = 1; i < NPT; i++)
+	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, N_sig, 3.0, 55.0);
+   for ( int i = 1; i < NPT; i++)
    {
 	   cfg_mb->cd(i);
        hfg_minbias_MCmatched[i]->SetMarkerSize(0.8);
@@ -433,13 +471,16 @@ void FillSpectrum_MC_FONLLweight()
    }
 
    char cfgname[200];
-   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5);
-   cfg_mb->SaveAs(cfgname);
-   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5);
-   cfg_mb->SaveAs(cfgname); 
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
+//   cfg_mb->SaveAs(cfgname);
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
+//   cfg_mb->SaveAs(cfgname); 
   
    char outputfile[200];
-   sprintf(outputfile,"Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+   if( isPrompt )
+	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Prompt.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+   else
+	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Bfeeddown.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    TFile * output = new TFile(outputfile,"RECREATE");
    d0genpt_fonllweighted->Write();
    d0genpt->Write();
