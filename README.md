@@ -16,7 +16,9 @@ correction and cross sections.
  * scram b -j20
  * cd UserCode
  * git clone https://github.com/jiansunpurdue/Dmesonana.git
- * cd ..
+ * cd Dmesonana
+ * mkdir FONLL
+ * git clone https://github.com/boundino/fonll.git
  
 **Produce reduced ntuples**:
 
@@ -40,7 +42,7 @@ To run it:
    E.g. ./run_Dmesonana.sh 0 4 list.lis 2. In this case you run on the first 5 files (0-4) of 
    the list file list.lis with the option D0 (index=2)
 
-**Extract spectra, efficiency, cross section ..**:
+**Extract spectra, efficiency, cross section ..** ( obsolete ):
 
 This step performs yield extraction, efficiency and trigger correction, cross sections and RAA.
 
