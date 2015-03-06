@@ -12,7 +12,7 @@
 
 #define MAXGENDMESON 100
 
-int weight_cal_pythiarawtofonll()
+int weight_cal_pythiarawtofonll_prompt()
 {
 
   gROOT->SetStyle("Plain");
@@ -68,7 +68,7 @@ int weight_cal_pythiarawtofonll()
       hmaxpdf->SetBinContent(i+1,max_pdf[i]);
     }
 
-  TFile * input_PbPb_MC = new TFile("rootfiles/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_vz_v2.root");
+  TFile * input_PbPb_MC = new TFile("rootfiles/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_Bmom_v3.root");
   TTree * gendmesontree = ( TTree * ) input_PbPb_MC->Get("gendmesontree");
   
   float pthat;
@@ -77,12 +77,14 @@ int weight_cal_pythiarawtofonll()
   float dpt[MAXGENDMESON];
   float deta[MAXGENDMESON];
   float dy[MAXGENDMESON];
+  float pt_Bmom[MAXGENDMESON];
   gendmesontree->SetBranchAddress("pthat", &pthat);
   gendmesontree->SetBranchAddress("weight_pthat", &weight_pthat);
   gendmesontree->SetBranchAddress("ngend", &ngend);
   gendmesontree->SetBranchAddress("dpt", dpt);
   gendmesontree->SetBranchAddress("deta", deta);
   gendmesontree->SetBranchAddress("dy", dy);
+  gendmesontree->SetBranchAddress("pt_Bmom", pt_Bmom);
 
 
   TH1D * D0_pythiaspectrum = new TH1D("D0_pythiaspectrum","D0_pythiaspectrum",BIN_NUM,HMIN,HMAX);
@@ -95,10 +97,12 @@ int weight_cal_pythiarawtofonll()
 	  gendmesontree->GetEntry(ievent);
 	  for( int igend = 0; igend < ngend; igend++ )
 	  {
+          if( pt_Bmom[igend] > 0 )   continue;
 		  if( TMath::Abs( dy[igend] ) > 2.0 ) continue;
 		  D0_pythiaspectrum_raw->Fill(dpt[igend]);
 
 		  if( dpt[igend] > 2.0 * pthat )   continue;
+
 		  D0_pythiaspectrum->Fill(dpt[igend], weight_pthat);
 
 		  if( pthat < 15 && dpt[igend] > 16.0 ) continue;
@@ -117,7 +121,7 @@ int weight_cal_pythiarawtofonll()
   }
   TCanvas* c_fonll_pythia = new TCanvas("c_fonll_pythia","c_fonll_pythia");
   gPad->SetLogy();
-  D0_pythiaspectrum->GetXaxis()->SetRangeUser(4.5, 45);
+  D0_pythiaspectrum->GetXaxis()->SetRangeUser(3.5, 45);
   D0_pythiaspectrum->GetYaxis()->SetRangeUser(1e2, 1e9);
   D0_pythiaspectrum->GetYaxis()->SetTitle("d#sigma/dp_{T}(D^{0}) (pb b GeV-1c)");
   D0_pythiaspectrum->GetXaxis()->SetTitle("D^{0} p_{T} (GeV/c)");
@@ -130,20 +134,20 @@ int weight_cal_pythiarawtofonll()
   
   TLegend * t = new TLegend(0.22, 0.7, 0.85, 0.85);
   t->SetFillColor(0);
-  t->AddEntry(hpt,"FONLL Prompt D0 Center Value");
-  t->AddEntry(D0_pythiaspectrum, "Pythia Inclusive D0, Pthat Weighted");
+  t->AddEntry(hpt,"FONLL Prompt D^{0} Center Value");
+  t->AddEntry(D0_pythiaspectrum, "Pythia Prompt D^{0}, Pthat Weighted");
 //  t->AddEntry(D0_pythiaspectrum_cuts, "Pythia Pthat Weighted, Cuts");
   t->Draw();
   
   
-  TCanvas * c_ratio_rawtofonll = new TCanvas("c_ratio_rawtofonll","c_ratio_rawtofonll");
+  TCanvas * c_ratio_rawtofonll = new TCanvas("c_ratio_rawtofonll","c_ratio_rawtofonll", 800, 600);
   c_ratio_rawtofonll->Divide(2,1);
   c_ratio_rawtofonll->cd(1);
   gPad->SetLogy();
   
   hpt->SetLineColor(4.0);
   hpt->GetXaxis()->SetTitle("D^{0} p_{T} (GeV/c)");
-  hpt->GetXaxis()->SetRangeUser(4.5, 45);
+  hpt->GetXaxis()->SetRangeUser(3.5, 45);
   hpt->GetYaxis()->SetRangeUser(1e1, 1e9);
   hpt->Draw();
 
@@ -151,18 +155,18 @@ int weight_cal_pythiarawtofonll()
   D0_pythiaspectrum_raw->Scale(0.5);
   D0_pythiaspectrum_raw->Draw("HISTesame");
   
-  TLegend * t1 = new TLegend(0.22, 0.7, 0.65, 0.85);
+  TLegend * t1 = new TLegend(0.2, 0.7, 0.65, 0.85);
   t1->SetFillColor(0);
-  t1->SetTextSize(0.04);
-  t1->AddEntry(hpt,"FONLL Center Value");
-  t1->AddEntry(D0_pythiaspectrum_raw, "Pythia Raw Spectrum Shape");
+  t1->SetTextSize(0.03);
+  t1->AddEntry(hpt,"FONLL Prompt D^{0} Center Value");
+  t1->AddEntry(D0_pythiaspectrum_raw, "Pythia Prompt D^{0} Raw Spectrum Shape");
   t1->Draw(); 
 
   c_ratio_rawtofonll->cd(2);
   gPad->SetLogy();
   TH1D * ratio_rawtofonll = (TH1D *) hpt->Clone("ratio_rawtofonll");
   ratio_rawtofonll->Divide(hpt, D0_pythiaspectrum_raw, 1.0, 1.0);
-  ratio_rawtofonll->GetXaxis()->SetRangeUser(4.5, 45);
+  ratio_rawtofonll->GetXaxis()->SetRangeUser(3.5, 45);
   ratio_rawtofonll->GetXaxis()->SetTitle("D^{0} p_{T} (GeV/c)");
   ratio_rawtofonll->GetYaxis()->SetTitle("FONLL / Pythia Raw");
   ratio_rawtofonll->Draw("HISTe");
@@ -178,16 +182,17 @@ int weight_cal_pythiarawtofonll()
 	  }
   }
 
+
   c_ratio_rawtofonll->cd(1);
   D0_pythiaspectrum_weighted->Scale(0.5);
   D0_pythiaspectrum_weighted->SetLineColor(8.0);
 //  D0_pythiaspectrum_weighted->Draw("HISTesame");
-  c_fonll_pythia->SaveAs("plots/D0_dsigmadpt_fonll_pythiapthatweight.png");
-  c_fonll_pythia->SaveAs("plots/D0_dsigmadpt_fonll_pythiapthatweight.pdf");
-  c_ratio_rawtofonll->SaveAs("plots/weight_pytiarawtofonll_D0_PbPb.png");
-  c_ratio_rawtofonll->SaveAs("plots/weight_pytiarawtofonll_D0_PbPb.pdf");
+  c_fonll_pythia->SaveAs("plots/D0_dsigmadpt_fonll_pythiapthatweight_prompt.png");
+  c_fonll_pythia->SaveAs("plots/D0_dsigmadpt_fonll_pythiapthatweight_prompt.pdf");
+  c_ratio_rawtofonll->SaveAs("plots/weight_pytiarawtofonll_D0_PbPb_prompt.png");
+  c_ratio_rawtofonll->SaveAs("plots/weight_pytiarawtofonll_D0_PbPb_prompt.pdf");
 
-  TFile * output = new TFile("D0_PbPb_rawtoFONLL_3to100.root","RECREATE");
+  TFile * output = new TFile("D0_PbPb_rawtoFONLL_3to100_prompt.root","RECREATE");
 
   D0_pythiaspectrum->Write();
   hpt->Write();
