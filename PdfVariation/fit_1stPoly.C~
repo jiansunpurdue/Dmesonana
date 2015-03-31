@@ -19,8 +19,8 @@
 #include "PtBins.h"
 using namespace std;
 
-float ptmin = 11.0;
-float ptmax = 13.0;
+float ptmin = 13.0;
+float ptmax = 16.0;
 
 bool evtunprescaleMB = false;   //false to fit raw counts without unprescale MB trigger
 bool isMC = false;
@@ -88,14 +88,15 @@ void fit_hist( TH1F * histo, TCanvas *cfg, float ptlow, float pthigh)
   histo->GetXaxis()->SetTitle("m_{#piK} (GeV)");
   histo->GetYaxis()->SetTitle("Counts");
   histo->GetXaxis()->SetRangeUser(cut_m_low, cut_m_high);
-  TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol2(3)", cut_m_low, cut_m_high);
+  //TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol2(3)", cut_m_low, cut_m_high);
+  TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol1(3)", cut_m_low, cut_m_high);
   float max = histo->GetMaximum();
   
   float p0 = 1000, p1 = 1.87, p2 = 0.02;
   float p0_L = 0, p1_L = 1.84, p2_L = 0;
   float p0_H = 2*max, p1_H = 1.9, p2_H = 0.05;
   
-  float p3 = -1. * max, p4 = max, p5 = -1. * max;
+  float p3 = -1. * max, p4 = max;
   
   int pass = 0;
   int fittingtry = 0;
@@ -125,8 +126,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, float ptlow, float pthigh)
       TF1* fit_fun_1st = (TF1*)fit_fun->Clone("fit_fun_1st");
       fit_fun_1st->SetParameter(3, 0);
       fit_fun_1st->SetParameter(4, 0);
-      fit_fun_1st->SetParameter(5, 0);
-
+  
       TF1* fit_fun_bg = (TF1*)fit_fun->Clone("fit_fun_bg");
       fit_fun_bg->SetParameter(0, 0);
       fit_fun_bg->SetParameter(1, 0);
@@ -200,7 +200,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, float ptlow, float pthigh)
   return;
 }
 
-void fit()
+void fit_1stPoly()
 {
   book_hist();
   
@@ -300,7 +300,7 @@ void fit()
   TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 500, 500);
   fit_hist(hfg_minbias, cfg_mb, ptmin, ptmax);
 
-  cfg_mb->SaveAs(Form("plots/fit/massSpectrum_%.0fp0_%.0fp0.pdf",ptmin,ptmax));
+  cfg_mb->SaveAs(Form("plots/1stPoly/massSpectrum_%.0fp0_%.0fp0.pdf",ptmin,ptmax));
 
 }
 

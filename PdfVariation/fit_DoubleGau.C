@@ -19,8 +19,8 @@
 #include "PtBins.h"
 using namespace std;
 
-float ptmin = 9.0;
-float ptmax = 11.0;
+float ptmin = 7.0;
+float ptmax = 9.0;
 
 bool evtunprescaleMB = false;   //false to fit raw counts without unprescale MB trigger
 bool isMC = false;
@@ -117,8 +117,8 @@ void fit_hist( TH1F * histo, TCanvas *cfg, float ptlow, float pthigh)
       fit_fun->SetParLimits(0, p0_L, p0_H);
       fit_fun->SetParLimits(1, p1_L, p1_H);
       fit_fun->SetParLimits(2, p2_L, p2_H);
-      fit_fun->SetParLimits(2, p8_L, p8_H);
-      fit_fun->SetParLimits(2, p7_L, p7_H);
+      fit_fun->SetParLimits(8, p8_L, p8_H);
+      fit_fun->SetParLimits(7, p7_L, p7_H);
       
       if(fittingtry == 0)
 	{
@@ -137,10 +137,10 @@ void fit_hist( TH1F * histo, TCanvas *cfg, float ptlow, float pthigh)
 
       TF1* fit_fun_bg = (TF1*)fit_fun->Clone("fit_fun_bg");
       fit_fun_bg->SetParameter(0, 0);
-      fit_fun_bg->SetParameter(1, 0);
-      fit_fun_bg->SetParameter(2, 0);
-      fit_fun_bg->SetParameter(8, 0);
-      fit_fun_bg->SetParameter(7, 0);
+      //fit_fun_bg->SetParameter(1, 0);
+      //fit_fun_bg->SetParameter(2, 0);
+      //fit_fun_bg->SetParameter(8, 0);
+      //fit_fun_bg->SetParameter(7, 0);
     
       fit_fun_bg->SetLineColor(8);
       fit_fun_bg->Draw("same");

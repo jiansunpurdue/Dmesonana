@@ -19,8 +19,8 @@
 #include "PtBins.h"
 using namespace std;
 
-float ptmin = 9.0;
-float ptmax = 11.0;
+float ptmin = 7.0;
+float ptmax = 9.0;
 
 bool evtunprescaleMB = false;   //false to fit raw counts without unprescale MB trigger
 bool isMC = false;
