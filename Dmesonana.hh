@@ -14,7 +14,7 @@
 //#include "DataFormats/HLTReco/interface/TriggerObject.h"
 #include "UserCode/OpenHF/interface/hfcand_v1.hh"
 
-#define MAXPARTICLES 50000
+#define MAXPARTICLES 150000
 #define nch 3
 
 #define MAXGENDMESON 100

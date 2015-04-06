@@ -102,7 +102,7 @@ int decideptbin( float dpt )
     {
         if (dpt >= ptbins[i] && dpt < ptbins[i+1])  { ipt = i; break; }
     }
-    if ( dpt > ptbins[NPT] ) ipt = NPT-1;
+	if ( dpt > ptbins[NPT] ) ipt = NPT-1;
     return ipt;
 }
 
@@ -144,6 +144,8 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 //    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(6)", cut_m_low, cut_m_high);
     float max = histo->GetMaximum();
 
+	histo->SetMaximum(1.2 * max);
+
     float p0 = 1000, p1 = 1.87, p2 = 0.02;
     float p0_L = 0, p1_L = 1.84, p2_L = 0;
     float p0_H = 2*max, p1_H = 1.9, p2_H = 0.05;
@@ -153,7 +155,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 	int pass = 0;
     int fittingtry = 0;
 
-	char sig_print[100], chi2_print[100];
+	char sig_print[100], chi2_print[100], mean_print[100], sigma_print[100];
 
     while (!pass) {
 
@@ -183,7 +185,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
         fit_fun_1st->SetParameter(3, 0);
         fit_fun_1st->SetParameter(4, 0);
         fit_fun_1st->SetParameter(5, 0);
-		fit_fun_1st->SetLineColor(4);
+		fit_fun_1st->SetLineColor(6);
 		fit_fun_1st->SetLineStyle(2);
         fit_fun_1st->Draw("same");
 
@@ -199,6 +201,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 
 
         fit_fun_bg->SetLineColor(8);
+		fit_fun_bg->SetLineStyle(2);
         fit_fun_bg->Draw("same");
 
 
@@ -216,6 +219,8 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 		   float Nsig = fit_fun->GetParameter(0)/( binwidth );
 		   float err_Nsig = fit_fun->GetParError(0)/( binwidth );
 		   float fitchi2 = fit_fun->GetChisquare();
+		   float fitmean = fit_fun->GetParameter(1);
+		   float fitsigma = fit_fun->GetParameter(2);
 		   int noffreepara = fit_fun->GetNumberFreeParameters();
 		   int noffitpoints = fit_fun->GetNumberFitPoints();
 
@@ -225,20 +230,24 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 		   cout << " fitchi2: " << fitchi2 << "   noffreepara: " << noffreepara << "  noffitpoints: " << noffitpoints << endl;
 
            if( !pthatweighted )
-		       sprintf( sig_print,"N_{sig} = %7.1f #pm %7.1f", Nsig, err_Nsig);
+		       sprintf( sig_print,"N_{sig}: %.1f#pm%.1f", Nsig, err_Nsig);
 		   else
-			   sprintf( sig_print,"10^{6} * N_{sig} = %7.2f #pm %7.2f", 1000000 * Nsig, 1000000 * err_Nsig);
+			   sprintf( sig_print,"10^{6} * N_{sig}: %.2f#pm%.2f", 1000000 * Nsig, 1000000 * err_Nsig);
 //               sprintf( sig_print,"N_{sig} = %7.2f #pm %7.2f", Nsig, err_Nsig);
-		   sprintf( chi2_print, "#chi^{2}#/d.o.f = %3.2f", fitchi2/( noffitpoints - noffreepara));
+		   sprintf( chi2_print, "#chi^{2}#/d.o.f: %3.2f", fitchi2/( noffitpoints - noffreepara));
+		   sprintf( mean_print, "mean: %6.5f", fitmean);
+		   sprintf( sigma_print, "#sigma: %6.5f", fitsigma);
 
 		   if (fittingtry == 2)
 		   {
 			   TLatex Tl;
 			   Tl.SetNDC();
 			   Tl.SetTextAlign(12);
-			   Tl.SetTextSize(0.05);
-			   Tl.DrawLatex(0.55,0.8, sig_print);
-			   Tl.DrawLatex(0.55,0.7, chi2_print);
+			   Tl.SetTextSize(0.06);
+			   Tl.DrawLatex(0.15,0.8, sig_print);
+			   Tl.DrawLatex(0.15,0.7, mean_print);
+			   Tl.DrawLatex(0.65,0.8, sigma_print);
+			   Tl.DrawLatex(0.65,0.7, chi2_print);
 		   }
 
 		}
@@ -282,7 +291,7 @@ void FillSpectrum_MC_FONLLweight()
         input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100_Bfeeddown.root");
 	TH1D * fonllweight = ( TH1D * ) input_fonllweight->Get("ratio_rawtofonll");
 
-    TFile * input = new TFile("rootfiles/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_Bmom_v3.root");
+    TFile * input = new TFile("rootfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
 	TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
 	recodmesontree->AddFriend(gendmesontree);
@@ -378,7 +387,7 @@ void FillSpectrum_MC_FONLLweight()
            if( isPrompt )
                { if( matched_pt_Bmom->at(icand) > 0 )   continue; }
            else
-               { if( matched_pt_Bmom->at(icand) < 0 )   continue; }
+               { if( matchedtogen->at(icand) == 1 && matched_pt_Bmom->at(icand) < 0 )   continue; }
 
            double effectiveffls3dcut = 100000.;
            double effectivecosalphacut = 2.0;
@@ -429,7 +438,7 @@ void FillSpectrum_MC_FONLLweight()
 
    TH1D * N_gendpt = new TH1D("N_gendpt", "N_gendpt", NPT,ptbins);
    N_gendpt->Sumw2();
-   for( int i = 0; i < NPT; i++ )
+   for( int i = 0; i < NPT - 1 ; i++ )
    {
 	   float ptbinwidth = ptbins[i+1] - ptbins[i];
 	   N_gendpt->SetBinContent( i+1,  d0genpt->GetBinContent(i+1) / ptbinwidth);
@@ -441,24 +450,24 @@ void FillSpectrum_MC_FONLLweight()
    TH1D * N_sig = new TH1D("N_sig","N_sig", NPT, ptbins);
    N_sig->Sumw2();
    
-   TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 1000, 1000);
+   TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 800, 800);
    cfg_mb->Divide(cfg_N_row, cfg_N_column);
 
-   for ( int i = 1; i < NPT; i++)
+   for ( int i = 1; i < NPT - 1; i++)
 	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, N_sig, 3.0, 55.0);
-   for ( int i = 1; i < NPT; i++)
+   for ( int i = 1; i < NPT - 1; i++)
    {
 	   cfg_mb->cd(i);
-       hfg_minbias_MCmatched[i]->SetMarkerSize(0.8);
-       hfg_minbias_MCmatched[i]->SetLineColor(4);
-       hfg_minbias_MCmatched[i]->SetMarkerColor(4);
-       hfg_minbias_MCmatched[i]->SetMarkerStyle(20);
+       hfg_minbias_MCmatched[i]->SetMarkerSize(0.5);
+       hfg_minbias_MCmatched[i]->SetLineColor(6);
+       hfg_minbias_MCmatched[i]->SetMarkerColor(6);
+       hfg_minbias_MCmatched[i]->SetMarkerStyle(24);
 	   hfg_minbias_MCmatched[i]->Draw("same");
-       hfg_minbias_MCdoublecounted[i]->SetMarkerSize(0.8);
+       hfg_minbias_MCdoublecounted[i]->SetMarkerSize(0.5);
        hfg_minbias_MCdoublecounted[i]->SetLineColor(12);
        hfg_minbias_MCdoublecounted[i]->SetMarkerColor(12);
-       hfg_minbias_MCdoublecounted[i]->SetMarkerStyle(20);
-	   hfg_minbias_MCdoublecounted[i]->Draw("same");
+       hfg_minbias_MCdoublecounted[i]->SetMarkerStyle(24);
+//	   hfg_minbias_MCdoublecounted[i]->Draw("same");
 
 	   float ptbinwidth = ptbins[i+1] - ptbins[i];
 	   double error = 0.0;
@@ -472,9 +481,9 @@ void FillSpectrum_MC_FONLLweight()
 
    char cfgname[200];
    sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
-//   cfg_mb->SaveAs(cfgname);
+   cfg_mb->SaveAs(cfgname);
    sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
-//   cfg_mb->SaveAs(cfgname); 
+   cfg_mb->SaveAs(cfgname); 
   
    char outputfile[200];
    if( isPrompt )
