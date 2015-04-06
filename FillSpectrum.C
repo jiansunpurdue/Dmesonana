@@ -24,6 +24,9 @@ float cut_m_low = 1.70;
 float cut_m_high = 2.05;
 int massbin = 35;
 
+double eff_fit_range_low[NPT] = {1.70, 1.70, 1.75, 1.72, 1.70, 1.70, 1.70, 1.70, 1.70, 1.70, 1.70, 1.70};
+double eff_fit_range_high[NPT] = {2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05, 2.05};
+
 const int cfg_N_row = 3;
 const int cfg_N_column = 4;
 
@@ -63,7 +66,7 @@ int decideptbin( float dpt )
     {
         if (dpt >= ptbins[i] && dpt < ptbins[i+1])  { ipt = i; break; }
     }
-    if ( dpt > ptbins[NPT] ) ipt = NPT-1;
+	if ( dpt > ptbins[NPT] ) ipt = NPT-1;
     return ipt;
 }
 
@@ -96,13 +99,16 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
     histo->GetXaxis()->SetNdivisions(505);
     histo->GetXaxis()->SetTitle("m_{#piK} (GeV)");
     histo->GetYaxis()->SetTitle("Counts");
-    histo->GetXaxis()->SetRangeUser(cut_m_low, cut_m_high);
-//    TF1* fit_fun = new TF1("fit_fun", fitfunction, cut_m_low, cut_m_high, 6);
+
+    double fit_range_low = eff_fit_range_low[iptbin];
+    double fit_range_high = eff_fit_range_high[iptbin];
+
+    histo->GetXaxis()->SetRangeUser(fit_range_low, fit_range_high);
+
     //.. fit with a Gaussian and pol
-    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol2(3)", cut_m_low, cut_m_high);
-//    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(3)", cut_m_low, cut_m_high);
-//    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(6)", cut_m_low, cut_m_high);
+    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol2(3)", fit_range_low, fit_range_high);
     float max = histo->GetMaximum();
+	histo->SetMaximum(1.1 * max);
 
     float p0 = 1000, p1 = 1.87, p2 = 0.02;
     float p0_L = 0, p1_L = 1.84, p2_L = 0;
@@ -113,7 +119,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
 	int pass = 0;
     int fittingtry = 0;
 
-	char sig_print[100], chi2_print[100];
+	char sig_print[100], chi2_print[100], mean_print[100], sigma_print[100];
 
     while (!pass) {
 
@@ -131,10 +137,9 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
 //		fit_fun->SetParameter(5, p5);
 
         if( fittingtry == 0 )
-            histo->Fit(fit_fun,"","", cut_m_low, cut_m_high);
+            histo->Fit(fit_fun,"","", fit_range_low, fit_range_high);
         else 
-//			histo->Fit(fit_fun,"WL","", cut_m_low, cut_m_high);
-			histo->Fit(fit_fun,"","", cut_m_low, cut_m_high);
+			histo->Fit(fit_fun,"","", fit_range_low, fit_range_high);
 
         //.. draw foreground and background ..
         histo->Draw();
@@ -157,6 +162,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
 
 
         fit_fun_bg->SetLineColor(8);
+		fit_fun_bg->SetLineStyle(2);
         fit_fun_bg->Draw("same");
 
 
@@ -172,25 +178,31 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
 		   float Nsig = fit_fun->GetParameter(0)/( binwidth );
 		   float err_Nsig = fit_fun->GetParError(0)/( binwidth );
 		   float fitchi2 = fit_fun->GetChisquare();
+		   float fitmean = fit_fun->GetParameter(1);
+		   float fitsigma = fit_fun->GetParameter(2);
 		   int noffreepara = fit_fun->GetNumberFreeParameters();
 		   int noffitpoints = fit_fun->GetNumberFitPoints();
 
 		   cout << " fitchi2: " << fitchi2 << "   noffreepara: " << noffreepara << "  noffitpoints: " << noffitpoints << endl;
 
            if( !isMC )
-		       sprintf( sig_print,"N_{sig} = %7.1f #pm %7.1f", Nsig, err_Nsig);
+		       sprintf( sig_print,"N_{sig}: %7.1f#pm%7.1f", Nsig, err_Nsig);
 		   else
-			   sprintf( sig_print,"N_{sig} = %7.5f #pm %7.5f", Nsig, err_Nsig);
-		   sprintf( chi2_print, "#chi^{2}#/d.o.f = %3.2f", fitchi2/( noffitpoints - noffreepara));
+			   sprintf( sig_print,"N_{sig}: %7.5f#pm%7.5f", Nsig, err_Nsig);
+		   sprintf( chi2_print, "#chi^{2}#/d.o.f: %3.2f", fitchi2/( noffitpoints - noffreepara));
+		   sprintf( mean_print, "mean: %6.5f", fitmean);
+		   sprintf( sigma_print, "#sigma: %6.5f", fitsigma);
 
 		   if (fittingtry == 2)
 		   {
 			   TLatex Tl;
 			   Tl.SetNDC();
 			   Tl.SetTextAlign(12);
-			   Tl.SetTextSize(0.05);
-			   Tl.DrawLatex(0.55,0.8, sig_print);
-			   Tl.DrawLatex(0.55,0.7, chi2_print);
+			   Tl.SetTextSize(0.06);
+			   Tl.DrawLatex(0.15,0.8, sig_print);
+			   Tl.DrawLatex(0.15,0.7, chi2_print);
+			   Tl.DrawLatex(0.55,0.8, mean_print);
+			   Tl.DrawLatex(0.55,0.7, sigma_print);
 		   }
 
 		}
@@ -223,7 +235,7 @@ void FillSpectrum()
 	hf_mb->Sumw2();
 
 //	TFile * input = new TFile("Dmesonana_hiforest_D0embedded_Hydjet1p8_2760GeV_D0pt4_pthat15305080_1119_all.root");
-    TFile * input = new TFile("rootfiles/Dmesonana_Rereco_MBtrig_d0pt3p0_d1p8_pt1p5_v1_tight_1213_6lumi_cuts_noprobchi2cut_vz_v4.root");
+    TFile * input = new TFile("/home/sun229/store/Analysisfiles/Dmesonana_Rereco_MBtrig_d0pt3p0_d1p8_pt1p5_v1_tight_1213_6lumi_cuts_noprobchi2cut_vz_v4.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
     
 
@@ -259,7 +271,7 @@ void FillSpectrum()
     
 //   cout << " total number of event: " << recodmesontree->GetEntries() << endl;
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
-//   for ( unsigned int entry = 0; entry < 20000000; entry++ )
+//   for ( unsigned int entry = 0; entry < 2000000; entry++ )
    {
 	   recodmesontree->GetEntry(entry);
 	   if( entry % 1000000 == 0 )  cout << entry+1 << "st event" << endl;
@@ -310,8 +322,7 @@ void FillSpectrum()
    TCanvas* cfg_mb = new TCanvas("cfg_mb", "cfg_mb", 800, 800);
    cfg_mb->Divide(cfg_N_row, cfg_N_column);
 
-//   for ( int i = 1; i < NPT -1 ; i++)
-   for ( int i = 1; i < NPT ; i++)
+   for ( int i = 1; i < NPT -1 ; i++)
 	   fit_hist( hfg_minbias[i], cfg_mb, i, N_mb, 3.0, 55.0);
    
    char cfgname[200];

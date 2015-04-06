@@ -1,4 +1,4 @@
-
+//#include "PtBins.h"
 
 void Draw_RAFONLL( TFile * input_pbpb, TFile * fonllinput, int cent_low, int cent_high, int Nptbin, double TAA)
 {
@@ -16,7 +16,7 @@ void Draw_RAFONLL( TFile * input_pbpb, TFile * fonllinput, int cent_low, int cen
 		D0_pbpb_spectrum->GetYaxis()->SetRangeUser(5.0, 24);
 	}
 
-	TGraphAsymmErrors * d0fonllspectrum = ( TGraphAsymmErrors *) fonllinput->Get("gaeSigmaDecayDzero");
+	TGraphAsymmErrors * d0fonllspectrum = ( TGraphAsymmErrors *) fonllinput->Get("gaeSigmaDzero");
 
 	TCanvas * spectrum = new TCanvas("spectrum","spectrum");
 	spectrum->SetLeftMargin(0.2);
@@ -30,7 +30,7 @@ void Draw_RAFONLL( TFile * input_pbpb, TFile * fonllinput, int cent_low, int cen
 	D0_pbpb_spectrum->GetYaxis()->SetRangeUser(10E1,10E7);
 
     D0_pbpb_spectrum->GetYaxis()->SetTitleOffset(2.0);
-    D0_pbpb_spectrum->GetYaxis()->SetTitle("#frac{d#sigma_{pp}}{dp_{T}}, #frac{1}{2N_{evt}T_{AA}}#frac{dN_{PbPb}}{dp_{T}} #frac{pb}{GeV/c}");
+    D0_pbpb_spectrum->GetYaxis()->SetTitle("#frac{d#sigma_{pp}}{dp_{T}}, #frac{1}{2N_{evt}T_{AA}} #frac{dN_{PbPb}}{dp_{T}} #frac{pb}{GeV/c}");
 	D0_pbpb_spectrum->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
 //	D0_pbpb_spectrum->GetYaxis()->SetRangeUser(10E-8,10E0);   //Alice way to plot, scale pp cross section by TAA rather than PbPb
 //	D0_pbpb_spectrum->GetYaxis()->SetTitle("dN/dp_{T}");
@@ -61,7 +61,8 @@ void Draw_RAFONLL( TFile * input_pbpb, TFile * fonllinput, int cent_low, int cen
 
 	for( int i = 0; i < D0_fonll_raa_errordata->GetN();i++){
 		D0_fonll_raa_errordata->GetY()[i] = D0_pbpb_spectrum_raa->GetBinContent(i+2) / d0fonllspectrum->GetY()[i];
-		cout << "PbPb: " << D0_pbpb_spectrum_raa->GetBinContent(i+2) << " pp: " << d0fonllspectrum->GetY()[i] << " ratio: " << D0_fonll_raa_errordata->GetY()[i] << endl;
+		cout << "PbPb: " << D0_pbpb_spectrum_raa->GetBinContent(i+2) << " pp: " << d0fonllspectrum->GetY()[i] << " RAA: " << D0_fonll_raa_errordata->GetY()[i] << endl;
+//        cout << "Pbbin: " << ptbins[i+1] << " to " << ptbins[i+2] <<   " RAA: " << D0_fonll_raa_errordata->GetY()[i] << endl;
 		double higherror =  TMath::Sqrt( TMath::Power(D0_pbpb_spectrum_raa->GetBinError(i+2), 2) / TMath::Power(d0fonllspectrum->GetY()[i] ,2) );
         double lowerror =  TMath::Sqrt( TMath::Power(D0_pbpb_spectrum_raa->GetBinError(i+2), 2) / TMath::Power(d0fonllspectrum->GetY()[i] ,2) );
 		D0_fonll_raa_errordata->SetPointEYhigh(i, higherror);
@@ -82,19 +83,32 @@ void Draw_RAFONLL( TFile * input_pbpb, TFile * fonllinput, int cent_low, int cen
 	}
 
 	D0_fonll_raa_errordata->GetYaxis()->SetRangeUser(0.,2.);
-	D0_fonll_raa_errordata->GetXaxis()->SetRangeUser(4.5,40.);
+	D0_fonll_raa_errordata->GetXaxis()->SetRangeUser(3.5,40.);
 	D0_fonll_raa_errordata->GetYaxis()->SetTitle("D^{0} R^{FONLL}_{AA}");
 	D0_fonll_raa_errordata->GetXaxis()->SetTitle("D^{0} p_{T} (GeV/c)");
 
 	D0_fonll_raa_errorfonll->GetYaxis()->SetRangeUser(0.,2.);
-	D0_fonll_raa_errorfonll->GetXaxis()->SetRangeUser(4.5,40.);
+	D0_fonll_raa_errorfonll->GetXaxis()->SetRangeUser(3.5,40.);
 	D0_fonll_raa_errorfonll->GetYaxis()->SetTitle("D^{0} R^{FONLL}_{AA}");
 	D0_fonll_raa_errorfonll->GetXaxis()->SetTitle("D^{0} p_{T} (GeV/c)");
 	D0_fonll_raa_errorfonll->SetFillColor(0);
 	D0_fonll_raa_errorfonll->SetFillStyle(0);
 
-	D0_fonll_raa_errorfonll->Draw("A2");
+//	D0_fonll_raa_errorfonll->Draw("A2");
 	D0_fonll_raa_errordata->Draw("P");
+
+    TF1* fit_fun = new TF1("fit_fun", "pol2(0)", 3.5, 40.0);
+    fit_fun->SetLineColor(8);
+    fit_fun->SetLineStyle(2);
+    D0_fonll_raa_errordata->Fit(fit_fun, "", "", 3.5, 40.0);
+    D0_fonll_raa_errordata->Draw("P");
+
+    TLegend *leg = new TLegend(0.3,0.55,0.55,0.7);
+    leg->AddEntry(D0_fonll_raa_errordata,"D^{0} R^{FONLL}_{AA}","PL");
+    leg->AddEntry(D0_fonll_raa_errorfonll,"Syst. err. from FONLL","f");
+    leg->SetBorderSize(0);
+    leg->SetFillStyle(0);
+    leg->Draw();
 
     TLatex Tl;
     Tl.SetNDC();
@@ -129,7 +143,7 @@ void Draw_RAFONLL( TFile * input_pbpb, TFile * fonllinput, int cent_low, int cen
 	output->Close();
 }
 
-void Dmeson_RAFONLL()
+void Dmeson_RAFONLL_fittest()
 {
     //double TAA = 5.67E-9;  //centrality 0 to 100  5.67 0.32
     // double TAA = 18.93e-9 ;     //Alice.  CMS????centrality 0 to 20
@@ -143,7 +157,7 @@ void Dmeson_RAFONLL()
 
    //centrality 0 to 100%
       input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to100_ptbin9.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
+	  fonllinput = new TFile("./../FONLL/fonll/outputDzero.root");
 
 	  TAA = 5.67E-9;
 	  cent_low = 0;
@@ -155,132 +169,132 @@ void Dmeson_RAFONLL()
 	  input_pbpb->Close();
 	  fonllinput->Close();
 
-   //centrality 0 to 20%
-      input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to20_ptbin8.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
-
-	  TAA = 18.84e-9;   //CMS
-	  cent_low = 0;
-	  cent_high = 20;
-	  Nptbin = 8;
-
-	  Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-      
-   //centrality 40% to 80% 
-	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent40to80_ptbin8.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
-
-      TAA = 1.20e-9;
-	  cent_low = 40;
-	  cent_high = 80;
-	  Nptbin = 8;
-
-      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-      
-   //centrality 10% to 30% 
-	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin8.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
-
-      TAA = 11.64e-9;
-	  cent_low = 10;
-	  cent_high = 30;
-	  Nptbin = 8;
-
-      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-      
-   //centrality 30% to 50% 
-	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin8.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
-
-      TAA = 3.92e-9;
-	  cent_low = 30;
-	  cent_high = 50;
-	  Nptbin = 8;
-
-      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-      
-   //centrality 50% to 100% 
-	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin8.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
-
-      TAA = 0.47e-9;
-	  cent_low = 50;
-	  cent_high = 100;
-	  Nptbin = 8;
-
-      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-     
-// 4 ptbins, used for RAA vs Npart
-   
-   //centrality 0% to 10% 
-	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to10_ptbin4.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
-
-      TAA = 23.20e-9; //error 0.99
-	  cent_low = 0;
-	  cent_high = 10;
-	  Nptbin = 4;
-
-      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-   
-   //centrality 10% to 30% 
-	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin4.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
-
-      TAA = 11.64e-9; //error 0.67
-	  cent_low = 10;
-	  cent_high = 30;
-	  Nptbin = 4;
-
-      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-   
-   //centrality 30% to 50% 
-	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin4.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
-
-      TAA = 3.92e-9;  //error 0.37
-	  cent_low = 30;
-	  cent_high = 50;
-	  Nptbin = 4;
-
-      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-   
-   //centrality 50% to 100% 
-	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin4.root");
-	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
-
-      TAA = 0.47e-9;  //error 0.07
-	  cent_low = 50;
-	  cent_high = 100;
-	  Nptbin = 4;
-
-      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
-
-	  input_pbpb->Close();
-	  fonllinput->Close();
-	
+//   //centrality 0 to 20%
+//      input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to20_ptbin8.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
+//
+//	  TAA = 18.84e-9;   //CMS
+//	  cent_low = 0;
+//	  cent_high = 20;
+//	  Nptbin = 8;
+//
+//	  Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//      
+//   //centrality 40% to 80% 
+//	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent40to80_ptbin8.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
+//
+//      TAA = 1.20e-9;
+//	  cent_low = 40;
+//	  cent_high = 80;
+//	  Nptbin = 8;
+//
+//      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//      
+//   //centrality 10% to 30% 
+//	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin8.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
+//
+//      TAA = 11.64e-9;
+//	  cent_low = 10;
+//	  cent_high = 30;
+//	  Nptbin = 8;
+//
+//      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//      
+//   //centrality 30% to 50% 
+//	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin8.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
+//
+//      TAA = 3.92e-9;
+//	  cent_low = 30;
+//	  cent_high = 50;
+//	  Nptbin = 8;
+//
+//      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//      
+//   //centrality 50% to 100% 
+//	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin8.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
+//
+//      TAA = 0.47e-9;
+//	  cent_low = 50;
+//	  cent_high = 100;
+//	  Nptbin = 8;
+//
+//      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//     
+//// 4 ptbins, used for RAA vs Npart
+//   
+//   //centrality 0% to 10% 
+//	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to10_ptbin4.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
+//
+//      TAA = 23.20e-9; //error 0.99
+//	  cent_low = 0;
+//	  cent_high = 10;
+//	  Nptbin = 4;
+//
+//      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//   
+//   //centrality 10% to 30% 
+//	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin4.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
+//
+//      TAA = 11.64e-9; //error 0.67
+//	  cent_low = 10;
+//	  cent_high = 30;
+//	  Nptbin = 4;
+//
+//      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//   
+//   //centrality 30% to 50% 
+//	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin4.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
+//
+//      TAA = 3.92e-9;  //error 0.37
+//	  cent_low = 30;
+//	  cent_high = 50;
+//	  Nptbin = 4;
+//
+//      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//   
+//   //centrality 50% to 100% 
+//	  input_pbpb = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin4.root");
+//	  fonllinput = new TFile("./FONLL/fonll/outputDzero_4ptbin.root");
+//
+//      TAA = 0.47e-9;  //error 0.07
+//	  cent_low = 50;
+//	  cent_high = 100;
+//	  Nptbin = 4;
+//
+//      Draw_RAFONLL(input_pbpb, fonllinput, cent_low, cent_high, Nptbin, TAA);
+//
+//	  input_pbpb->Close();
+//	  fonllinput->Close();
+//	
 }
