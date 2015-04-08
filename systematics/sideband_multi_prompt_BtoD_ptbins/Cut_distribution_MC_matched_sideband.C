@@ -28,10 +28,11 @@ double cut_ffls3d = 3.5;  //2.0
 double cut_falpha = 0.05;  //0.2
 double cut_fprob = 0.05;  //0.05
 
-double Ptcut_low = 3.5;
+double Ptcut_low = 7.0;
 double Ptcut_high = 40.0;
 
-bool isPrompt = false;
+bool isPrompt = true;
+
 bool Allcuts = false;
 bool nocuts = false;
 
