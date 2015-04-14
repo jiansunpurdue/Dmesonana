@@ -20,55 +20,21 @@ int weight_cal_pythiarawtofonll_Bfeeddown()
   gStyle->SetOptStat(0);
   TH1::SetDefaultSumw2();
 
-  ifstream getdata("./FONLL/fonll/FONLLInputs/fo_BtoD_pp_2.76_y2.dat");
-
-  if(!getdata.is_open())
-    {
-      cout<<"Opening the file fails"<<endl;
-    }
-
-  float central[BIN_NUM];
-  float min_all[BIN_NUM],max_all[BIN_NUM],min_sc[BIN_NUM],max_sc[BIN_NUM],min_mass[BIN_NUM],max_mass[BIN_NUM],min_pdf[BIN_NUM],max_pdf[BIN_NUM];
-  int i;
-  float tem;
-  for(i=0;i<BIN_NUM;i++)
-    {
-      getdata>>tem;
-      getdata>>central[i];
-      getdata>>min_all[i];
-      getdata>>max_all[i];
-      getdata>>min_sc[i];
-      getdata>>max_sc[i];
-      getdata>>min_mass[i];
-      getdata>>max_mass[i];
-      getdata>>min_pdf[i];
-      getdata>>max_pdf[i];
-    }
   
-  TH1F* hpt = new TH1F("hpt","",BIN_NUM,HMIN,HMAX);
-  TH1F* hminall = new TH1F("hminall","",BIN_NUM,HMIN,HMAX);
-  TH1F* hmaxall = new TH1F("hmaxall","",BIN_NUM,HMIN,HMAX);
-  TH1F* hminsc = new TH1F("hminsc","",BIN_NUM,HMIN,HMAX);
-  TH1F* hmaxsc = new TH1F("hmaxsc","",BIN_NUM,HMIN,HMAX);
-  TH1F* hminmass = new TH1F("hminmass","",BIN_NUM,HMIN,HMAX);
-  TH1F* hmaxmass = new TH1F("hmaxmass","",BIN_NUM,HMIN,HMAX);
-  TH1F* hminpdf = new TH1F("hminpdf","",BIN_NUM,HMIN,HMAX);
-  TH1F* hmaxpdf = new TH1F("hmaxpdf","",BIN_NUM,HMIN,HMAX);
+  TFile * input_BFONLL = new TFile("./RAA_RCP/BtoD_cent0to100.root");
+  TH1D * BtoD_central = (TH1D *) input_BFONLL->Get("hDFromBPt");
+  BtoD_central->Scale(0.5);
+  double bin_edge[BIN_NUM+1];
 
-  for(i=0;i<BIN_NUM;i++)
-    {
-      hpt->SetBinContent(i+1,central[i]);
-      hminall->SetBinContent(i+1,min_all[i]);
-      hmaxall->SetBinContent(i+1,max_all[i]);
-      hminsc->SetBinContent(i+1,min_sc[i]);
-      hmaxsc->SetBinContent(i+1,max_sc[i]);
-      hminmass->SetBinContent(i+1,min_mass[i]);
-      hmaxmass->SetBinContent(i+1,max_mass[i]);
-      hminpdf->SetBinContent(i+1,min_pdf[i]);
-      hmaxpdf->SetBinContent(i+1,max_pdf[i]);
-    }
+  for( int i = 0; i < BIN_NUM+1; i++ )
+  {
+      bin_edge[i] = 2.0 + 0.25 * i;
+  }
 
-  TFile * input_PbPb_MC = new TFile("rootfiles/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_Bmom_v3.root");
+  TH1D * hpt = (TH1D *) BtoD_central->Rebin( BIN_NUM, "hpt", bin_edge);
+  
+
+  TFile * input_PbPb_MC = new TFile("rootfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root");
   TTree * gendmesontree = ( TTree * ) input_PbPb_MC->Get("gendmesontree");
   
   float pthat;

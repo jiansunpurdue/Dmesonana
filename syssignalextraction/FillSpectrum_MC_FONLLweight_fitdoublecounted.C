@@ -15,14 +15,14 @@
 #include <TLatex.h>
 #include "Math/MinimizerOptions.h"
 
-#include "PtBins.h"
+#include "./../PtBins.h"
 
 #define MAXGENDMESON 100
 
 
 using namespace std;
 
-bool isPrompt = true;
+bool isPrompt = false;
 
 float hiBin_low = -0.5;
 float hiBin_high = 199.5;
@@ -201,7 +201,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 
 
         fit_fun_bg->SetLineColor(8);
-		fit_fun_bg->SetLineStyle(2);
+		fit_fun_bg->SetLineStyle(2.0);
         fit_fun_bg->Draw("same");
 
 
@@ -272,7 +272,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 
 }
 
-void FillSpectrum_MC_FONLLweight()
+void FillSpectrum_MC_FONLLweight_fitdoublecounted()
 {
     TH1::SetDefaultSumw2();
 	book_hist();
@@ -286,12 +286,12 @@ void FillSpectrum_MC_FONLLweight()
 
 	TFile * input_fonllweight;
     if( isPrompt )
-        input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100_prompt.root");
+        input_fonllweight = new TFile("./../D0_PbPb_rawtoFONLL_3to100_prompt.root");
     else
-        input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100_Bfeeddown.root");
+        input_fonllweight = new TFile("./../D0_PbPb_rawtoFONLL_3to100_Bfeeddown.root");
 	TH1D * fonllweight = ( TH1D * ) input_fonllweight->Get("ratio_rawtofonll");
 
-    TFile * input = new TFile("rootfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root");
+    TFile * input = new TFile("./../rootfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
 	TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
 	recodmesontree->AddFriend(gendmesontree);
@@ -462,12 +462,12 @@ void FillSpectrum_MC_FONLLweight()
        hfg_minbias_MCmatched[i]->SetLineColor(6);
        hfg_minbias_MCmatched[i]->SetMarkerColor(6);
        hfg_minbias_MCmatched[i]->SetMarkerStyle(24);
-	   hfg_minbias_MCmatched[i]->Draw("same");
+	   hfg_minbias_MCmatched[i]->DrawCopy("same");
        hfg_minbias_MCdoublecounted[i]->SetMarkerSize(0.5);
        hfg_minbias_MCdoublecounted[i]->SetLineColor(12);
        hfg_minbias_MCdoublecounted[i]->SetMarkerColor(12);
        hfg_minbias_MCdoublecounted[i]->SetMarkerStyle(24);
-//	   hfg_minbias_MCdoublecounted[i]->Draw("same");
+	   hfg_minbias_MCdoublecounted[i]->DrawCopy("same");
 
 	   float ptbinwidth = ptbins[i+1] - ptbins[i];
 	   double error = 0.0;
@@ -479,20 +479,52 @@ void FillSpectrum_MC_FONLLweight()
 	   N_mb_matched_genpt->SetBinError( i+1, error/ptbinwidth );
    }
 
+
+
+   TCanvas* cfg_doublecounted = new TCanvas("cfg_doublecounted", "cfg_doublecounted", 800, 800);
+   cfg_doublecounted->Divide(cfg_N_row, cfg_N_column);
+
+   gStyle->SetOptFit(0);
+   for ( int i = 1; i < NPT-1; i++)
+   {
+       cfg_doublecounted->cd(i);
+	 cout << "  ********************************* i: " << i <<  endl;  
+     TF1* fit_fun = new TF1("fit_fun", "gausn(0)", cut_m_low, cut_m_high);
+     hfg_minbias_MCdoublecounted[i]->Fit(fit_fun,"","", cut_m_low, cut_m_high);
+     float max = hfg_minbias_MCdoublecounted[i]->GetMaximum();
+     fit_fun->SetLineColor(12);
+     fit_fun->SetLineStyle(2);
+     fit_fun->SetParameter(0, max);
+     fit_fun->SetParameter(1, 1.864);
+     fit_fun->SetParameter(2, 0.06);
+     fit_fun->SetParLimits(1, 1.85, 1.89);
+     fit_fun->SetParLimits(2, 0.04, 0.2);
+//       TF1* fit_fun = new TF1("fit_fun", "pol2(0)", cut_m_low, cut_m_high);
+//       TF1* fit_fun = new TF1("fit_fun", "gausn(0)", cut_m_low, cut_m_high);
+       hfg_minbias_MCdoublecounted[i]->Fit(fit_fun,"","", cut_m_low, cut_m_high);
+       hfg_minbias_MCdoublecounted[i]->Draw();
+   }
+
    char cfgname[200];
-   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d_showdouble.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
    cfg_mb->SaveAs(cfgname);
-   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d_showdouble.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
    cfg_mb->SaveAs(cfgname); 
+  
+//   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d_misid.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
+//   cfg_doublecounted->SaveAs(cfgname);
+//   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d_misid.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
+//   cfg_doublecounted->SaveAs(cfgname); 
   
    char outputfile[200];
    if( isPrompt )
-	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Prompt.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Prompt_Fitdouble.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    else
-	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Bfeeddown.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Bfeeddown_Fitdouble.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    TFile * output = new TFile(outputfile,"RECREATE");
    d0genpt_fonllweighted->Write();
    d0genpt->Write();
+   cfg_doublecounted->Write();
    N_gendpt->Write();
    N_mb_matched->Write();
    N_mb_matched_genpt->Write();

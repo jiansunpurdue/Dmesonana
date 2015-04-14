@@ -15,14 +15,24 @@
 #include <TLatex.h>
 #include "Math/MinimizerOptions.h"
 
-#include "PtBins.h"
+#include "./../PtBins.h"
 
 #define MAXGENDMESON 100
 
 
 using namespace std;
 
-bool isPrompt = true;
+double NsigMC[NPT] = { 0.,4.71502e+06,4.71502e+06,4.52978e+06,3.53057e+06,1.8534e+06,1.16857e+06,730841, 434796, 226032, 58895.2 , 0.0};
+double NsigMCerror[NPT] = { 0.0,106053, 96199.7, 79213.6, 52891.9, 27333.3, 16174.2, 9442.98, 5095.41, 2368.65, 705.864, 0.0};
+
+double p0[NPT] = {0.0, 4.46143e+04, 4.60846e+04, 4.47238e+04, 3.36765e+04, 1.65979e+04, 1.00342e+04, 5.93331e+03, 3.42488e+03, 1.76738e+03, 4.44104e+02, 0.0};
+double p0error[NPT] =  { 0.0, 1.06550e+03, 9.82781e+02, 8.94665e+02, 6.81751e+02, 3.46451e+02, 2.08120e+02, 1.14258e+02, 6.55421e+01, 3.36693e+01, 9.40173e+00, 0.0};
+double p1[NPT] = { 0.0, 1.86825e+00, 1.86631e+00, 1.87290e+00, 1.86807e+00, 1.87436e+00, 1.86868e+00, 1.86815e+00, 1.86979e+00, 1.86801e+00, 1.87162e+00, 0.0};
+double p1error[NPT] = { 0.0, 1.84948e-03, 1.87471e-03, 2.14965e-03, 2.43882e-03, 2.53836e-03, 2.55428e-03, 2.39527e-03, 2.34529e-03, 2.40362e-03, 2.65083e-03, 0.0};
+double p2[NPT] = {0.0, 7.32402e-02, 8.08389e-02, 9.76748e-02, 1.13106e-01, 1.13500e-01, 1.17294e-01, 1.15535e-01, 1.19552e-01, 1.27681e-01, 1.24804e-01,0.0};
+double p2error[NPT] = { 0.0, 1.57751e-03, 1.73784e-03, 2.33569e-03, 3.17703e-03, 3.26998e-03, 3.38318e-03, 3.00984e-03, 3.14191e-03, 3.43527e-03, 3.70928e-03,0.0};
+
+bool isPrompt = false;
 
 float hiBin_low = -0.5;
 float hiBin_high = 199.5;
@@ -137,14 +147,22 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
     histo->GetXaxis()->SetTitle("m_{#piK} (GeV)");
     histo->GetYaxis()->SetTitle("Counts");
     histo->GetXaxis()->SetRangeUser(cut_m_low, cut_m_high);
-//    TF1* fit_fun = new TF1("fit_fun", fitfunction, cut_m_low, cut_m_high, 6);
-    //.. fit with a Gaussian and pol
-    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol2(3)", cut_m_low, cut_m_high);
-//    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(3)", cut_m_low, cut_m_high);
-//    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + expo(6)", cut_m_low, cut_m_high);
+	double fit_range_low = cut_m_low;
+	double fit_range_high = cut_m_high;
+    TF1* fit_fun = new TF1("fit_fun", "gausn(0) + gausn(3) * ([0]/0.01) * (1.0/[6]) + pol2(7)", fit_range_low, fit_range_high);
     float max = histo->GetMaximum();
 
 	histo->SetMaximum(1.2 * max);
+
+
+    double effp0 = p0[iptbin];
+    double effp0error = p0error[iptbin];
+    double effp1 = p1[iptbin];
+    double effp1error = p1error[iptbin];
+    double effp2 = p2[iptbin];
+    double effp2error = p2error[iptbin];
+    double effNsigMC = NsigMC[iptbin];
+    double effNsigMCerror = NsigMCerror[iptbin];
 
     float p0 = 1000, p1 = 1.87, p2 = 0.02;
     float p0_L = 0, p1_L = 1.84, p2_L = 0;
@@ -172,6 +190,17 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 //		fit_fun->SetParameter(4, p4);
 //		fit_fun->SetParameter(5, p5);
 
+        //pol2 as bkg function
+        fit_fun->FixParameter(3, effp0);
+        fit_fun->FixParameter(4, effp1);
+        fit_fun->FixParameter(5, effp2);
+        //    fit_fun->SetParLimits(3, effp0 - effp0error, effp0 + effp0error);
+        //    fit_fun->SetParLimits(4, effp1 - effp1error, effp1 + effp1error);
+        //    fit_fun->SetParLimits(5, effp2 - effp2error, effp2 + effp2error);
+        //    fit_fun->SetParLimits(6, NsigMC[iptbin] - NsigMCerror[iptbin], NsigMC[iptbin] + NsigMCerror[iptbin] );
+        fit_fun->FixParameter(6, effNsigMC);
+
+
         if( fittingtry == 0 )
             histo->Fit(fit_fun,"","", cut_m_low, cut_m_high);
         else 
@@ -181,29 +210,53 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
         //.. draw foreground and background ..
         histo->Draw();
 
+
         TF1* fit_fun_1st = (TF1*)fit_fun->Clone("fit_fun_1st");
         fit_fun_1st->SetParameter(3, 0);
         fit_fun_1st->SetParameter(4, 0);
         fit_fun_1st->SetParameter(5, 0);
-		fit_fun_1st->SetLineColor(6);
-		fit_fun_1st->SetLineStyle(2);
+        fit_fun_1st->SetParameter(6, 0);
+        fit_fun_1st->SetParameter(7, 0);
+        fit_fun_1st->SetParameter(8, 0);
+        fit_fun_1st->SetParameter(9, 0);
+        fit_fun_1st->SetLineColor(6.0);
+        fit_fun_1st->SetLineStyle(2);
         fit_fun_1st->Draw("same");
 
+        TF1* fit_fun_doublecounted = new TF1("fit_fun_doublecounted", "gausn(0) * ([3]/0.01) * (1.0/[4])", fit_range_low, fit_range_high);
+        fit_fun_doublecounted->SetParameter(0, fit_fun->GetParameter(3));
+        fit_fun_doublecounted->SetParameter(1, fit_fun->GetParameter(4));
+        fit_fun_doublecounted->SetParameter(2, fit_fun->GetParameter(5));
+        fit_fun_doublecounted->SetParameter(3, fit_fun->GetParameter(0));
+        fit_fun_doublecounted->SetParameter(4, fit_fun->GetParameter(6));
+        fit_fun_doublecounted->SetLineColor(12);
+        fit_fun_doublecounted->SetLineStyle(2);
+        fit_fun_doublecounted->Draw("same");
 
         TF1* fit_fun_bg = (TF1*)fit_fun->Clone("fit_fun_bg");
-//        TF1* fit_fun_bg = new TF1("fit_fun_bg", fitfunction, cut_m_low, cut_m_high, 6);
         fit_fun_bg->SetParameter(0, 0);
         fit_fun_bg->SetParameter(1, 0);
         fit_fun_bg->SetParameter(2, 0);
-//		fit_fun_bg->SetParameter(3, fit_fun->GetParameter(3));
-//		fit_fun_bg->SetParameter(4, fit_fun->GetParameter(4));
-//		fit_fun_bg->SetParameter(5, fit_fun->GetParameter(5));
-
-
-        fit_fun_bg->SetLineColor(8);
-		fit_fun_bg->SetLineStyle(2);
+        fit_fun_bg->SetParameter(3, 0);
+        fit_fun_bg->SetParameter(4, 0);
+        fit_fun_bg->SetParameter(5, 0);
+        fit_fun_bg->SetParameter(6, 0);
+        fit_fun_bg->SetLineColor(4.0);
+        fit_fun_bg->SetLineStyle(2);
         fit_fun_bg->Draw("same");
 
+        TF1* fit_fun_doubleplusbkg = new TF1("fit_fun_doubleplusbkg", "gausn(0) * ([3]/0.01) * (1.0/[4]) + pol2(5)", fit_range_low, fit_range_high);
+        fit_fun_doubleplusbkg->SetParameter(0, fit_fun->GetParameter(3));
+        fit_fun_doubleplusbkg->SetParameter(1, fit_fun->GetParameter(4));
+        fit_fun_doubleplusbkg->SetParameter(2, fit_fun->GetParameter(5));
+        fit_fun_doubleplusbkg->SetParameter(3, fit_fun->GetParameter(0));
+        fit_fun_doubleplusbkg->SetParameter(4, fit_fun->GetParameter(6));
+        fit_fun_doubleplusbkg->SetParameter(5, fit_fun->GetParameter(7));
+        fit_fun_doubleplusbkg->SetParameter(6, fit_fun->GetParameter(8));
+        fit_fun_doubleplusbkg->SetParameter(7, fit_fun->GetParameter(9));
+        fit_fun_doubleplusbkg->SetLineColor(8.0);
+        fit_fun_doubleplusbkg->SetLineStyle(2);
+        fit_fun_doubleplusbkg->Draw("same");
 
         fittingtry++;
 
@@ -272,7 +325,7 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 
 }
 
-void FillSpectrum_MC_FONLLweight()
+void FillSpectrum_MC_FONLLweight_fixeddouble()
 {
     TH1::SetDefaultSumw2();
 	book_hist();
@@ -286,12 +339,12 @@ void FillSpectrum_MC_FONLLweight()
 
 	TFile * input_fonllweight;
     if( isPrompt )
-        input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100_prompt.root");
+        input_fonllweight = new TFile("./../D0_PbPb_rawtoFONLL_3to100_prompt.root");
     else
-        input_fonllweight = new TFile("D0_PbPb_rawtoFONLL_3to100_Bfeeddown.root");
+        input_fonllweight = new TFile("./../D0_PbPb_rawtoFONLL_3to100_Bfeeddown.root");
 	TH1D * fonllweight = ( TH1D * ) input_fonllweight->Get("ratio_rawtofonll");
 
-    TFile * input = new TFile("rootfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root");
+    TFile * input = new TFile("./../rootfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root");
     TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
 	TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
 	recodmesontree->AddFriend(gendmesontree);
@@ -459,15 +512,15 @@ void FillSpectrum_MC_FONLLweight()
    {
 	   cfg_mb->cd(i);
        hfg_minbias_MCmatched[i]->SetMarkerSize(0.5);
-       hfg_minbias_MCmatched[i]->SetLineColor(6);
-       hfg_minbias_MCmatched[i]->SetMarkerColor(6);
+       hfg_minbias_MCmatched[i]->SetLineColor(6.0);
+       hfg_minbias_MCmatched[i]->SetMarkerColor(6.0);
        hfg_minbias_MCmatched[i]->SetMarkerStyle(24);
 	   hfg_minbias_MCmatched[i]->Draw("same");
        hfg_minbias_MCdoublecounted[i]->SetMarkerSize(0.5);
        hfg_minbias_MCdoublecounted[i]->SetLineColor(12);
        hfg_minbias_MCdoublecounted[i]->SetMarkerColor(12);
        hfg_minbias_MCdoublecounted[i]->SetMarkerStyle(24);
-//	   hfg_minbias_MCdoublecounted[i]->Draw("same");
+	   hfg_minbias_MCdoublecounted[i]->Draw("same");
 
 	   float ptbinwidth = ptbins[i+1] - ptbins[i];
 	   double error = 0.0;
@@ -480,16 +533,16 @@ void FillSpectrum_MC_FONLLweight()
    }
 
    char cfgname[200];
-   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d_fixeddouble.pdf",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
    cfg_mb->SaveAs(cfgname);
-   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
+   sprintf(cfgname,"plots/D0_PbPb_MC_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_prompt%d_fixeddouble.gif",NPT, hiBin_low * 0.5, hiBin_high * 0.5, isPrompt);
    cfg_mb->SaveAs(cfgname); 
   
    char outputfile[200];
    if( isPrompt )
-	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Prompt.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Prompt_fixeddouble.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    else
-	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Bfeeddown.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
+	   sprintf(outputfile,"rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_%d_ptd_cent%2.0fto%2.0f_FONLLweight_Bfeeddown_fixeddouble.root", NPT, hiBin_low * 0.5, hiBin_high * 0.5);
    TFile * output = new TFile(outputfile,"RECREATE");
    d0genpt_fonllweighted->Write();
    d0genpt->Write();

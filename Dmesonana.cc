@@ -23,19 +23,12 @@ bool isPbPb = true;
 bool ispppPbMB = false;
 bool ispPbJettrig = false;
 
-////for D0 Hydjet samples
-#define NPTHATBIN 5
-int MCentries[NPTHATBIN] = { 19240, 19321, 18992, 20010, 22437};
-int pthatbin[NPTHATBIN+1] = { 0, 15, 30, 50, 80, 1000};
-double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
-double filtereff[NPTHATBIN+1] = { 0.01194, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
-
-//////for D0 Hydjet samples, pthat from 5
-//#define NPTHATBIN 5
-//int MCentries[NPTHATBIN] = { 12906, 19321, 18992, 20010, 22437};
-//int pthatbin[NPTHATBIN+1] = { 5, 15, 30, 50, 80, 1000};
-//double pthatweight_xsection[NPTHATBIN+1] = {12.31, 0.2035, 1.087E-2, 1.014E-03, 1.004E-04, 1.756E-15};
-//double filtereff[NPTHATBIN+1] = { 0.03716, 0.09132, 0.12752, 0.15206, 0.1694, 0.0945};
+////for D0 official Hydjet samples
+#define NPTHATBIN 4
+int MCentries[NPTHATBIN] = { 192029, 192708, 190549, 224082};
+int pthatbin[NPTHATBIN+1] = { 0, 15, 30, 50, 1000};
+double pthatweight_xsection[NPTHATBIN+1] = {41.30, 0.2037, 1.079E-2, 1.025E-03, 1.756E-15};
+double filtereff[NPTHATBIN+1] = { 0.012269, 0.09910, 0.13495, 0.15662, 0.0945};
 
 ////for D0 pythia samples
 //#define NPTHATBIN 6
@@ -517,7 +510,8 @@ void Dmesonana::LoopOvercandidate()
 		}
 
 		if( fpt < 3.5  )  continue;
-        if( fq1 * fq2 > 0 )  continue;  //applied in forest level except for the test production (not a full producton) used to do tmva and Data/Mc comparison study
+//		if( cosalpha < 0.9 )   continue;
+//        if( fq1 * fq2 > 0 )  continue;  //applied in forest level except for the test production (not a full producton) used to do tmva and Data/Mc comparison study
 
 		bool passingtopocuts = false;
 		if(mass > cut_m_low[1] && mass < cut_m_high[1] && ffls3d > cut_ffls3d[1] && cosalpha > cut_cosfalpha0[1] && fdr < cut_fdr[1]) 
