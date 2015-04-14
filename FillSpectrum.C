@@ -36,8 +36,15 @@ float rapidityrange = 2.0;
 
 TH1F* hfg_minbias[NPT];  //for D0
 
+TH1F* hfg_masssigma;
+
 void book_hist()
 {
+	TH1::SetDefaultSumw2();
+
+	hfg_masssigma = new TH1F("hfg_masssigma","hfg_masssigma",NPT, ptbins);
+    hfg_masssigma->Sumw2();
+
 	char hname[100], pt_range[1000];
 	for(int i = 0; i<NPT; i++)
 	{
@@ -52,6 +59,8 @@ void book_hist()
 
 void write_histo( TFile * output)
 {
+   hfg_masssigma->Write();
+
    for(int i = 0; i<NPT; i++)
    {
 	   hfg_minbias[i]->Write();
@@ -179,9 +188,14 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
 		   float err_Nsig = fit_fun->GetParError(0)/( binwidth );
 		   float fitchi2 = fit_fun->GetChisquare();
 		   float fitmean = fit_fun->GetParameter(1);
+		   float fitmeanerror = fit_fun->GetParError(1);
 		   float fitsigma = fit_fun->GetParameter(2);
+		   float fitsigmaerror = fit_fun->GetParError(2);
 		   int noffreepara = fit_fun->GetNumberFreeParameters();
 		   int noffitpoints = fit_fun->GetNumberFitPoints();
+
+		   hfg_masssigma->SetBinContent(iptbin+1, fitsigma);
+		   hfg_masssigma->SetBinError(iptbin+1, fitsigmaerror);
 
 		   cout << " fitchi2: " << fitchi2 << "   noffreepara: " << noffreepara << "  noffitpoints: " << noffitpoints << endl;
 
@@ -190,8 +204,8 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, float low
 		   else
 			   sprintf( sig_print,"N_{sig}: %7.5f#pm%7.5f", Nsig, err_Nsig);
 		   sprintf( chi2_print, "#chi^{2}#/d.o.f: %3.2f", fitchi2/( noffitpoints - noffreepara));
-		   sprintf( mean_print, "mean: %6.5f", fitmean);
-		   sprintf( sigma_print, "#sigma: %6.5f", fitsigma);
+		   sprintf( mean_print, "mean: %6.4f", fitmean);
+		   sprintf( sigma_print, "#sigma: %6.4f", fitsigma);
 
 		   if (fittingtry == 2)
 		   {

@@ -22,7 +22,7 @@
 
 using namespace std;
 
-bool isPrompt = true;
+bool isPrompt = false;
 
 float hiBin_low = -0.5;
 float hiBin_high = 199.5;
@@ -45,10 +45,14 @@ TH1F* hfg_minbiasdiff[NPT];  //for D*
 TH1D* d0genpt;
 TH1D* d0genpt_fonllweighted;
 
+TH1F* hfg_masssigma;
+
 
 void book_hist()
 {
 	TH1::SetDefaultSumw2();
+	hfg_masssigma = new TH1F("hfg_masssigma","hfg_masssigma",NPT, ptbins);
+	hfg_masssigma->Sumw2();
 	d0genpt = new TH1D("d0genpt","d0genpt", NPT, ptbins);
     d0genpt->Sumw2();
 	d0genpt_fonllweighted = new TH1D("d0genpt_fonllweighted","d0genpt_fonllweighted",392,2,100);
@@ -84,6 +88,7 @@ void book_hist()
 
 void write_histo( TFile * output)
 {
+   hfg_masssigma->Write();
    for(int i = 0; i<NPT; i++)
    {
 	   hfg_minbias[i]->Write();
@@ -220,9 +225,14 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 		   float err_Nsig = fit_fun->GetParError(0)/( binwidth );
 		   float fitchi2 = fit_fun->GetChisquare();
 		   float fitmean = fit_fun->GetParameter(1);
+		   float fitmeanerror = fit_fun->GetParError(1);
 		   float fitsigma = fit_fun->GetParameter(2);
+		   float fitsigmaerror = fit_fun->GetParError(2);
 		   int noffreepara = fit_fun->GetNumberFreeParameters();
 		   int noffitpoints = fit_fun->GetNumberFitPoints();
+
+           hfg_masssigma->SetBinContent(iptbin+1, fitsigma);
+		   hfg_masssigma->SetBinError(iptbin+1, fitsigmaerror);
 
 		   N_sig->SetBinContent( iptbin+1, Nsig);
 		   N_sig->SetBinError( iptbin+1, err_Nsig);
@@ -235,8 +245,8 @@ void fit_hist( TH1F * histo, TCanvas *cfg, int iptbin , TH1D * counts, TH1D * N_
 			   sprintf( sig_print,"10^{6} * N_{sig}: %.2f#pm%.2f", 1000000 * Nsig, 1000000 * err_Nsig);
 //               sprintf( sig_print,"N_{sig} = %7.2f #pm %7.2f", Nsig, err_Nsig);
 		   sprintf( chi2_print, "#chi^{2}#/d.o.f: %3.2f", fitchi2/( noffitpoints - noffreepara));
-		   sprintf( mean_print, "mean: %6.5f", fitmean);
-		   sprintf( sigma_print, "#sigma: %6.5f", fitsigma);
+		   sprintf( mean_print, "mean: %6.4f", fitmean);
+		   sprintf( sigma_print, "#sigma: %6.4f", fitsigma);
 
 		   if (fittingtry == 2)
 		   {
