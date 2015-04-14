@@ -23,7 +23,7 @@ void Draw_prompt_Bfeeddown_eff()
     TLegend * t = new TLegend(0.45, 0.25, 0.75, 0.45);
     t->SetFillColor(0);
     t->AddEntry(d0tkefficiency_pt_prompt, "Prompt D^{0}");
-    t->AddEntry(d0tkefficiency_pt_Bfeeddown,"B Feed-down D^{0}");
+    t->AddEntry(d0tkefficiency_pt_Bfeeddown,"Non-prompt D^{0}");
     t->Draw();
 
 	TCanvas * cfg_cuteff = new TCanvas("cfg_cuteff","cfg_cuteff");
@@ -35,7 +35,7 @@ void Draw_prompt_Bfeeddown_eff()
     TLegend * t = new TLegend(0.45, 0.25, 0.75, 0.45);
     t->SetFillColor(0);
     t->AddEntry(d0efficiency_pt_prompt, "Prompt D^{0}");
-    t->AddEntry(d0efficiency_pt_Bfeeddown,"B Feed-down D^{0}");
+    t->AddEntry(d0efficiency_pt_Bfeeddown,"Non-prompt D^{0}");
     t->Draw();
 
 	TCanvas * cfg_accxeff = new TCanvas("cfg_accxeff","cfg_accxeff");
@@ -54,7 +54,7 @@ void Draw_prompt_Bfeeddown_eff()
     TLegend * t = new TLegend(0.45, 0.25, 0.75, 0.45);
     t->SetFillColor(0);
     t->AddEntry(d0accxeff_pt_prompt, "Prompt D^{0}");
-    t->AddEntry(d0accxeff_pt_Bfeeddown,"B Feed-down D^{0}");
+    t->AddEntry(d0accxeff_pt_Bfeeddown,"Non-prompt D^{0}");
     t->Draw();
 
 	pad2->cd();
@@ -88,7 +88,7 @@ void Draw_prompt_Bfeeddown_eff()
     TLegend * t = new TLegend(0.45, 0.45, 0.75, 0.75);
     t->SetFillColor(0);
     t->AddEntry(ffls3d_prompt, "Prompt D^{0}");
-    t->AddEntry(ffls3d_Bfeeddown,"B Feed-down D^{0}");
+    t->AddEntry(ffls3d_Bfeeddown,"Non-prompt D^{0}");
     t->Draw();
 
 	cfg_ffls3d->SaveAs("plots/D0_mathced_ffls3d_prompt_Bfeeddown_fonllptweight.pdf");

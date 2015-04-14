@@ -95,7 +95,7 @@ void Bfractioncal_method1()
 	for( int i = 0; i < REBIN; i++ )
 	{
 		double ptrange = ptbins[i+2] - ptbins[i+1];
-		cout << "histo bin width: " << recoeff_BtoD->GetBinWidth(i+2) << "   pt range: " << ptrange << endl;
+//		cout << "histo bin width: " << recoeff_BtoD->GetBinWidth(i+2) << "   pt range: " << ptrange << endl;
 		
 		double eff = recoeff_BtoD->GetBinContent(i+2);
 		double error_eff = recoeff_BtoD->GetBinError(i+2);
@@ -113,12 +113,16 @@ void Bfractioncal_method1()
 		bfractionerror_lower[i] = bfraction[i] * TMath::Sqrt( aerrorl[i]/asigma[i] * aerrorl[i]/asigma[i] + symmetricerrorPer_squaresum * symmetricerrorPer_squaresum );
 
 		bfractionerror_upper[i] = bfraction[i] * TMath::Sqrt( aerrorh[i]/asigma[i] * aerrorh[i]/asigma[i] + symmetricerrorPer_squaresum * symmetricerrorPer_squaresum);
+//		cout << " b fraction relative error, lower: " << bfractionerror_lower[i]/bfraction[i] << "  upper: " << bfractionerror_upper[i]/bfraction[i] << endl;
 
-		cout << " bfraction: " << bfraction[i] << endl;
+//		cout << " bfraction: " << bfraction[i] << endl;
 
 		promptfraction[i] = 1.0 - bfraction[i];
 		promptfractionerror_lower[i] = bfractionerror_upper[i] ;
 		promptfractionerror_upper[i] = bfractionerror_lower[i] ;
+
+//		cout << " prompt fraction: " <<  promptfraction[i] << "  lower error: " << promptfractionerror_lower[i] << "  upper error: " << promptfractionerror_upper[i] << endl;
+		cout << " prompt relative error,  lower: " <<  promptfractionerror_lower[i]/promptfraction[i] << "   upper: " << promptfractionerror_upper[i]/promptfraction[i] << endl;
 
 	}
 	
@@ -129,7 +133,7 @@ void Bfractioncal_method1()
     gaeBfraction->GetXaxis()->SetRangeUser(3.5, 40);
 	gaeBfraction->GetYaxis()->SetRangeUser(0, 1.0);
 	gaeBfraction->GetXaxis()->SetTitle("D^{0} p_{T} (GeV/c)");
-	gaeBfraction->GetYaxis()->SetTitle("B Feed-down D^{0} fraction");
+	gaeBfraction->GetYaxis()->SetTitle("Non-prompt D^{0} fraction");
 	gaeBfraction->SetLineWidth(0.5);
 	gaeBfraction->SetMarkerStyle(20);
 	gaeBfraction->SetMarkerSize(0.8);
@@ -170,7 +174,7 @@ void Bfractioncal_method1()
 
 
     TLegend *leg = new TLegend(0.3,0.55,0.75,0.7);
-    leg->AddEntry(gaeBfraction,"B feed-down D^{0} fraction","PL");
+    leg->AddEntry(gaeBfraction,"Non-prompt D^{0} fraction","PL");
     leg->AddEntry(gaePromptfraction,"Prompt D^{0} fraction","PL");
     leg->SetBorderSize(0);
     leg->SetFillStyle(0);
@@ -196,7 +200,7 @@ void Bfractioncal_method1()
 
     TLegend * t = new TLegend(0.35, 0.75, 0.85, 0.85);
     t->SetFillColor(0);
-    t->AddEntry(gaeSigmaBtoD, "FONLL B Feed-down D^{0} with RAA Scale", "PL");
+    t->AddEntry(gaeSigmaBtoD, "FONLL Non-prompt D^{0} with RAA Scale", "PL");
     t->Draw();
 
 	TFile * output = new TFile("Bfraction_method1.root", "RECREATE");
