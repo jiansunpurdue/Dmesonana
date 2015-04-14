@@ -33,8 +33,8 @@ double ybins[NY+1] = {-2.0, -1.5, -0.7, 0, 0.7, 1.5, 2.0};
 //const double fchi2cut = 3.0;
 //
 //tmva cut
-#define NCUTPT 10
-const double cut_pt_edge[NCUTPT+1] = {0,4.5,5.5,7,9,11,13,16,20,28,40};
-const double ffls3dcut[NCUTPT] = {3.87, 3.87, 3.87, 3.87, 4.36, 3.68, 3.59, 3.25, 2.76, 3.18};
-const double alphacut[NCUTPT]  = {0.053, 0.053, 0.053, 0.053, 0.066, 0.075, 0.06, 0.061, 0.055, 0.133};
-const double fprobcut[NCUTPT] = {0.113, 0.113, 0.113, 0.113, 0.093, 0.057, 0.107, 0.025, 0.068, 0.020};
+#define NCUTPT 11
+const double cut_pt_edge[NCUTPT+1] = {0,4.5,5.5,7,9,11,13,16,20,28,40,100};
+const double ffls3dcut[NCUTPT] = {3.98, 3.98, 4.14, 3.87, 4.36, 3.68, 3.59, 3.25, 2.76, 3.18, 3.18};
+const double alphacut[NCUTPT]  = {0.065, 0.065, 0.069, 0.053, 0.066, 0.075, 0.06, 0.061, 0.055, 0.133, 0.133};
+const double fprobcut[NCUTPT] = {0.082, 0.082, 0.209, 0.113, 0.093, 0.057, 0.107, 0.025, 0.068, 0.020, 0.020};

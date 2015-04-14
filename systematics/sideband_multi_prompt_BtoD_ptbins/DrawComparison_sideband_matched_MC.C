@@ -45,15 +45,15 @@ void Drawvariable(TString varname, TString vartitle, TFile * input_mc, float min
   
   for ( int fittingtimes = 0; fittingtimes < 3; fittingtimes++ )
   {
-    h_mass->Fit(fit_fun,"","", range_fit_low, range_fit_high);
-    fit_fun->SetParameter(0, fit_fun->GetParameter(0));
-    fit_fun->SetParameter(1, fit_fun->GetParameter(1));
-    fit_fun->SetParameter(2, fit_fun->GetParameter(2));
-    fit_fun->SetParameter(3, fit_fun->GetParameter(3));
-    fit_fun->SetParameter(4, fit_fun->GetParameter(4));
-    fit_fun->SetParameter(5, fit_fun->GetParameter(5));
+	  h_mass->Fit(fit_fun,"","", range_fit_low, range_fit_high);
+	  fit_fun->SetParameter(0, fit_fun->GetParameter(0));
+	  fit_fun->SetParameter(1, fit_fun->GetParameter(1));
+	  fit_fun->SetParameter(2, fit_fun->GetParameter(2));
+	  fit_fun->SetParameter(3, fit_fun->GetParameter(3));
+	  fit_fun->SetParameter(4, fit_fun->GetParameter(4));
+	  fit_fun->SetParameter(5, fit_fun->GetParameter(5));
   }
-  
+
   
   h_mass->GetYaxis()->SetTitle("Counts");
   h_mass->GetXaxis()->SetTitle("m_{#piK} (GeV)");
@@ -161,24 +161,19 @@ void Drawvariable(TString varname, TString vartitle, TFile * input_mc, float min
 
 void DrawComparison_sideband_matched_MC()
 {
-  gStyle->SetOptTitle(0);
+	gStyle->SetOptTitle(0);
   
 //	TFile * input_mc = new TFile("filespt11to40/Cut_distribution_MC_FONLLweight_Prompt_pt11to40_sideband.root");
 //    TFile * input_mc = new TFile("filespt11to40/Cut_distribution_MC_FONLLweight_Prompt_pt11to40_sideband.root");
+    TFile * input_mc = new TFile("filespt7to40/Cut_distribution_MC_FONLLweight_Prompt_pt7to40_sideband.root");
+//    TFile * input_mc = new TFile("Cut_distribution_MC_FONLLweight_Prompt_pt7to40_sideband_nodoublecounted.root");
 
+	TFile * outputfile = new TFile("Sideband_FONLLweight_MC_sideband_prompt_pt7.root","RECREATE");
 
-  TFile * input_mc = new TFile("Cut_distribution_MC_FONLLweight_Prompt_pt7to40_sideband.root");
-  //TFile * input_mc = new TFile("filespt7to40/Cut_distribution_MC_FONLLweight_Prompt_pt7to40_sideband.root");
-
-
-  //    TFile * input_mc = new TFile("Cut_distribution_MC_FONLLweight_Prompt_pt7to40_sideband_nodoublecounted.root");
-  
-  TFile * outputfile = new TFile("Sideband_FONLLweight_MC_sideband_prompt_pt7.root","RECREATE");
-  
-  //    Drawvariable("y","rapidity",input_mc, -2, 2, 4, outputfile);
-  Drawvariable("ffls3d","decay length sig",input_mc, 0.0, 40, 20, outputfile);
-  //	Drawvariable("alpha", "#alpha", input_mc, 0.0,3.14, 10 , outputfile);
-  //	Drawvariable("fprob", "vertex prob", input_mc, 0.0, 1.0, 50, outputfile);
-  //	Drawvariable("fchi2", "vertex #chi2", input_mc,input_mc, input_mc_BtoD, 0.0, 10, 5, 0., 1.0);
-  outputfile->Close();
+//    Drawvariable("y","rapidity",input_mc, -2, 2, 4, outputfile);
+	Drawvariable("ffls3d","decay length sig",input_mc, 0.0, 40, 20, outputfile);
+//	Drawvariable("alpha", "#alpha", input_mc, 0.0,3.14, 10 , outputfile);
+//	Drawvariable("fprob", "vertex prob", input_mc, 0.0, 1.0, 50, outputfile);
+//	Drawvariable("fchi2", "vertex #chi2", input_mc,input_mc, input_mc_BtoD, 0.0, 10, 5, 0., 1.0);
+    outputfile->Close();
 }
