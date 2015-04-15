@@ -21,7 +21,7 @@
 #define MAXGENDMESON 100
 using namespace std;
 
-bool isPrompt = true;
+bool isPrompt = false;
 
 float hiBin_low = -0.5;
 float hiBin_high = 199.5;
@@ -248,7 +248,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
 
 //		   if( ( dcandpt->at(icand)  <  lowptedge_d0 && dcandmatchedpt->at(icand) < lowptedge_d0 ) || ( dcandpt->at(icand) > highptedge_d0 && dcandmatchedpt->at(icand) > highptedge_d0 ) )   continue;
 
-		   if( dcandmatchedpt->at(icand) < lowptedge_d0  || dcandmatchedpt->at(icand) > highptedge_d0 )   continue;
+		   if( dcandpt->at(icand) < lowptedge_d0  || dcandpt->at(icand) > highptedge_d0 )   continue;
 
 		   weight = fonllweight->GetBinContent( fonllweight->FindBin( dcandpt->at(icand) ) );
 
