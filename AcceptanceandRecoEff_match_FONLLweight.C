@@ -23,11 +23,14 @@ using namespace std;
 
 bool isPrompt = true;
 
+float hiBin_low = -0.5;
+float hiBin_high = 199.5;
 double dautrackcut = 1.5;
 
 double lowptedge_d0 = 3.5;
 double highptedge_d0 = 40.0;
 
+TH1D* d0genpt_fonllweighted;
 
 TH1D* d0genpt;
 TH1D* d0genpt_acceptance;
@@ -44,6 +47,8 @@ TH2D* d0genypt_acceptance;
 TH2D* d0candypt_matched;
 TH2D* d0candypt_matched_cuts;
 
+TH1D* d0ffls3d_matched;
+
 float cut_m_low = 1.70;
 float cut_m_high = 2.05;
 int massbin = 35;
@@ -51,6 +56,9 @@ int massbin = 35;
 void book_hist()
 {
 	TH1::SetDefaultSumw2();
+
+	d0genpt_fonllweighted = new TH1D("d0genpt_fonllweighted","d0genpt_fonllweighted",392,2,100);
+	d0genpt_fonllweighted->Sumw2();
 
 	d0genpt = new TH1D("d0genpt","d0genpt", NPT, ptbins);
 	d0genpt_acceptance = new TH1D("d0genpt_acceptance","d0genpt_acceptance", NPT, ptbins);
@@ -69,26 +77,21 @@ void book_hist()
 	d0candypt_matched = new TH2D( "d0candypt_matched", "d0candypt_matched", NY, ybins, NPT, ptbins);
 	d0candypt_matched_cuts = new TH2D( "d0candypt_matched_cuts", "d0candypt_matched_cuts", NY, ybins, NPT, ptbins);
     d0genypt->Sumw2();  d0genypt_acceptance->Sumw2(); d0candypt_matched->Sumw2(); d0candypt_matched_cuts->Sumw2();
+
+	d0ffls3d_matched = new TH1D("d0ffls3d_matched", "d0ffls3d_matched", 200, 0, 100);
+	d0ffls3d_matched->Sumw2();
 }
 
 void write_histo( TFile * output)
 {
    output->cd();
+   d0genpt_fonllweighted->Write();
    d0genpt->Write(); d0genpt_acceptance->Write();  d0candpt_matched->Write();  d0candpt_matched_cuts->Write();
    d0geny->Write();   d0geny_acceptance->Write();  d0candy_matched->Write();   d0candy_matched_cuts->Write();
    d0genypt->Write(); d0genypt_acceptance->Write();  d0candypt_matched->Write();  d0candypt_matched_cuts->Write();
+   d0ffls3d_matched->Write();
 }
 
-//int decideptbin( float dpt )
-//{
-//    int ipt = -1;
-//    for ( int i = 0 ; i < NPT; i++)
-//    {
-//        if (dpt >= ptbins[i] && dpt < ptbins[i+1])  { ipt = i; break; }
-//    }
-//    if ( dpt > ptbins[NPT] ) ipt = NPT-1;
-//    return ipt;
-//}
 //
 //int decideybin( float dy)
 //{
@@ -132,7 +135,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
 
 	TH1D * fonllweight = ( TH1D * ) input_fonllweight->Get("ratio_rawtofonll");
 
-	TFile * input = new TFile("rootfiles/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_Bmom_v3.root");
+	TFile * input = new TFile("rootfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root");
 	TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
 	TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
 	recodmesontree->AddFriend(gendmesontree);
@@ -168,6 +171,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
 
     recodmesontree->SetBranchAddress("MinBias", &MinBias);
     recodmesontree->SetBranchAddress("MinBias_Prescl", &MinBias_Prescl);
+	recodmesontree->SetBranchAddress("hiBin", &hiBin);
     recodmesontree->SetBranchAddress("pthatweight", &pthatweight);
     recodmesontree->SetBranchAddress("trigweight", &trigweight);
     recodmesontree->SetBranchAddress("ndcand", &ndcand);
@@ -198,21 +202,24 @@ void AcceptanceandRecoEff_match_FONLLweight()
 	   if( !MinBias ) continue;
 	   if( ndcand != dtype->size() || ndcand != passingcuts->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )   //check 
 		   cout << "Error!!!!!!!!" << endl;
+	   if( hiBin < hiBin_low || hiBin > hiBin_high )   continue;
 
        double weight = -999;
 	   
 	   for( int igend = 0; igend < ngend; igend++ )
 	   {
 		   if( dy[igend] < -2.0 || dy[igend] > 2.0 )   continue;
-		   if( dpt[igend] < lowptedge_d0 || dpt[igend] > highptedge_d0 )  continue;
 
 		   if( isPrompt )
 			   { if( pt_Bmom[igend] > 0 )   continue; } //tell if is from B feed down or not
 		   else
 			   { if( pt_Bmom[igend] < 0 )   continue;  }
 
+		   if(  dpt[igend] <  lowptedge_d0 ||  dpt[igend] > highptedge_d0 )   continue;
+
            weight = fonllweight->GetBinContent( fonllweight->FindBin( dpt[igend] ) );
 
+           d0genpt_fonllweighted->Fill( dpt[igend], weight);
 		   d0genpt->Fill( dpt[igend], weight);
 		   d0geny->Fill( dy[igend], weight);
 		   d0genypt->Fill( dy[igend], dpt[igend], weight);
@@ -233,12 +240,15 @@ void AcceptanceandRecoEff_match_FONLLweight()
 		   
 		   if( dcandy->at(icand) < -2.0 || dcandy->at(icand) > 2.0 )   continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > 2.4 || TMath::Abs( dcanddau2eta->at(icand) ) > 2.4 )   continue;
-           if( dcandmatchedpt->at(icand) < lowptedge_d0 || dcandpt->at(icand) > highptedge_d0 )   continue;
 
 		   if( isPrompt )
 			   { if( matched_pt_Bmom->at(icand) > 0 )   continue; }
 		   else
 			   { if( matched_pt_Bmom->at(icand) < 0 )   continue; }
+
+//		   if( ( dcandpt->at(icand)  <  lowptedge_d0 && dcandmatchedpt->at(icand) < lowptedge_d0 ) || ( dcandpt->at(icand) > highptedge_d0 && dcandmatchedpt->at(icand) > highptedge_d0 ) )   continue;
+
+		   if( dcandmatchedpt->at(icand) < lowptedge_d0  || dcandmatchedpt->at(icand) > highptedge_d0 )   continue;
 
 		   weight = fonllweight->GetBinContent( fonllweight->FindBin( dcandpt->at(icand) ) );
 
@@ -247,6 +257,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
 			   d0candpt_matched->Fill( dcandmatchedpt->at(icand), weight);
 			   d0candy_matched->Fill( dcandy->at(icand), weight);
 			   d0candypt_matched->Fill( dcandy->at(icand), dcandmatchedpt->at(icand), weight);
+			   d0ffls3d_matched->Fill( dcandffls3d->at(icand), weight);
 		   }
 
            double effectiveffls3dcut = 100000.;
@@ -259,6 +270,8 @@ void AcceptanceandRecoEff_match_FONLLweight()
 
            if( dcandffls3d->at(icand) < effectiveffls3dcut || dcandcosalpha->at(icand) < effectivecosalphacut || dcandfprob->at(icand) < effectiveprobcut )
                continue;
+//           if( dcandffls3d->at(icand) < effectiveffls3dcut || dcandfprob->at(icand) < effectiveprobcut )
+//			   continue;
 
 		   if( matchedtogen->at(icand) == 1 && nongendoublecounted->at(icand) == 1)
 		   {
@@ -330,7 +343,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
    TH1D * d0tkefficiency_pt = (TH1D *) d0candpt_matched->Clone("d0tkefficiency_pt");
    d0tkefficiency_pt->Divide(d0candpt_matched, d0genpt, 1.0, 1.0, "B");
    d0tkefficiency_pt->SetLineWidth(2.0);
-   d0tkefficiency_pt->GetYaxis()->SetTitle("Efficiency1");
+   d0tkefficiency_pt->GetYaxis()->SetTitle("#alpha #times #varepsilon_{reco}");
    d0tkefficiency_pt->GetXaxis()->SetRangeUser(4.0, 38);
    d0tkefficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0tkefficiency_pt->Draw("EP");
@@ -339,7 +352,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
    TH1D * d0tkefficiency_y = (TH1D *) d0candy_matched->Clone("d0tkefficiency_y");
    d0tkefficiency_y->Divide(d0candy_matched, d0geny, 1.0, 1.0, "B");
    d0tkefficiency_y->SetLineWidth(2.0);
-   d0tkefficiency_y->GetYaxis()->SetTitle("Efficiency2");
+   d0tkefficiency_y->GetYaxis()->SetTitle("#alpha #times #varepsilon_{reco}");
    d0tkefficiency_y->GetXaxis()->SetTitle("y");
    d0tkefficiency_y->Draw("EP");
 
@@ -355,7 +368,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
    TH1D * d0efficiency_pt = (TH1D *) d0candpt_matched_cuts->Clone("d0efficiency_pt");
    d0efficiency_pt->Divide(d0candpt_matched_cuts, d0candpt_matched, 1.0, 1.0, "B");
    d0efficiency_pt->SetLineWidth(2.0);
-   d0efficiency_pt->GetYaxis()->SetTitle("Efficiency2");
+   d0efficiency_pt->GetYaxis()->SetTitle("#varepsilon_{cuts}");
    d0efficiency_pt->GetXaxis()->SetRangeUser(4.0, 38);
    d0efficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0efficiency_pt->Draw("EP");
@@ -364,7 +377,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
    TH1D * d0efficiency_y = (TH1D *) d0candy_matched_cuts->Clone("d0efficiency_y");
    d0efficiency_y->Divide(d0candy_matched_cuts, d0candy_matched, 1.0, 1.0, "B");
    d0efficiency_y->SetLineWidth(2.0);
-   d0efficiency_y->GetYaxis()->SetTitle("Efficiency2");
+   d0efficiency_y->GetYaxis()->SetTitle("#varepsilon_{cuts}");
    d0efficiency_y->GetXaxis()->SetTitle("y");
    d0efficiency_y->Draw("EP");
 
@@ -380,7 +393,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
    TH1D * d0accxeff_pt = (TH1D *) d0candpt_matched_cuts->Clone("d0accxeff_pt");
    d0accxeff_pt->Divide(d0candpt_matched_cuts, d0genpt, 1.0, 1.0, "B");
    d0accxeff_pt->SetLineWidth(2.0);
-   d0accxeff_pt->GetYaxis()->SetTitle("Acceptance #times Efficiency");
+   d0accxeff_pt->GetYaxis()->SetTitle("#alpha #times #varepsilon_{reco} #times #varepsilon_{cuts}");
    d0accxeff_pt->GetXaxis()->SetRangeUser(4.0, 38);
    d0accxeff_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0accxeff_pt->Draw("EP");
@@ -389,7 +402,7 @@ void AcceptanceandRecoEff_match_FONLLweight()
    TH1D * d0accxeff_y = (TH1D *) d0candy_matched_cuts->Clone("d0accxeff_y");
    d0accxeff_y->Divide(d0candy_matched_cuts, d0geny, 1.0, 1.0, "B");
    d0accxeff_y->SetLineWidth(2.0);
-   d0accxeff_y->GetYaxis()->SetTitle("Acceptance #times Efficiency");
+   d0accxeff_y->GetYaxis()->SetTitle("#alpha #times #varepsilon_{reco} #times #varepsilon_{cuts}");
    d0accxeff_y->GetXaxis()->SetTitle("y");
    d0accxeff_y->Draw("EP");
 
@@ -402,7 +415,6 @@ void AcceptanceandRecoEff_match_FONLLweight()
    d0accxeff_ypt->Draw("COLZ");
    
 	
-/*	
 //	   cfg_d0acceptance_pt->SaveAs("plots/acceptandeff/D0_PbPb_acceptance_pt.pdf");
 //	   cfg_d0acceptance_pt->SaveAs("plots/acceptandeff/D0_PbPb_acceptance_pt.png");
 //	   cfg_d0acceptance_y->SaveAs("plots/acceptandeff/D0_PbPb_acceptance_y.pdf");
@@ -416,12 +428,12 @@ void AcceptanceandRecoEff_match_FONLLweight()
 //	   cfg_d0efficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency_ypt.pdf");
 //	   cfg_d0efficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency_ypt.png");
 
-       cfg_d0tkefficiency_pt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency1_pt.pdf");
-	   cfg_d0tkefficiency_pt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency1_pt.png");
-	   cfg_d0tkefficiency_y->SaveAs("plots/acceptandeff/D0_PbPb_efficiency1_y.pdf");
-	   cfg_d0tkefficiency_y->SaveAs("plots/acceptandeff/D0_PbPb_efficiency1_y.png");
-	   cfg_d0tkefficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency1_ypt.pdf");
-	   cfg_d0tkefficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency1_ypt.png");
+       cfg_d0tkefficiency_pt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_pt.pdf");
+	   cfg_d0tkefficiency_pt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_pt.png");
+	   cfg_d0tkefficiency_y->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_y.pdf");
+	   cfg_d0tkefficiency_y->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_y.png");
+	   cfg_d0tkefficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_ypt.pdf");
+	   cfg_d0tkefficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_ypt.png");
 
 	   cfg_d0efficiency2_pt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_pt.pdf");
 	   cfg_d0efficiency2_pt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_pt.png");
@@ -436,13 +448,13 @@ void AcceptanceandRecoEff_match_FONLLweight()
 	   cfg_d0accxeff_y->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_y.png");
 	   cfg_d0accxeff_ypt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_ypt.pdf");
 	   cfg_d0accxeff_ypt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_ypt.png");
-*/
+
 
    char outputfile[200];
    if( isPrompt )
-	   sprintf(outputfile,"D0_PbPb_acc_eff_ptbin_%d_ybin_%d_prompt_FONLLweight.root", NPT, NY);
+	   sprintf(outputfile,"D0_PbPb_acc_eff_ptbin_%d_ybin_%d_prompt_FONLLweight_cent%2.0fto%2.0f.root", NPT, NY, hiBin_low * 0.5, hiBin_high * 0.5);
    else
-	   sprintf(outputfile,"D0_PbPb_acc_eff_ptbin_%d_ybin_%d_Bfeeddown_FONLLweight.root", NPT, NY);
+	   sprintf(outputfile,"D0_PbPb_acc_eff_ptbin_%d_ybin_%d_Bfeeddown_FONLLweight_cent%2.0fto%2.0f.root", NPT, NY, hiBin_low * 0.5, hiBin_high * 0.5);
 
    TFile * output = new TFile(outputfile,"RECREATE");
    write_histo( output );
@@ -452,15 +464,15 @@ void AcceptanceandRecoEff_match_FONLLweight()
 //   cfg_d0efficiency_pt->Write();
 //   cfg_d0efficiency_y->Write();
 //   cfg_d0efficiency_ypt->Write();
-//   cfg_d0tkefficiency_pt->Write();
-//   cfg_d0tkefficiency_y->Write();
-//   cfg_d0tkefficiency_ypt->Write();
-//   cfg_d0efficiency2_pt->Write();
-//   cfg_d0efficiency2_y->Write();
-//   cfg_d0efficiency2_ypt->Write();
-//   cfg_d0accxeff_pt->Write();
-//   cfg_d0accxeff_y->Write();
-//   cfg_d0accxeff_ypt->Write();
+   cfg_d0tkefficiency_pt->Write();
+   cfg_d0tkefficiency_y->Write();
+   cfg_d0tkefficiency_ypt->Write();
+   cfg_d0efficiency2_pt->Write();
+   cfg_d0efficiency2_y->Write();
+   cfg_d0efficiency2_ypt->Write();
+   cfg_d0accxeff_pt->Write();
+   cfg_d0accxeff_y->Write();
+   cfg_d0accxeff_ypt->Write();
 
    d0tkefficiency_pt->Write();
    d0tkefficiency_y->Write();
