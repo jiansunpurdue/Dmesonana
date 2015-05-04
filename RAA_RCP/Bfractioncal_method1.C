@@ -5,27 +5,24 @@
 #define REBIN 10     //pPb_pt:6,pPb_y:4,pp_pt:8,pp_y:4
 #define REBINp 11    //pPb_pt:7,pPb_y:5,pp_pt:9,pp_y:5
 
-#define TAA 5.67E-9
-#define ERROR_TAA_PERCEN 0.057
 #define BR 0.0388
-#define NEVT 30172291.0
+#define ERROR_BR_PERCEN 0.0129
 
 #define NPT  12
 double ptbins[NPT+1] = {0,3.5,4.5,5.5,7,9,11,13,16,20,28,40,100};
 
-void Bfractioncal_method1()
+void Calculate_Bfraction( TFile *input_data_raw, TFile *input_mc_BtoDeff, TFile *input_BtoD, int cent_low, int cent_high, double NEVT, double TAA, double ERROR_TAA_PERCEN)
 {
+	char cfgname[200];
+	char outputfile[200];
+
     gStyle->SetOptTitle(0);
     gStyle->SetOptStat(0);
     TH1::SetDefaultSumw2();
 
-	TFile * input_data_raw = new TFile("./../rootfiles/Dspectrum_pbpb_data_ptbin_12_ptd_unpreMBtrig_0_cent-0to100.root");
-	TFile * input_mc_BtoDeff = new TFile("./../D0_PbPb_acc_eff_ptbin_12_ybin_6_Bfeeddown_FONLLweight_cent-0to100.root");
-
 	TH1D * d0raw_data = ( TH1D * ) input_data_raw->Get("N_mb");
 	TH1D * recoeff_BtoD = ( TH1D * ) input_mc_BtoDeff->Get("d0accxeff_pt");
 
-	TFile * input_BtoD = new TFile("BtoD_cent0to100.root");
 
 	TH1D * BtoD_max_raa = (TH1D *)input_BtoD->Get("hDFromBPtMax");
 	TH1D * BtoD_central_raa = (TH1D *)input_BtoD->Get("hDFromBPtCentral");
@@ -35,7 +32,7 @@ void Bfractioncal_method1()
 	BtoD_central_raa->Scale(0.5);
 	BtoD_min_raa->Scale(0.5);
 
-	cout << " bin width: " << BtoD_max_raa->GetBinWidth(10) << "    " << BtoD_central_raa->GetBinWidth(10) << "   " << BtoD_min_raa->GetBinWidth(10) << endl;
+//	cout << " bin width: " << BtoD_max_raa->GetBinWidth(10) << "    " << BtoD_central_raa->GetBinWidth(10) << "   " << BtoD_min_raa->GetBinWidth(10) << endl;
 
     double bin_edge[BIN_NUM+1];
 
@@ -107,8 +104,8 @@ void Bfractioncal_method1()
 		
 		bfraction[i] = TAA * asigma[i] * eff  * BR * NEVT * ptrange / ( 0.5 * entries_Dzero_raw );
 
-		double symmetricerrorPer_squaresum = ERROR_TAA_PERCEN * ERROR_TAA_PERCEN + errorPer_eff * errorPer_eff + 
-		                                        errorPer_entries_Dzero_raw * errorPer_entries_Dzero_raw + 0.0129 * 0.0129;
+		double symmetricerrorPer_squaresum = ERROR_BR_PERCEN * ERROR_BR_PERCEN + ERROR_TAA_PERCEN * ERROR_TAA_PERCEN + errorPer_eff * errorPer_eff + 
+		                                        errorPer_entries_Dzero_raw * errorPer_entries_Dzero_raw;
 
 		bfractionerror_lower[i] = bfraction[i] * TMath::Sqrt( aerrorl[i]/asigma[i] * aerrorl[i]/asigma[i] + symmetricerrorPer_squaresum * symmetricerrorPer_squaresum );
 
@@ -141,8 +138,10 @@ void Bfractioncal_method1()
 	gaeBfraction->SetLineColor(4.0);
 	gaeBfraction->Draw("AP");
 
-	cfg_Bfraction->SaveAs("plots/cfg_Bfraction_0to100.png");
-	cfg_Bfraction->SaveAs("plots/cfg_Bfraction_0to100.pdf");
+    sprintf(cfgname,"plots/cfg_Bfraction_ptbin_%d_cent%dto%d.png", NPT, cent_low, cent_high);
+	cfg_Bfraction->SaveAs(cfgname);
+	sprintf(cfgname,"plots/cfg_Bfraction_ptbin_%d_cent%dto%d.pdf", NPT, cent_low, cent_high);
+	cfg_Bfraction->SaveAs(cfgname);
 	
 	TGraphAsymmErrors* gaePromptfraction = new TGraphAsymmErrors(REBIN, apt, promptfraction, aptl, aptl, promptfractionerror_lower, promptfractionerror_upper);
 	gaePromptfraction->SetName("gaePromptfraction");
@@ -160,8 +159,10 @@ void Bfractioncal_method1()
 	gaePromptfraction->SetLineColor(4.0);
 	gaePromptfraction->Draw("AP");
 
-	cfg_Promptfraction->SaveAs("plots/cfg_Promptfraction_0to100.png");
-	cfg_Promptfraction->SaveAs("plots/cfg_Promptfraction_0to100.pdf");
+    sprintf(cfgname,"plots/cfg_Promptfraction_ptbin_%d_cent%dto%d.png", NPT, cent_low, cent_high);
+	cfg_Promptfraction->SaveAs(cfgname);
+    sprintf(cfgname,"plots/cfg_Promptfraction_ptbin_%d_cent%dto%d.pdf", NPT, cent_low, cent_high);
+	cfg_Promptfraction->SaveAs(cfgname);
 
 
     TCanvas * cfg_fraction = new TCanvas("cfg_fraction","cfg_fraction");
@@ -180,8 +181,10 @@ void Bfractioncal_method1()
     leg->SetFillStyle(0);
     leg->Draw();
 
-    cfg_fraction->SaveAs("plots/cfg_fraction_0to100_method1.png");
-    cfg_fraction->SaveAs("plots/cfg_fraction_0to100_method1.pdf");
+    sprintf(cfgname,"plots/cfg_fraction_ptbin_%d_cent%dto%d.png", NPT, cent_low, cent_high);
+    cfg_fraction->SaveAs(cfgname);
+	sprintf(cfgname,"plots/cfg_fraction_ptbin_%d_cent%dto%d.pdf", NPT, cent_low, cent_high);
+    cfg_fraction->SaveAs(cfgname);
 
 
 	TCanvas * cfg_BtoDrebin = new TCanvas("cfg_BtoDrebin","cfg_BtoDrebin");
@@ -203,7 +206,8 @@ void Bfractioncal_method1()
     t->AddEntry(gaeSigmaBtoD, "FONLL Non-prompt D^{0} with RAA Scale", "PL");
     t->Draw();
 
-	TFile * output = new TFile("Bfraction_method1.root", "RECREATE");
+    sprintf(outputfile,"Bfraction_method1_ptbin_%d_cent%dto%d.root", NPT, cent_low, cent_high);
+	TFile * output = new TFile(outputfile, "RECREATE");
 
 	cfg_fraction->Write();
 
@@ -222,6 +226,49 @@ void Bfractioncal_method1()
 	cfg_Promptfraction->Write();
 
 	output->Close();
+}
+
+void Bfractioncal_method1()
+{
+	int cent_low = 0;
+	int cent_high = 0;
+    double NEVT = 0.0;
+	double TAA = 0.0;
+	double ERROR_TAA_PERCEN = 0.0;
+	TFile * input_data_raw;
+	TFile * input_mc_BtoDeff;
+	TFile * input_BtoD;
+	
+//	cent_low = 0;
+//	cent_high = 100;
+//	NEVT = 30172291.0;
+//	TAA = 5.67E-9;
+//	ERROR_TAA_PERCEN = 0.057;
+//	TFile * input_data_raw = new TFile("./../rootfiles/Dspectrum_pbpb_data_ptbin_12_ptd_unpreMBtrig_0_cent-0to100_expobkg_doublegauss.root");
+//	TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_12_ybin_6_Bfeeddown_FONLLweight_cent-0to100_RAAscale.root");
+//	TFile * input_BtoD = new TFile("./BtoD_fromyenjie/BtoD-0-100.root");
+//    Calculate_Bfraction( input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
+//	
+//	cent_low = 0;
+//	cent_high = 10;
+//	NEVT = 3.07931000000000000e+06;
+//	TAA = 23.20e-9;
+//	ERROR_TAA_PERCEN = 0.043;
+//	TFile * input_data_raw = new TFile("./../rootfiles/Dspectrum_pbpb_data_ptbin_12_ptd_unpreMBtrig_0_cent-0to10_expobkg_doublegauss.root");
+//	TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_12_ybin_6_Bfeeddown_FONLLweight_cent-0to10_RAAscale.root");
+//	TFile * input_BtoD = new TFile("./BtoD_fromyenjie/BtoD-0-10.root");
+//    Calculate_Bfraction( input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
+
+	cent_low = 0;
+	cent_high = 20;
+	NEVT = 6.09279800000000000e+06;
+	TAA = 18.84e-9;
+	ERROR_TAA_PERCEN = 0.045;
+	TFile * input_data_raw = new TFile("./../rootfiles/Dspectrum_pbpb_data_ptbin_12_ptd_unpreMBtrig_0_cent-0to20_expobkg_doublegauss.root");
+	TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_12_ybin_6_Bfeeddown_FONLLweight_cent-0to20_RAAscale.root");
+	TFile * input_BtoD = new TFile("./BtoD_fromyenjie/BtoD-0-20.root");
+    Calculate_Bfraction( input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
+
 
 
 }
