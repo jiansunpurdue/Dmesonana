@@ -36,6 +36,7 @@ vector<int> *Event_passingcuts=0;
 vector<float> *Event_dcandmass=0;
 vector<float> *Event_dcandpt=0;
 vector<float> *Event_dcandeta=0;
+vector<float> *Event_dcandy=0;
 vector<float> *Event_dcandphi=0;
 vector<float> *Event_dcandffls3d=0;
 vector<float> *Event_dcandcosalpha=0;
@@ -46,6 +47,7 @@ vector<float> *Event_dcanddau2eta=0;
 vector<float> *Event_dcanddau1pt=0;
 vector<float> *Event_dcanddau2pt=0;
 vector<int> *Event_matchedtogen=0;
+vector<int> *Event_matched_pt_Bmom=0;
 vector<int> *Event_dcandmatchedpdg=0;
 vector<int> *Event_nongendoublecounted=0;
 vector<float> *Event_dcandmatchedpt=0;
@@ -89,6 +91,7 @@ void setBranch(TTree *root, bool isPbPb, bool isMC)
   root->SetBranchAddress("dcandmass",&Event_dcandmass);
   root->SetBranchAddress("dcandpt",&Event_dcandpt);
   root->SetBranchAddress("dcandeta",&Event_dcandeta);
+  root->SetBranchAddress("dcandy",&Event_dcandy);
   root->SetBranchAddress("dcandphi",&Event_dcandphi);
   root->SetBranchAddress("dcandffls3d",&Event_dcandffls3d);
   root->SetBranchAddress("dcandcosalpha",&Event_dcandcosalpha);
@@ -101,6 +104,7 @@ void setBranch(TTree *root, bool isPbPb, bool isMC)
   if(isMC)
     {
       root->SetBranchAddress("matchedtogen",&Event_matchedtogen);
+      root->SetBranchAddress("matched_pt_Bmom",&Event_matched_pt_Bmom);
       root->SetBranchAddress("dcandmatchedpdg",&Event_dcandmatchedpdg);
       root->SetBranchAddress("nongendoublecounted",&Event_nongendoublecounted);
       root->SetBranchAddress("dcandmatchedpt",&Event_dcandmatchedpt);
@@ -141,6 +145,7 @@ Int_t    passingcuts;
 Float_t  dcandmass;
 Float_t  dcandpt;
 Float_t  dcandeta;
+Float_t  dcandy;
 Float_t  dcandphi;
 Float_t  dcandffls3d;
 Float_t  dcandcosalpha;
@@ -151,6 +156,7 @@ Float_t  dcanddau2eta;
 Float_t  dcanddau1pt;
 Float_t  dcanddau2pt;
 Int_t    matchedtogen;
+Int_t    matched_pt_Bmom;
 Int_t    dcandmatchedpdg;
 Int_t    nongendoublecounted;
 Float_t  dcandmatchedpt;
@@ -191,6 +197,7 @@ void buildBranch(TTree* nt)
   nt->Branch("dcandmass",&dcandmass);
   nt->Branch("dcandpt",&dcandpt);
   nt->Branch("dcandeta",&dcandeta);
+  nt->Branch("dcandy",&dcandy);
   nt->Branch("dcandphi",&dcandphi);
   nt->Branch("dcandffls3d",&dcandffls3d);
   nt->Branch("dcandcosalpha",&dcandcosalpha);
@@ -200,16 +207,9 @@ void buildBranch(TTree* nt)
   nt->Branch("dcanddau2eta",&dcanddau2eta);
   nt->Branch("dcanddau1pt",&dcanddau1pt);
   nt->Branch("dcanddau2pt",&dcanddau2pt);
+
   nt->Branch("matchedtogen",&matchedtogen);
-  nt->Branch("dcandmatchedpdg",&dcandmatchedpdg);
-  nt->Branch("nongendoublecounted",&nongendoublecounted);
-  nt->Branch("dcandmatchedpt",&dcandmatchedpt);
-  nt->Branch("dcandmatchedeta",&dcandmatchedeta);
-  nt->Branch("dcandmatchedphi",&dcandmatchedphi);
-  nt->Branch("dcandmatchnofdau",&dcandmatchnofdau);
-  nt->Branch("dcandmatcheddau1pt",&dcandmatcheddau1pt);
-  nt->Branch("dcanddau2pt",&dcanddau2pt);
-  nt->Branch("matchedtogen",&matchedtogen);
+  nt->Branch("matched_pt_Bmom",&matched_pt_Bmom);
   nt->Branch("dcandmatchedpdg",&dcandmatchedpdg);
   nt->Branch("nongendoublecounted",&nongendoublecounted);
   nt->Branch("dcandmatchedpt",&dcandmatchedpt);
