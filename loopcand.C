@@ -48,6 +48,7 @@ void fillTree(int j, bool isPbPb, bool isMC)
   dcandmass = Event_dcandmass->at(j);
   dcandpt = Event_dcandpt->at(j);
   dcandeta = Event_dcandeta->at(j);
+  dcandy = Event_dcandy->at(j);
   dcandphi = Event_dcandphi->at(j);
   dcandffls3d = Event_dcandffls3d->at(j);
   dcandcosalpha = Event_dcandcosalpha->at(j);
@@ -60,6 +61,7 @@ void fillTree(int j, bool isPbPb, bool isMC)
   if(isMC)
     {
       matchedtogen = Event_matchedtogen->at(j);
+      matched_pt_Bmom = Event_matched_pt_Bmom->at(j);
       dcandmatchedpdg = Event_dcandmatchedpdg->at(j);
       nongendoublecounted = Event_nongendoublecounted->at(j);
       dcandmatchedpt = Event_dcandmatchedpt->at(j);
@@ -85,18 +87,18 @@ int loopcand(string infile="/afs/cern.ch/work/j/jisun/public/Dmesonana/Dmesonana
 	     bool isPbPb=false,
 	     bool isMC=false)
 */
-/*
-int loopcand(string infile="/afs/cern.ch/work/j/jisun/public/Dmesonana/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_v1.root",
-	     string outfile="/afs/cern.ch/work/w/wangj/public/dmeson/candbase/Dmesonana_hiforest_PbPb_Pyquen_D0embedded_D0pt3_pthat015305080_1217_1223_all_v1_Candbase.root",
+
+int loopcand(string infile="/data/dmeson/Ntuple/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root",
+	     string outfile="/data/dmeson/Ntuple/candbase/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1_Candbase.root",
 	     bool isPbPb=true,
 	     bool isMC=true)
-*/
 
+/*
 int loopcand(string infile="/data/dmeson/Ntuple/Dmesonana_Rereco_MBtrig_d0pt4p5_nodalphacuts_pt1p5_tight_3lumi_0131_part1_fortmva.root",
 	     string outfile="/data/dmeson/Ntuple/candbase/Dmesonana_Rereco_MBtrig_d0pt4p5_nodalphacuts_pt1p5_tight_3lumi_0131_part1_fortmva_nocut_Candbase_1p.root",
 	     bool isPbPb=true,
 	     bool isMC=false)
-
+*/
 {
   const char* infname;
   const char* outfname;
@@ -118,7 +120,7 @@ int loopcand(string infile="/data/dmeson/Ntuple/Dmesonana_Rereco_MBtrig_d0pt4p5_
   int i=0,j=0;
   float flag=0;
   int sum=0;
-  for(i=0;i<nentries;i+=100)
+  for(i=0;i<nentries;i++)
     {
       root->GetEntry(i);
       if (i%1000000==0) cout <<i<<" / "<<nentries<<endl;
