@@ -31,6 +31,10 @@ double dautrackcut = 1.5;
 double lowptedge_d0 = 3.5;
 double highptedge_d0 = 40.0;
 
+float cut_m_low = 1.70;
+float cut_m_high = 2.05;
+int massbin = 35;
+
 TH1D* d0genpt_fonllweighted;
 
 TH1D* d0genpt;
@@ -48,11 +52,15 @@ TH2D* d0genypt_acceptance;
 TH2D* d0candypt_matched;
 TH2D* d0candypt_matched_cuts;
 
-TH1D* d0ffls3d_matched;
+TH1D* d0ffls3d_matched_ptintegral;
 
-float cut_m_low = 1.70;
-float cut_m_high = 2.05;
-int massbin = 35;
+TH1D* deltapt[NPT];
+TH1D* deltapt_overgen[NPT];
+TH1D* deltaR[NPT];
+TH1D* deltay[NPT];
+TH1D* deltay_overgen[NPT];
+TH1D* d0ffls3d_matched[NPT];
+
 
 void book_hist()
 {
@@ -79,8 +87,41 @@ void book_hist()
 	d0candypt_matched_cuts = new TH2D( "d0candypt_matched_cuts", "d0candypt_matched_cuts", NY, ybins, NPT, ptbins);
     d0genypt->Sumw2();  d0genypt_acceptance->Sumw2(); d0candypt_matched->Sumw2(); d0candypt_matched_cuts->Sumw2();
 
-	d0ffls3d_matched = new TH1D("d0ffls3d_matched", "d0ffls3d_matched", 200, 0, 100);
-	d0ffls3d_matched->Sumw2();
+	d0ffls3d_matched_ptintegral = new TH1D("d0ffls3d_matched_ptintegral", "d0ffls3d_matched_ptintegral", 200, 0, 100);
+	d0ffls3d_matched_ptintegral->Sumw2();
+
+    char hname[100], pt_range[1000];
+    for(int i = 0; i<NPT; i++)
+    {
+        float pt_low = ptbins[i];
+        float pt_high = ptbins[i+1];
+        sprintf(pt_range, "pt: %2.1f to %2.1f GeV", pt_low, pt_high);
+
+        sprintf(hname, "deltapt_%d", i);
+        deltapt[i] = new TH1D( hname, pt_range, 100, -1.0, 1.0);
+        deltapt[i]->Sumw2();
+
+        sprintf(hname, "deltapt_overgen_%d", i);
+        deltapt_overgen[i] = new TH1D( hname, pt_range, 200, 0.0, 0.15);
+        deltapt_overgen[i]->Sumw2();
+
+        sprintf(hname, "deltaR_%d", i);
+        deltaR[i] = new TH1D( hname, pt_range, 200, 0.0, 0.1);
+        deltaR[i]->Sumw2();
+
+        sprintf(hname, "deltay_%d", i);
+        deltay[i] = new TH1D( hname, pt_range, 400, -0.1, 0.1);
+        deltay[i]->Sumw2();
+
+        sprintf(hname, "deltay_overgen_%d", i);
+        deltay_overgen[i] = new TH1D( hname, pt_range, 400, 0.0, 0.3);
+        deltay_overgen[i]->Sumw2();
+
+        sprintf(hname, "d0ffls3d_matched_%d", i);
+        d0ffls3d_matched[i] = new TH1D( hname, pt_range, 200, 0.0, 100);
+        d0ffls3d_matched[i]->Sumw2();
+    }
+
 }
 
 void write_histo( TFile * output)
@@ -90,7 +131,29 @@ void write_histo( TFile * output)
    d0genpt->Write(); d0genpt_acceptance->Write();  d0candpt_matched->Write();  d0candpt_matched_cuts->Write();
    d0geny->Write();   d0geny_acceptance->Write();  d0candy_matched->Write();   d0candy_matched_cuts->Write();
    d0genypt->Write(); d0genypt_acceptance->Write();  d0candypt_matched->Write();  d0candypt_matched_cuts->Write();
-   d0ffls3d_matched->Write();
+   d0ffls3d_matched_ptintegral->Write();
+
+   for(int i = 0; i<NPT; i++)
+   {
+      deltapt[i]->Write();
+      deltapt_overgen[i]->Write();
+      deltaR[i]->Write();
+      deltay[i]->Write();
+      deltay_overgen[i]->Write();
+      d0ffls3d_matched[i]->Write();
+   }
+
+}
+
+int decideptbin( float dpt )
+{
+    int ipt = -1;
+    for ( int i = 0 ; i < NPT; i++)
+    {
+        if (dpt >= ptbins[i] && dpt < ptbins[i+1])  { ipt = i; break; }
+    }
+    if ( dpt > ptbins[NPT] ) ipt = NPT-1;  //overflowbin into last bin
+    return ipt;
 }
 
 //
@@ -124,7 +187,11 @@ void decideeffectivecuts(double dpt, double &effectiveffls3dcut, double &effecti
 
 void AcceptanceandRecoEff_match_FONLLweight_BfeeddownRAAscale()
 {
-    TH1::SetDefaultSumw2();
+	if( NPT == 7 )   highptedge_d0 = 28.0;
+    
+	TH1::SetDefaultSumw2();
+	gStyle->SetPadLeftMargin(0.17);
+	gStyle->SetTitleYOffset(1.8);
     
     book_hist();
  
@@ -167,7 +234,7 @@ void AcceptanceandRecoEff_match_FONLLweight_BfeeddownRAAscale()
     vector<float> *dcandmass = 0, *dcandpt = 0, *dcandeta = 0, *dcandy = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandcosalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
     vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0;
 	vector<int>   *matchedtogen = 0, *dcandmatchedpdg = 0, *nongendoublecounted = 0;
-	vector<float> *dcandmatchedpt = 0, *dcandmatchedeta = 0, *dcandmatchedphi = 0, *dcandmatchnofdau = 0;
+	vector<float> *dcandmatchedpt = 0, *dcandmatchedy = 0, *dcandmatchedeta = 0, *dcandmatchedphi = 0, *dcandmatchnofdau = 0;
 	vector<float> *matched_pt_Bmom = 0;
 
     recodmesontree->SetBranchAddress("MinBias", &MinBias);
@@ -190,11 +257,13 @@ void AcceptanceandRecoEff_match_FONLLweight_BfeeddownRAAscale()
 	recodmesontree->SetBranchAddress("matchedtogen", &matchedtogen);
 	recodmesontree->SetBranchAddress("nongendoublecounted", &nongendoublecounted);
 	recodmesontree->SetBranchAddress("dcandmatchedpt", &dcandmatchedpt);
+	recodmesontree->SetBranchAddress("dcandmatchedy", &dcandmatchedy);
 	recodmesontree->SetBranchAddress("dcandmatchedeta", &dcandmatchedeta);
 	recodmesontree->SetBranchAddress("dcandmatchedphi", &dcandmatchedphi);
     recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
     recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
 	recodmesontree->SetBranchAddress("matched_pt_Bmom", &matched_pt_Bmom);
+
     
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
    {
@@ -219,6 +288,7 @@ void AcceptanceandRecoEff_match_FONLLweight_BfeeddownRAAscale()
 		   if(  dpt[igend] <  lowptedge_d0 ||  dpt[igend] > highptedge_d0 )   continue;
 
            weight = fonllweight->GetBinContent( fonllweight->FindBin( dpt[igend] ) );
+
 
            d0genpt_fonllweighted->Fill( dpt[igend], weight);
 		   d0genpt->Fill( dpt[igend], weight);
@@ -253,12 +323,26 @@ void AcceptanceandRecoEff_match_FONLLweight_BfeeddownRAAscale()
 
 		   weight = fonllweight->GetBinContent( fonllweight->FindBin( dcandpt->at(icand) ) );
 
+           int ipt = decideptbin( dcandpt->at(icand) );
+           if( ipt < 0 ) continue;
+
 		   if( matchedtogen->at(icand) == 1 && nongendoublecounted->at(icand) == 1)
 		   {
-			   d0candpt_matched->Fill( dcandmatchedpt->at(icand), weight);
+			   d0candpt_matched->Fill( dcandpt->at(icand), weight);
 			   d0candy_matched->Fill( dcandy->at(icand), weight);
-			   d0candypt_matched->Fill( dcandy->at(icand), dcandmatchedpt->at(icand), weight);
-			   d0ffls3d_matched->Fill( dcandffls3d->at(icand), weight);
+			   d0candypt_matched->Fill( dcandy->at(icand), dcandpt->at(icand), weight);
+			   d0ffls3d_matched_ptintegral->Fill( dcandffls3d->at(icand), weight);
+
+               d0ffls3d_matched[ipt]->Fill( dcandffls3d->at(icand), weight);
+               deltapt[ipt]->Fill(dcandmatchedpt->at(icand) - dcandpt->at(icand), weight);
+               deltapt_overgen[ipt]->Fill( TMath::Abs( ( dcandmatchedpt->at(icand) - dcandpt->at(icand) ) / dcandmatchedpt->at(icand) ), weight);
+
+               deltay[ipt]->Fill(dcandmatchedy->at(icand) - dcandy->at(icand), weight);
+               deltay_overgen[ipt]->Fill( TMath::Abs( ( dcandmatchedy->at(icand) - dcandy->at(icand) ) / dcandmatchedy->at(icand) ), weight);
+
+               double dr = TMath::Sqrt( (dcandmatchedeta->at(icand) - dcandeta->at(icand) ) * (dcandmatchedeta->at(icand) - dcandeta->at(icand) ) + (dcandmatchedphi->at(icand) - dcandphi->at(icand) ) * (dcandmatchedphi->at(icand) - dcandphi->at(icand) )  );
+               deltaR[ipt]->Fill(dr, weight);
+
 		   }
 
            double effectiveffls3dcut = 100000.;
@@ -276,9 +360,9 @@ void AcceptanceandRecoEff_match_FONLLweight_BfeeddownRAAscale()
 
 		   if( matchedtogen->at(icand) == 1 && nongendoublecounted->at(icand) == 1)
 		   {
-			   d0candpt_matched_cuts->Fill( dcandmatchedpt->at(icand), weight);
+			   d0candpt_matched_cuts->Fill( dcandpt->at(icand), weight);
 			   d0candy_matched_cuts->Fill( dcandy->at(icand), weight);
-			   d0candypt_matched_cuts->Fill( dcandy->at(icand), dcandmatchedpt->at(icand), weight);
+			   d0candypt_matched_cuts->Fill( dcandy->at(icand), dcandpt->at(icand), weight);
 		   }
 	   }
    }
@@ -440,26 +524,26 @@ void AcceptanceandRecoEff_match_FONLLweight_BfeeddownRAAscale()
 ////	   cfg_d0efficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency_ypt.pdf");
 ////	   cfg_d0efficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency_ypt.png");
 
-//       cfg_d0tkefficiency_pt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_pt.pdf");
-//	   cfg_d0tkefficiency_pt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_pt.png");
-//	   cfg_d0tkefficiency_y->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_y.pdf");
-//	   cfg_d0tkefficiency_y->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_y.png");
-//	   cfg_d0tkefficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_ypt.pdf");
-//	   cfg_d0tkefficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_ypt.png");
-//
-//	   cfg_d0efficiency2_pt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_pt.pdf");
-//	   cfg_d0efficiency2_pt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_pt.png");
-//	   cfg_d0efficiency2_y->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_y.pdf");
-//	   cfg_d0efficiency2_y->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_y.png");
-//	   cfg_d0efficiency2_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_ypt.pdf");
-//	   cfg_d0efficiency2_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_ypt.png");
-//
-//	   cfg_d0accxeff_pt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_pt.pdf");
-//	   cfg_d0accxeff_pt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_pt.png");
-//	   cfg_d0accxeff_y->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_y.pdf");
-//	   cfg_d0accxeff_y->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_y.png");
-//	   cfg_d0accxeff_ypt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_ypt.pdf");
-//	   cfg_d0accxeff_ypt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_ypt.png");
+       cfg_d0tkefficiency_pt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_pt.pdf");
+	   cfg_d0tkefficiency_pt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_pt.png");
+	   cfg_d0tkefficiency_y->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_y.pdf");
+	   cfg_d0tkefficiency_y->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_y.png");
+	   cfg_d0tkefficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_ypt.pdf");
+	   cfg_d0tkefficiency_ypt->SaveAs("plots/acceptandeff/D0_PbPb_tkefficiency_ypt.png");
+
+	   cfg_d0efficiency2_pt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_pt.pdf");
+	   cfg_d0efficiency2_pt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_pt.png");
+	   cfg_d0efficiency2_y->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_y.pdf");
+	   cfg_d0efficiency2_y->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_y.png");
+	   cfg_d0efficiency2_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_ypt.pdf");
+	   cfg_d0efficiency2_ypt->SaveAs("plots/acceptandeff/D0_PbPb_efficiency2_ypt.png");
+
+	   cfg_d0accxeff_pt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_pt.pdf");
+	   cfg_d0accxeff_pt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_pt.png");
+	   cfg_d0accxeff_y->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_y.pdf");
+	   cfg_d0accxeff_y->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_y.png");
+	   cfg_d0accxeff_ypt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_ypt.pdf");
+	   cfg_d0accxeff_ypt->SaveAs("plots/acceptandeff/D0_PbPb_accxeff_ypt.png");
 
 
    char outputfile[200];
