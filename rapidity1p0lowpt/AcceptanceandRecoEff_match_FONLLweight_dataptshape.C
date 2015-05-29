@@ -223,7 +223,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
 //    TF1 * fit_fun_datafitted = D0_pbpb_spectrum_fitted->GetFunction("fit_fun");
 //    cout << "p0:  " << fit_fun_datafitted->GetParameter(0) << "   p1: " << fit_fun_datafitted->GetParameter(1) << endl;	
 
-	TFile * input = new TFile("/scratch/lustreA/s/sun229/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_tkpt0p4_topocutsforD0pt3p5.root");
+	TFile * input = new TFile("/home/sun229/store/Analysisfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_tkpt0p4_topocutsforD0pt3p5.root");
 	TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
 	TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
 	recodmesontree->AddFriend(gendmesontree);
@@ -407,7 +407,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
 //   d0acceptance_pt->Divide(d0genpt_acceptance, d0genpt, 1.0, 1.0, "B");
 //   d0acceptance_pt->SetLineWidth(2.0);
 //   d0acceptance_pt->GetYaxis()->SetTitle("Acceptance");
-//   d0acceptance_pt->GetXaxis()->SetRangeUser(0.0, 100.0);
+//   d0acceptance_pt->GetXaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
 //   d0acceptance_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
 //   d0acceptance_pt->Draw("EP");
 //
@@ -423,7 +423,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
 //   TH2D * d0acceptance_ypt = ( TH2D *) d0genypt_acceptance->Clone("d0acceptance_ypt");
 //   d0acceptance_ypt->Divide(d0genypt_acceptance, d0genypt, 1.0, 1.0, "B");
 //   d0acceptance_ypt->GetXaxis()->SetTitle("y");
-//   d0acceptance_ypt->GetYaxis()->SetRangeUser(0.0, 100.0);
+//   d0acceptance_ypt->GetYaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
 //   d0acceptance_ypt->GetYaxis()->SetTitle("D0 p_{T} (GeV/c)");
 //   d0acceptance_ypt->Draw("COLZ");
 //
@@ -432,7 +432,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
 //   d0efficiency_pt->Divide(d0candpt_matched_cuts, d0genpt_acceptance, 1.0, 1.0, "B");
 //   d0efficiency_pt->SetLineWidth(2.0);
 //   d0efficiency_pt->GetYaxis()->SetTitle("Efficiency");
-//   d0efficiency_pt->GetXaxis()->SetRangeUser(0.0, 100.0);
+//   d0efficiency_pt->GetXaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
 //   d0efficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
 //   d0efficiency_pt->Draw("EP");
 //
@@ -448,7 +448,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
 //   TH2D * d0efficiency_ypt = ( TH2D *) d0candypt_matched_cuts->Clone("d0efficiency_ypt");
 //   d0efficiency_ypt->Divide(d0candypt_matched_cuts, d0genypt_acceptance, 1.0, 1.0, "B");
 //   d0efficiency_ypt->GetXaxis()->SetTitle("y");
-//   d0efficiency_ypt->GetYaxis()->SetRangeUser(0.0, 100.0);
+//   d0efficiency_ypt->GetYaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
 //   d0efficiency_ypt->GetYaxis()->SetTitle("D0 p_{T} (GeV/c)");
 //   d0efficiency_ypt->Draw("COLZ");
 //   
@@ -459,7 +459,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
    d0tkefficiency_pt->Divide(d0candpt_matched, d0genpt, 1.0, 1.0, "B");
    d0tkefficiency_pt->SetLineWidth(2.0);
    d0tkefficiency_pt->GetYaxis()->SetTitle("#alpha #times #varepsilon_{reco}");
-   d0tkefficiency_pt->GetXaxis()->SetRangeUser(0.0, 100.0);
+   d0tkefficiency_pt->GetXaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
    if( NPT == 7 || NPT == 6 ) d0tkefficiency_pt->GetXaxis()->SetRangeUser(4.0, 25);
    d0tkefficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0tkefficiency_pt->Draw("EP");
@@ -476,7 +476,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
    TH2D * d0tkefficiency_ypt = ( TH2D *) d0candypt_matched->Clone("d0tkefficiency_ypt");
    d0tkefficiency_ypt->Divide(d0candypt_matched, d0genypt, 1.0, 1.0, "B");
    d0tkefficiency_ypt->GetXaxis()->SetTitle("y");
-   d0tkefficiency_ypt->GetYaxis()->SetRangeUser(0.0, 100.0);
+   d0tkefficiency_ypt->GetYaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
    if( NPT == 7 || NPT == 6 ) d0tkefficiency_ypt->GetYaxis()->SetRangeUser(4.0, 25);
    d0tkefficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0tkefficiency_ypt->GetYaxis()->SetTitle("D0 p_{T} (GeV/c)");
@@ -487,7 +487,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
    d0efficiency_pt->Divide(d0candpt_matched_cuts, d0candpt_matched, 1.0, 1.0, "B");
    d0efficiency_pt->SetLineWidth(2.0);
    d0efficiency_pt->GetYaxis()->SetTitle("#varepsilon_{cuts}");
-   d0efficiency_pt->GetXaxis()->SetRangeUser(0.0, 100.0);
+   d0efficiency_pt->GetXaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
    if( NPT == 7 || NPT == 6 ) d0efficiency_pt->GetXaxis()->SetRangeUser(4.0, 25);
    d0tkefficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0efficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
@@ -505,7 +505,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
    TH2D * d0efficiency_ypt = ( TH2D *) d0candypt_matched_cuts->Clone("d0efficiency_ypt");
    d0efficiency_ypt->Divide(d0candypt_matched_cuts, d0candypt_matched, 1.0, 1.0, "B");
    d0efficiency_ypt->GetXaxis()->SetTitle("y");
-   d0efficiency_ypt->GetYaxis()->SetRangeUser(0.0, 100.0);
+   d0efficiency_ypt->GetYaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
    if( NPT == 7 || NPT == 6 ) d0efficiency_ypt->GetYaxis()->SetRangeUser(4.0, 25);
    d0tkefficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0efficiency_ypt->GetYaxis()->SetTitle("D0 p_{T} (GeV/c)");
@@ -516,7 +516,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
    d0accxeff_pt->Divide(d0candpt_matched_cuts, d0genpt, 1.0, 1.0, "B");
    d0accxeff_pt->SetLineWidth(2.0);
    d0accxeff_pt->GetYaxis()->SetTitle("#alpha #times #varepsilon_{reco} #times #varepsilon_{cuts}");
-   d0accxeff_pt->GetXaxis()->SetRangeUser(0.0, 100.0);
+   d0accxeff_pt->GetXaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
    if( NPT == 7 || NPT == 6 ) d0accxeff_pt->GetXaxis()->SetRangeUser(4.0, 25);
    d0tkefficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0accxeff_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
@@ -534,7 +534,7 @@ void AcceptanceandRecoEff_match_FONLLweight_dataptshape()
    TH2D * d0accxeff_ypt = ( TH2D *) d0candypt_matched_cuts->Clone("d0accxeff_ypt");
    d0accxeff_ypt->Divide(d0candypt_matched_cuts, d0genypt, 1.0, 1.0, "B");
    d0accxeff_ypt->GetXaxis()->SetTitle("y");
-   d0accxeff_ypt->GetYaxis()->SetRangeUser(0.0, 100.0);
+   d0accxeff_ypt->GetYaxis()->SetRangeUser(lowptedge_d0+0.1, highptedge_d0 - 0.1);
    if( NPT == 7 || NPT == 6 ) d0accxeff_ypt->GetYaxis()->SetRangeUser(4.0, 25);
    d0tkefficiency_pt->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
    d0accxeff_ypt->GetYaxis()->SetTitle("D0 p_{T} (GeV/c)");
