@@ -1,0 +1,107 @@
+
+//double TAA = 5.67E-9;  //centrality 0 to 100  5.67 0.32
+// double TAA = 18.93e-9 ;     //Alice.  CMS????centrality 0 to 20
+ double TAA = 1.20e-9;      //Alice.   CMS????centrality 40 to 80
+
+void Draw_RAFONLL()
+{
+	gStyle->SetOptTitle(0);
+	gStyle->SetOptStat(0);
+	TH1::SetDefaultSumw2();
+	TFile * input_pbpb = new TFile("Spectrum_Recoeff_D0_PbPb_dpt_evtunprescaleMB0_hibin80160.root");
+	TH1D * D0Spectrum_pbpb = ( TH1D *) input_pbpb->Get("d0raw_data_overeff");
+	TH1D * D0_pbpb_spectrum = ( TH1D * ) D0Spectrum_pbpb->Clone("D0_pbpb_spectrum");
+	TH1D * hf_mb = ( TH1D * ) input_pbpb->Get("hf_mb");
+
+	TFile * fonllinput = new TFile("./FONLL/fonll/outputDzero.root");
+	TGraphAsymmErrors * d0fonllspectrum = ( TGraphAsymmErrors *) fonllinput->Get("gaeSigmaDecayDzero");
+
+	TCanvas * spectrum = new TCanvas("spectrum","spectrum");
+	spectrum->SetLeftMargin(0.2);
+	gPad->SetLogy();
+
+	D0_pbpb_spectrum->Scale(1.0/0.0388);    //branch ratio
+	D0_pbpb_spectrum->Scale(0.5);          // D0 and anti D0
+	D0_pbpb_spectrum->Scale(1.0/hf_mb->Integral(0,-1));   //number of MB events in PbPb
+
+	D0_pbpb_spectrum->Scale(1.0/TAA);
+	D0_pbpb_spectrum->GetYaxis()->SetRangeUser(10E1,10E7);
+
+    D0_pbpb_spectrum->GetYaxis()->SetTitleOffset(2.0);
+    D0_pbpb_spectrum->GetYaxis()->SetTitle("#frac{d#sigma_{pp}}{dp_{T}}, #frac{1}{2N_{evt}T_{AA}}#frac{dN_{PbPb}}{dp_{T}} #frac{pb}{GeV/c}");
+	D0_pbpb_spectrum->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
+//	D0_pbpb_spectrum->GetYaxis()->SetRangeUser(10E-8,10E0);   //Alice way to plot, scale pp cross section by TAA rather than PbPb
+//	D0_pbpb_spectrum->GetYaxis()->SetTitle("dN/dp_{T}");
+	D0_pbpb_spectrum->Draw();
+	
+//	double scale = 5.67/1.0E9;    //TAA
+//	for( int i = 0; i < d0fonllspectrum->GetN();i++){
+//		d0fonllspectrum->GetY()[i] = d0fonllspectrum->GetY()[i] * scale;
+//		d0fonllspectrum->SetPointEYhigh(i,d0fonllspectrum->GetErrorYhigh(i)*scale);
+//		d0fonllspectrum->SetPointEYlow(i,d0fonllspectrum->GetErrorYlow(i)*scale);
+//	}
+	d0fonllspectrum->SetLineWidth(0.5);
+	d0fonllspectrum->SetMarkerStyle(20);
+	d0fonllspectrum->SetMarkerSize(0.8);
+	d0fonllspectrum->Draw("psame");
+
+	TLegend * t = new TLegend(0.5, 0.7, 0.85, 0.85);
+	t->SetFillColor(0);
+	t->AddEntry(D0_pbpb_spectrum, "2011 PbPb data");
+	t->AddEntry(d0fonllspectrum, "FONLL", "PL");
+	t->Draw();
+
+	spectrum->SaveAs("plots/D0_PbPb_spectrum_fonll_effunpre_hibin80160.pdf");
+	spectrum->SaveAs("plots/D0_PbPb_spectrum_fonll_effunpre_hibin80160.png");
+
+	TCanvas * raadmeson = new TCanvas("raadmeson","raadmeson");
+	TH1D * D0_pbpb_spectrum_raa = ( TH1D *) D0_pbpb_spectrum->Clone("D0_pbpb_spectrum_raa");
+	TGraphAsymmErrors * D0_fonll_raa_errordata = ( TGraphAsymmErrors *) d0fonllspectrum->Clone("D0_fonll_raa_errordata");
+	TGraphAsymmErrors * D0_fonll_raa_errorfonll = ( TGraphAsymmErrors *) d0fonllspectrum->Clone("D0_fonll_raa_errorfonll");
+
+	for( int i = 0; i < D0_fonll_raa_errordata->GetN();i++){
+		D0_fonll_raa_errordata->GetY()[i] = D0_pbpb_spectrum_raa->GetBinContent(i+2) / d0fonllspectrum->GetY()[i];
+		cout << "PbPb: " << D0_pbpb_spectrum_raa->GetBinContent(i+2) << " pp: " << d0fonllspectrum->GetY()[i] << " ratio: " << D0_fonll_raa_errordata->GetY()[i] << endl;
+		double higherror =  TMath::Sqrt( TMath::Power(D0_pbpb_spectrum_raa->GetBinError(i+2), 2) / TMath::Power(d0fonllspectrum->GetY()[i] ,2) );
+        double lowerror =  TMath::Sqrt( TMath::Power(D0_pbpb_spectrum_raa->GetBinError(i+2), 2) / TMath::Power(d0fonllspectrum->GetY()[i] ,2) );
+		D0_fonll_raa_errordata->SetPointEYhigh(i, higherror);
+		D0_fonll_raa_errordata->SetPointEYlow(i, lowerror);
+
+        D0_fonll_raa_errorfonll->GetY()[i] = D0_pbpb_spectrum_raa->GetBinContent(i+2) / d0fonllspectrum->GetY()[i];
+        higherror =  TMath::Sqrt( TMath::Power(d0fonllspectrum->GetErrorYhigh(i), 2 ) *TMath::Power( D0_pbpb_spectrum_raa->GetBinContent(i+2), 2) / TMath::Power( d0fonllspectrum->GetY()[i], 4 ) );
+        lowerror =  TMath::Sqrt( TMath::Power(d0fonllspectrum->GetErrorYlow(i), 2 ) *TMath::Power( D0_pbpb_spectrum_raa->GetBinContent(i+2), 2) / TMath::Power( d0fonllspectrum->GetY()[i], 4 ) );
+        D0_fonll_raa_errorfonll->SetPointEYhigh(i, higherror);
+        D0_fonll_raa_errorfonll->SetPointEYlow(i, lowerror);
+
+	}
+
+	D0_fonll_raa_errordata->GetYaxis()->SetRangeUser(0.,2.);
+	D0_fonll_raa_errordata->GetXaxis()->SetRangeUser(4.5,40.);
+	D0_fonll_raa_errordata->GetYaxis()->SetTitle("D^{0} R^{FONLL}_{AA}");
+	D0_fonll_raa_errordata->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
+
+	D0_fonll_raa_errorfonll->GetYaxis()->SetRangeUser(0.,2.);
+	D0_fonll_raa_errorfonll->GetXaxis()->SetRangeUser(4.5,40.);
+	D0_fonll_raa_errorfonll->GetYaxis()->SetTitle("D^{0} R^{FONLL}_{AA}");
+	D0_fonll_raa_errorfonll->GetXaxis()->SetTitle("D0 p_{T} (GeV/c)");
+	D0_fonll_raa_errorfonll->SetFillColor(0);
+	D0_fonll_raa_errorfonll->SetFillStyle(0);
+
+	D0_fonll_raa_errorfonll->Draw("A2");
+	D0_fonll_raa_errordata->Draw("P");
+
+    TLatex Tl;
+    Tl.SetNDC();
+    Tl.SetTextAlign(12);
+    Tl.SetTextSize(0.03);
+    Tl.DrawLatex(0.3,0.8, "CMS Preliminary #sqrt{s_{NN}} = 2.76 TeV");
+    Tl.DrawLatex(0.3,0.75, "#left|y#right| < 2.0");
+	Tl.DrawLatex(0.3,0.7, "Centrality 40-80%");
+
+	raadmeson->SaveAs("plots/RAAD0_PbPb_fonll_effunpre_hibin80160.pdf");
+	raadmeson->SaveAs("plots/RAAD0_PbPb_fonll_effunpre_hibin80160.png");
+}
+
+void Dmeson_RAFONLL()
+{
+}

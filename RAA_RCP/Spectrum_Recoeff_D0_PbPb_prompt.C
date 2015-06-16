@@ -1,8 +1,6 @@
 #define BR 0.0388
-#define NEVT 30172291.0
 
-
-void Draw_Recoeff_D0_PbPb( TFile * input_MC, TFile * input_data, TFile * input_promptfraction, bool evtunprescaleMB, int cent_low, int cent_high, int Nptbin)
+void Draw_Recoeff_D0_PbPb( TFile * input_MC, TFile * input_data, TFile * input_promptfraction, double NEVT, int cent_low, int cent_high, int Nptbin)
 {
 	gStyle->SetOptStat(0);
 	gStyle->SetOptTitle(0);
@@ -11,7 +9,7 @@ void Draw_Recoeff_D0_PbPb( TFile * input_MC, TFile * input_data, TFile * input_p
 	TH1D * recoeff_matched = ( TH1D * ) input_MC->Get("d0accxeff_pt");
 
 // for data
-	TH1D * d0raw_data = ( TH1D * ) input_data->Get("N_mb");
+	TH1D * d0raw_data = ( TH1D * ) input_data->Get("N_mb_expobkg");
 	TH1D * d0raw_data_overeff = ( TH1D * ) d0raw_data->Clone("d0raw_data_overeff");
 
     TGraphAsymmErrors * promptD0faction = ( TGraphAsymmErrors *) input_promptfraction->Get("gaePromptfraction");
@@ -23,13 +21,6 @@ void Draw_Recoeff_D0_PbPb( TFile * input_MC, TFile * input_data, TFile * input_p
 		d0raw_data_overeff->SetBinError( i+2, d0raw_data_overeff->GetBinError(i+2) * promptD0faction->GetY()[i] );
 	}
 
-
-
-    if( Nptbin == 8 )    
-	{
-		d0raw_data_overeff->SetBinContent(d0raw_data_overeff->FindBin(35), -999);
-		d0raw_data_overeff->SetBinError(d0raw_data_overeff->FindBin(35), 0);
-	}
 
     d0raw_data_overeff->Divide(recoeff_matched);   // corrected by acceptance * reco eff
 
@@ -43,14 +34,22 @@ void Draw_Recoeff_D0_PbPb( TFile * input_MC, TFile * input_data, TFile * input_p
 
     d0raw_data_overeff->GetXaxis()->SetTitle("D^{0} Pt (GeV/c)");
     d0raw_data_overeff->GetXaxis()->SetRangeUser(4.0,35);
-    d0raw_data_overeff->GetYaxis()->SetTitle("#frac{1}{N_{evt}} #frac{dN}{dp_{T}}");
+    d0raw_data_overeff->GetYaxis()->SetTitle("#frac{1}{2N_{evt}} #frac{dN}{dp_{T}}");
 	d0raw_data_overeff->GetYaxis()->SetTitleOffset(2.0);
 
+
+    if( Nptbin == 9 || Nptbin == 5 )    
+	{
+		d0raw_data_overeff->SetBinContent(d0raw_data_overeff->FindBin(35), -999);
+		d0raw_data_overeff->SetBinError(d0raw_data_overeff->FindBin(35), 0);
+		d0raw_data_overeff->GetXaxis()->SetRangeUser(4.0,25);
+	}
+
     d0raw_data_overeff->SetLineColor(4.0);
-    d0raw_data_overeff->SetMarkerSize(0.8);
+    d0raw_data_overeff->SetMarkerSize(1.0);
     d0raw_data_overeff->SetMarkerStyle(20);
     d0raw_data_overeff->SetMarkerColor(4.0);
-    d0raw_data_overeff->Draw("ep");
+    d0raw_data_overeff->DrawCopy("ep");
 
     TLatex Tl;
     Tl.SetNDC();
@@ -65,7 +64,7 @@ void Draw_Recoeff_D0_PbPb( TFile * input_MC, TFile * input_data, TFile * input_p
 // end data
 //
     char outputfile[200];
-	sprintf(outputfile,"Prompt_Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB%d_cent%dto%d_ptbin%d.root", evtunprescaleMB, cent_low, cent_high, Nptbin);
+	sprintf(outputfile,"Prompt_Spectrum_centRecoeff_D0_PbPb_dpt_cent%dto%d_ptbin%d.root", cent_low, cent_high, Nptbin);
 	TFile * output = new TFile(outputfile,"RECREATE");
 	recoeff_matched->Write();
 	d0spectrum_pbpb->Write();
@@ -76,121 +75,98 @@ void Draw_Recoeff_D0_PbPb( TFile * input_MC, TFile * input_data, TFile * input_p
 
 void Spectrum_Recoeff_D0_PbPb_prompt()
 {
-    bool evtunprescaleMB = false;
 	TFile * input_MC;
 	TFile * input_data;
     TFile * input_promptfraction;
-
+    double NEVT = 0.0;
 	int cent_low, cent_high;
 	int Nptbin;
 
-//9 ptbins
-	input_MC = new TFile("./../D0_PbPb_acc_eff_ptbin_12_ybin_6_prompt_FONLLweight_cent-0to100.root");
-    input_data = new TFile("./../rootfiles/Dspectrum_pbpb_data_ptbin_12_ptd_unpreMBtrig_0_cent-0to100.root");
-    input_promptfraction = new TFile("Bfraction_method1.root");
-    evtunprescaleMB = false;
+//10 ptbins
+	input_MC = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_12_ybin_6_prompt_FONLLweight_cent-0to100_dataptshape.root");
+    input_data = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_12_ptd_unpreMBtrig_0_cent0to100.root");
+    input_promptfraction = new TFile("Bfraction_method1_ptbin_12_cent0to100.root");
     cent_low = 0;
 	cent_high = 100;
 	Nptbin = 10;
-	Draw_Recoeff_D0_PbPb( input_MC, input_data, input_promptfraction, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
+	NEVT = 30172291.0;
+	Draw_Recoeff_D0_PbPb( input_MC, input_data, input_promptfraction, NEVT, cent_low, cent_high, Nptbin);
+	input_MC->Close();
+	input_promptfraction->Close();
+	input_data->Close();
 
-////unprescale MB trigger with effective prescaler
-//    evtunprescaleMB = false;
-//
-//    input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_11_ptd_cent-0to100_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_11_ptd_unpreMBtrig_0_cent-0to100.root");
-//    cent_low = 0;
-//    cent_high = 100;
-//    Nptbin = 9;
-//    Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//    input_MC->Close();
-//    input_data->Close();
-//
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_11_ptd_cent-0to20_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_11_ptd_unpreMBtrig_0_cent-0to20.root");
-//    cent_low = 0;
-//	cent_high = 20;
-//	Nptbin = 8;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_11_ptd_cent40to80_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_11_ptd_unpreMBtrig_0_cent40to80.root");
-//    cent_low = 40;
-//	cent_high = 80;
-//	Nptbin = 8;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_11_ptd_cent10to30_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_11_ptd_unpreMBtrig_0_cent10to30.root");
-//    cent_low = 10;
-//	cent_high = 30;
-//	Nptbin = 8;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
-//
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_11_ptd_cent30to50_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_11_ptd_unpreMBtrig_0_cent30to50.root");
-//    cent_low = 30;
-//	cent_high = 50;
-//	Nptbin = 8;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
-//
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_11_ptd_cent50to100_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_11_ptd_unpreMBtrig_0_cent50to100.root");
-//    cent_low = 50;
-//	cent_high = 100;
-//	Nptbin = 8;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
-//
-////Nptbin6
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_6_ptd_cent-0to10_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_6_ptd_unpreMBtrig_0_cent-0to10.root");
-//    cent_low = 0;
-//	cent_high = 10;
-//	Nptbin = 4;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_6_ptd_cent10to30_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_6_ptd_unpreMBtrig_0_cent10to30.root");
-//    cent_low = 10;
-//	cent_high = 30;
-//	Nptbin = 4;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_6_ptd_cent30to50_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_6_ptd_unpreMBtrig_0_cent30to50.root");
-//    cent_low = 30;
-//	cent_high = 50;
-//	Nptbin = 4;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
-//	input_MC = new TFile("rootfiles/Dspectrum_pbpb_MC_genmatch_histo_ptbin_6_ptd_cent50to100_FONLLweight.root");
-//    input_data = new TFile("rootfiles/Dspectrum_pbpb_data_ptbin_6_ptd_unpreMBtrig_0_cent50to100.root");
-//    cent_low = 50;
-//	cent_high = 100;
-//	Nptbin = 4;
-//	Draw_Recoeff_D0_PbPb( input_MC, input_data, evtunprescaleMB, cent_low, cent_high, Nptbin);
-//	input_MC->Close();
-//	input_data->Close();
-//
+//9 ptbins
+    input_MC = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_12_ybin_6_prompt_FONLLweight_cent-0to10_dataptshape.root");
+    input_data = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_12_ptd_unpreMBtrig_0_cent0to10.root");
+	input_promptfraction = new TFile("Bfraction_method1_ptbin_12_cent0to10.root");
+    cent_low = 0;
+    cent_high = 10;
+    Nptbin = 9;
+	NEVT = 3.07931000000000000e+06;
+    Draw_Recoeff_D0_PbPb( input_MC, input_data, input_promptfraction, NEVT, cent_low, cent_high, Nptbin);
+    input_MC->Close();
+	input_promptfraction->Close();
+    input_data->Close();
+
+    input_MC = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_12_ybin_6_prompt_FONLLweight_cent-0to20_dataptshape.root");
+    input_data = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_12_ptd_unpreMBtrig_0_cent0to20.root");
+	input_promptfraction = new TFile("Bfraction_method1_ptbin_12_cent0to20.root");
+    cent_low = 0;
+	cent_high = 20;
+	Nptbin = 9;
+	NEVT = 6.09279800000000000e+06;
+	Draw_Recoeff_D0_PbPb( input_MC, input_data, input_promptfraction, NEVT, cent_low, cent_high, Nptbin);
+	input_MC->Close();
+	input_promptfraction->Close();
+	input_data->Close();
+
+// 5 ptbins
+  input_MC = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_7_ybin_6_prompt_FONLLweight_cent-0to10_dataptshape.root");
+  input_data = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_7_ptd_unpreMBtrig_0_cent0to10.root");
+  input_promptfraction = new TFile("Bfraction_method1_ptbin_7_cent0to10.root");
+  cent_low = 0;
+  cent_high = 10;
+  Nptbin = 5;
+  NEVT = 3.07931000000000000e+06;
+  Draw_Recoeff_D0_PbPb( input_MC, input_data, input_promptfraction, NEVT, cent_low, cent_high, Nptbin);
+  input_MC->Close();
+  input_promptfraction->Close();
+  input_data->Close();
+
+	input_MC = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_7_ybin_6_prompt_FONLLweight_cent10to30_dataptshape.root");
+    input_data = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_7_ptd_unpreMBtrig_0_cent10to30.root");
+    input_promptfraction = new TFile("Bfraction_method1_ptbin_7_cent10to30.root");
+    cent_low = 10;
+	cent_high = 30;
+	Nptbin = 5;
+	NEVT = 6.09303800000000000e+06;
+	Draw_Recoeff_D0_PbPb( input_MC, input_data, input_promptfraction, NEVT, cent_low, cent_high, Nptbin);
+	input_MC->Close();
+	input_promptfraction->Close();
+	input_data->Close();
+
+	input_MC = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_7_ybin_6_prompt_FONLLweight_cent30to50_dataptshape.root");
+    input_data = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_7_ptd_unpreMBtrig_0_cent30to50.root");
+    input_promptfraction = new TFile("Bfraction_method1_ptbin_7_cent30to50.root");
+    cent_low = 30;
+	cent_high = 50;
+	Nptbin = 5;
+	NEVT = 6.13955200000000000e+06;
+	Draw_Recoeff_D0_PbPb( input_MC, input_data, input_promptfraction, NEVT, cent_low, cent_high, Nptbin);
+	input_MC->Close();
+	input_promptfraction->Close();
+	input_data->Close();
+
+	input_MC = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_7_ybin_6_prompt_FONLLweight_cent50to100_dataptshape.root");
+    input_data = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_7_ptd_unpreMBtrig_0_cent50to100.root");
+    input_promptfraction = new TFile("Bfraction_method1_ptbin_7_cent50to100.root");
+    cent_low = 50;
+	cent_high = 100;
+	Nptbin = 5;
+	NEVT = 1.48603910000000000e+07;
+	Draw_Recoeff_D0_PbPb( input_MC, input_data, input_promptfraction, NEVT, cent_low, cent_high, Nptbin);
+	input_MC->Close();
+	input_promptfraction->Close();
+	input_data->Close();
+
 }

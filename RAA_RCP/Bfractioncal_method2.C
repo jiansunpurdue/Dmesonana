@@ -23,7 +23,7 @@ void Bfractioncal_method2()
 	TH1D * recoeff_PromptD = ( TH1D * ) input_mc_PromptDeff->Get("d0accxeff_pt");
 	TH1D * recoeff_BtoD = ( TH1D * ) input_mc_BtoDeff->Get("d0accxeff_pt");
 
-	TFile * input_BtoD = new TFile("BtoD_cent0to100.root");
+	TFile * input_BtoD = new TFile("./BtoD_fromyenjie/BtoD-0-100.root");
 
 	TH1D * BtoD_max_raa = (TH1D *)input_BtoD->Get("hDFromBPtMax");
 	TH1D * BtoD_central_raa = (TH1D *)input_BtoD->Get("hDFromBPtCentral");

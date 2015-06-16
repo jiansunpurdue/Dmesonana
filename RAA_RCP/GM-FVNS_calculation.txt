@@ -1,0 +1,20 @@
+
+ D0 production at the LHC, \sqrt{s} = 2.76 TeV. 
+ Differential cross sections dsig/dpT [nb/GeV] for CMS (2015).
+ Using CT10 parton distribution and KKKS fragmentation functions.
+ Default scales: \mu_{R,I,F} = \sqrt{p_T^2 + m_c^2}.
+
+  -2.0 < y < +2.0 
+   
+   pT-min pT-max   dsig/dpT(cen)    dsig/dpT(min)    dsig/dpT(max)
+   
+   3.50   4.50     0.8044E+05       0.4321E+05       0.1194E+06
+   4.50   5.50     0.3229E+05       0.2177E+05       0.4462E+05
+   5.50   7.00     0.1275E+05       0.9708E+04       0.1650E+05
+   7.00   9.00     0.4310E+04       0.3460E+04       0.5270E+04
+   9.00  11.00     0.1519E+04       0.1232E+04       0.1801E+04
+  11.00  13.00     0.6179E+03       0.5077E+03       0.7158E+03
+  13.00  16.00     0.2468E+03       0.2048E+03       0.2821E+03
+  16.00  20.00     0.8283E+02       0.6935E+02       0.9344E+02
+  20.00  28.00     0.2006E+02       0.1690E+02       0.2257E+02
+  28.00  40.00     0.3003E+01       0.2553E+01       0.3343E+01
