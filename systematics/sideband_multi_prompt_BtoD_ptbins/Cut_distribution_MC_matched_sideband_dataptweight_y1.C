@@ -149,7 +149,7 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()//bool isPrompt=true)
     cout << "p0:  " << fit_fun_datafitted->GetParameter(0) << "   p1: " << fit_fun_datafitted->GetParameter(1) << endl;
 
 
-	TFile * input = new TFile("/home/sun229/DmesonAna/sl6ana/v2_pbpb_08062015/CMSSW_5_3_24/src/UserCode/OpenHF/Dmesonana/Dmesonanarooffiles/Dmesonana_hiforest_PbPbD0tokaonpion_Pthat0153050_D0pt1p0_tkpt1p0eta1p1_2760GeV_0803_all_pt6p0.root");
+	TFile * input = new TFile("/afs/cern.ch/work/j/jisun/public/Dmesonana/files_0813/fordatamccomparison/Dmesonana_hiforest_PbPbD0tokaonpion_Pthat0153050_D0pt1p0_tkpt1p0eta1p1_2760GeV_0803_all_pt6p0.root");
 	TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
     TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
     recodmesontree->AddFriend(gendmesontree);
@@ -204,7 +204,7 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()//bool isPrompt=true)
 	recodmesontree->SetBranchAddress("dcanddau1pt", &dcanddau1pt);
 	recodmesontree->SetBranchAddress("dcanddau2pt", &dcanddau2pt);
 
-	TFile * input_centralityweight = new TFile("/home/sun229/DmesonAna/sl6ana/v2_pbpb_08062015/CMSSW_5_3_24/src/UserCode/OpenHF/Dmesonana/MCcentralityweight/output_hibin_mc_data.root");
+	TFile * input_centralityweight = new TFile("./../../MCcentralityweight/output_hibin_mc_data.root");
 	TH1D * h_hibin_dataovermc = (TH1D *) input_centralityweight->Get("h_hibin_dataovermc");
     
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
