@@ -22,7 +22,7 @@
 double ptbins[NPT+1] = {0,3.5,4.5,5.5,7,9,11,13,16,20,28,40,100};
 
 double cut_ffls3d = 3.5;  //2.0   4.5 GeV: 3.5    0.06  0.05
-double cut_falpha = 0.05;  //0.2
+double cut_falpha = 0.12;  //0.2
 double cut_fprob = 0.05;  //0.05
 
 double Ptcut_low = 7.0;
@@ -31,14 +31,14 @@ double Ptcut_high = 40.0;
 float hiBin_low = -0.5;
 float hiBin_high = 59.5;
 
-bool loosealphacut = false;
-
 double rapidity_low = 0.0;
 double rapidity_high = 1.0;
-double dautracketacut = 1.1;
+float dautracketacut = 1.1;
+float dautrackptcut = 1.0;
 
 bool Allcuts = false;
 bool nocuts = false;
+bool loosealphacut = false;
 
 void Cut_distribution_Data_sideband( int startFile, int endFile, char *filelist )
 {
@@ -46,6 +46,7 @@ void Cut_distribution_Data_sideband( int startFile, int endFile, char *filelist 
 
     TH1D * h_pt = new TH1D("h_pt","h_pt",NPT, ptbins);
 	TH1D * mass = new TH1D("mass","mass",35,1.70,2.05);
+	TH1D * h_hiBin_noweight = new TH1D("h_hiBin_noweight","h_hiBin_noweight", 200, 0, 200);
 
     TH1D * mass_ffls3d = new TH1D("mass_ffls3d","mass_ffls3d", 35, 1.7, 2.05);
 	TH1D * ffls3d_signal_data = new TH1D("ffls3d_signal_data","ffls3d_signal_data",1000,0.,100.);
@@ -89,9 +90,9 @@ void Cut_distribution_Data_sideband( int startFile, int endFile, char *filelist 
     int hiBin;
     double pthatweight;
     double trigweight;
-    vector<int> *dtype = 0, *passingcuts = 0;
+    vector<int> *dtype = 0;
     vector<float> *dcandmass = 0, *dcandpt = 0, *dcandy = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandcosalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
-    vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0;
+    vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0, *dcanddau1pt = 0, *dcanddau2pt = 0;
 	vector<int> *dcanddau1q = 0, *dcanddau2q = 0;
    string filename;
 
@@ -123,7 +124,6 @@ void Cut_distribution_Data_sideband( int startFile, int endFile, char *filelist 
     recodmesontree->SetBranchAddress("trigweight", &trigweight);
     recodmesontree->SetBranchAddress("ndcand", &ndcand);
     recodmesontree->SetBranchAddress("dtype", &dtype);
-    recodmesontree->SetBranchAddress("passingcuts", &passingcuts);
     recodmesontree->SetBranchAddress("dcandmass", &dcandmass);
     recodmesontree->SetBranchAddress("dcandpt", &dcandpt);
     recodmesontree->SetBranchAddress("dcandy", &dcandy);
@@ -134,8 +134,8 @@ void Cut_distribution_Data_sideband( int startFile, int endFile, char *filelist 
     recodmesontree->SetBranchAddress("dcandfchi2", &dcandfchi2);
     recodmesontree->SetBranchAddress("dcanddau1eta", &dcanddau1eta);
     recodmesontree->SetBranchAddress("dcanddau2eta", &dcanddau2eta);
-	recodmesontree->SetBranchAddress("dcanddau1q", &dcanddau1q);
-	recodmesontree->SetBranchAddress("dcanddau2q", &dcanddau2q);
+	recodmesontree->SetBranchAddress("dcanddau1pt", &dcanddau1pt);
+	recodmesontree->SetBranchAddress("dcanddau2pt", &dcanddau2pt);
   
 //   for ( int entry = 0; entry < 100; entry++ )
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
@@ -143,16 +143,18 @@ void Cut_distribution_Data_sideband( int startFile, int endFile, char *filelist 
 	   recodmesontree->GetEntry(entry);
 	   if( entry % 1000000 == 0 )  cout << entry+1 << "st event" << endl;
 	   if( !MinBias ) continue;
-	   if( ndcand != dtype->size() || ndcand != passingcuts->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )    
+	   if( ndcand != dtype->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )    
 		   cout << "Error!!!!!!!!" << endl;
        if( hiBin < hiBin_low || hiBin > hiBin_high )   continue;
+	   h_hiBin_noweight->Fill( hiBin);
 
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
            if( dcandpt->at(icand) < Ptcut_low || dcandpt->at(icand) > Ptcut_high)   continue;
 		   if( TMath::Abs( dcandy->at(icand) ) > rapidity_high || TMath::Abs( dcandy->at(icand) ) < rapidity_low )  continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > dautracketacut || TMath::Abs( dcanddau2eta->at(icand) ) > dautracketacut )   continue;
-		   if( dcanddau1q->at(icand) * dcanddau2q->at(icand) > 0 )   continue;
+		   if( dcanddau1pt->at(icand) < dautrackptcut || dcanddau2pt->at(icand) < dautrackptcut )   continue;
+
 		   double dcandalpha = TMath::ACos(dcandcosalpha->at(icand));
 
 		   if( loosealphacut && dcandalpha > 0.5 )  continue;
@@ -232,6 +234,7 @@ Data_input->Close();
    TFile * output = new TFile(outfilename,"RECREATE");
 
    mass->Write();
+   h_hiBin_noweight->Write();
 
    mass_y->Write();
    y_leftband->Write();

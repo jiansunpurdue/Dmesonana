@@ -9,6 +9,9 @@
 #include <THStack.h>
 #include <TString.h>
 
+
+//present parameter setup just work for D0 pt 7 GeV to 40 GeV
+
 double sideband_close = 0.05;//0.10;//0.10;//0.07; //0.06
 double sideband_far = 0.07;//0.15;//0.15;//0.10;  //0.11
 double width_signal = 0.03;
@@ -34,72 +37,105 @@ void Getdistributionwithsideband(TString varname, TH1D * h_signal_dis, TFile * i
 
   TCanvas * c_mass = new TCanvas(Form("c_mass_%s",varname.Data()),"");
 
-  TF1* fit_fun = new TF1("fit_fun", "gausn(0) + pol2(3)", range_fit_low, range_fit_high);
-  float histomax = h_mass->GetMaximum();
-  h_mass->SetMaximum(1.1 * histomax);
+  double fit_range_low = 1.70;
+  double fit_range_high = 2.05;
 
-  float p0 = 1000, p1 = 1.87, p2 = 0.02;
-  float p0_L = 0, p1_L = 1.84, p2_L = 0;
-  float p0_H = 2*histomax, p1_H = 1.9, p2_H = 0.05;
-  fit_fun->SetParameter(0, p0);
-  fit_fun->SetParameter(1, p1);
-  fit_fun->SetParameter(2, p2);
+	TF1* fit_fun = new TF1("fit_fun", "[0]*([3]*Gaus(x,[1],[2])/(sqrt(2*3.14159)*[2])+(1-[3])*Gaus(x,[1],[4])/(sqrt(2*3.14159)*[4])) + gausn(5) * ([0]/0.01) * (1.0/[8]) + expo(9)", 1.70, 2.05);
+	fit_fun->SetLineColor(1.0);
+	//	fit_fun->SetLineWidth(2.0);
 
-  //.. fit constraint ..
-  fit_fun->SetParLimits(0, p0_L, p0_H);
-  fit_fun->SetParLimits(1, p1_L, p1_H);
-  fit_fun->SetParLimits(2, p2_L, p2_H);
-//  fit_fun->SetParameter(3, 200000.);
-  fit_fun->SetParameter(4, -100000);
-  fit_fun->SetParameter(5, 20000.);
-  fit_fun->SetParameter(3, 20000.);
-//  fit_fun->SetParameter(4, -1000);
-//  fit_fun->SetParameter(5, 2000.);
-  
-  for ( int fittingtimes = 0; fittingtimes < 5; fittingtimes++ )
-  {
-	  h_mass->Fit(fit_fun,"","", range_fit_low, range_fit_high);
-  }
+	float max = h_mass->GetMaximum();
+	h_mass->SetMaximum(1.15 * max);
+	fit_fun->SetParameter(0, 1.5 * max);
+	fit_fun->SetParameter(9, 2.0);
+	//
+	fit_fun->SetParameter(1, 1.865);
+	fit_fun->FixParameter(2, 0.01084);
+	fit_fun->FixParameter(4, 0.02453);
+	fit_fun->FixParameter(3, 0.9506);
 
-  
-//  h_mass->GetYaxis()->SetTitle("Entries");
-  h_mass->GetYaxis()->SetTitle(" ");
-  h_mass->GetXaxis()->SetTitle("m_{#piK} (GeV)");
-  h_mass->GetXaxis()->SetRangeUser(1.70, 2.05);
-  h_mass->SetLineColor(4.0);
-  h_mass->SetMinimum();
-//  h_mass->SetStats(1);
-  h_mass->Draw();
-  
-  TF1* fit_fun_bg = (TF1*)fit_fun->Clone("fit_fun_bg");
-  fit_fun_bg->SetParameter(0, 0);
-  fit_fun_bg->SetParameter(1, 0);
-  fit_fun_bg->SetParameter(2, 0);
-  fit_fun_bg->SetLineColor(8);
-  fit_fun_bg->SetLineStyle(2);
-  fit_fun_bg->Draw("same");
-  
+	// does not work, cannot float them, mean is OK to float
+	fit_fun->SetParLimits(1, 1.855, 1.875);
 
-  double sidebandcounts = fit_fun_bg->Integral(mass_d0-sideband_far, mass_d0-sideband_close) + fit_fun_bg->Integral( mass_d0+sideband_close, mass_d0+sideband_far);
-  double signalregioncounts = fit_fun_bg->Integral(mass_d0-width_signal, mass_d0+width_signal);
+	//gaussian as particle misid D0 function
+	fit_fun->FixParameter(5, 6.614e4);
+	fit_fun->FixParameter(6, 1.872);
+	fit_fun->FixParameter(7, 0.116);
+	fit_fun->FixParameter(8, 7.7598e6);
+
+	int pass = 0;
+	int fittingtry = 0;
+
+	char sig_print[100], chi2_print[100], mean_print[100], sigma_print[100];
+
+	while (!pass) {
+
+
+		h_mass->Fit(fit_fun,"L","", fit_range_low, fit_range_high);
+		fittingtry++;
+
+		if (fittingtry == 3)  
+		{
+			pass = 1;
+
+		}
+
+	}
+	//.. draw foreground and background ..
+	h_mass->Draw();
+
+	// double gaussian signal
+	TF1* fit_fun_1st = (TF1*)fit_fun->Clone("fit_fun_1st");
+	for( int ipar = 5; ipar < 11; ipar++ )
+		fit_fun_1st->SetParameter(ipar, 0);
+
+	//expo bkg
+	TF1* fit_fun_bg = (TF1*)fit_fun->Clone("fit_fun_bg");
+	for( int ipar = 0; ipar < 9; ipar++ )
+		fit_fun_bg->SetParameter(ipar, 0);
+	fit_fun_bg->SetLineColor(4);
+	fit_fun_bg->SetLineStyle(2);
+	fit_fun_bg->Draw("same");
+
+	//misid D0 plus bkg
+	TF1* fit_fun_bgplusmisid = new TF1("fit_fun_bgplusmisid", "gausn(0) * ([6]/0.01) * (1.0/[3]) + expo(4)", fit_range_low, fit_range_high);
+	fit_fun_bgplusmisid->SetParameter(6, fit_fun->GetParameter(0)); //number of D0
+	fit_fun_bgplusmisid->SetParError(6, fit_fun->GetParError(0));
+	for( int ipar = 0; ipar < 6; ipar++ )
+	{
+		fit_fun_bgplusmisid->SetParameter(ipar, fit_fun->GetParameter(ipar+5));
+	    fit_fun_bgplusmisid->SetParError(ipar, fit_fun->GetParError(ipar+5));
+	}
+	fit_fun_bgplusmisid->SetLineColor(8);
+	fit_fun_bgplusmisid->SetLineStyle(2);
+	fit_fun_bgplusmisid->Draw("same");
+
+  double sidebandcounts = fit_fun_bgplusmisid->Integral(mass_d0-sideband_far, mass_d0-sideband_close) + fit_fun_bgplusmisid->Integral( mass_d0+sideband_close, mass_d0+sideband_far);
+  double signalregioncounts = fit_fun_bgplusmisid->Integral(mass_d0-width_signal, mass_d0+width_signal);
+
+//  h_leftband->Scale( h_rightband->Integral(0, -1) / h_leftband->Integral(0, -1) );
+
   h_band->Add(h_leftband, h_rightband, 1.0, 1.0);
 
   cout << "slideband counts fit: "  << sidebandcounts << "  h_band:" << h_band->Integral(0, -1) << "   signalregioncounts: " << signalregioncounts << endl;
-  cout << "Integral test: " << fit_fun_bg->Integral(1.867, 1.887) << "   " << fit_fun_bg->Integral(1.867, 1.877) << endl;
+  cout << "Integral test: " << fit_fun_bgplusmisid->Integral(1.867, 1.887) << "   " << fit_fun_bgplusmisid->Integral(1.867, 1.877) << endl;
 //  h_band->Scale( width_signal/(sideband_far - sideband_close) );
   h_band->Scale( signalregioncounts/ ( 0.01 * h_band->Integral( 0, -1) ) );
   h_signal_dis->Add( h_signalregion, h_band, 1.0, -1.0);
-
-//  c_mass->SaveAs(Form("plotscent-0to10_loosealphacut/varmass_bothsideband_%s_pt7_%s.pdf",varname.Data(),type.Data()));
-//  c_mass->SaveAs(Form("plotscent-0to10_loosealphacut/varmass_bothsideband_%s_pt7_%s.png",varname.Data(),type.Data()));
-
+//
   if( type == "data" )
   {
-	  output->cd();
-      h_signalregion->Write();
-      h_band->Write();
-      h_signal_dis->Write();
+	  c_mass->SaveAs(Form("plots_nocentralityweight_doublegaussian/varmass_bothsideband_%s_pt7to40_%s_cent30to100.pdf",varname.Data(),type.Data()));
+	  c_mass->SaveAs(Form("plots_nocentralityweight_doublegaussian/varmass_bothsideband_%s_pt7to40_%s_cent30to100.png",varname.Data(),type.Data()));
   }
+//
+//  if( type == "data" )
+//  {
+//	  output->cd();
+//      h_signalregion->Write();
+//      h_band->Write();
+//      h_signal_dis->Write();
+//  }
 }
 
 void GetRatio( TH1D * h_signal_dis_data_copy, TH1D * h_mc_total, float range1, float range2, float cut1, float cut2)
@@ -249,11 +285,11 @@ void Drawvariable(TString varname, TString vartitle, TFile * input_data, TFile *
   DataMCratio->GetYaxis()->SetTitle("Data/MC");
   DataMCratio->DrawCopy();
 
-  c->SaveAs(Form("plots_nocentralityweight/varcomparison_cent-0to100_bothsideband_%s_BtoDfraction%1.2f_pt7to40_allcut_datapt_double.pdf",varname.Data(), BtoDfraction));
-  c->SaveAs(Form("plots_nocentralityweight/varcomparison_cent-0to100_bothsideband_%s_BtoDfraction%1.2f_pt7to40_allcut_datapt_double.png",varname.Data(), BtoDfraction));
+  c->SaveAs(Form("plots_nocentralityweight_doublegaussian/varcomparison_cent30to100_bothsideband_%s_BtoDfraction%1.2f_pt7to40_allcut_datapt_double.pdf",varname.Data(), BtoDfraction));
+  c->SaveAs(Form("plots_nocentralityweight_doublegaussian/varcomparison_cent30to100_bothsideband_%s_BtoDfraction%1.2f_pt7to40_allcut_datapt_double.png",varname.Data(), BtoDfraction));
 }
 
-void DrawComparison_bothsideband_promptBtoD()
+void DrawComparison_bothsideband_promptBtoD_doublegaussian()
 {
   gStyle->SetOptTitle(0);
   gStyle->SetOptStat(0);
@@ -262,15 +298,15 @@ void DrawComparison_bothsideband_promptBtoD()
   gStyle->SetHistMinimumZero(kTRUE);
   output = new TFile("Signal_cut_distribution_pt7to40.root","RECREATE");
   
-  TFile * input_data = new TFile("datafiles/Cut_distribution_Data_sideband_pt7to40_rapidity0to1_cent-0to100_0To1_cuts0.root");
-  TFile * input_mc_prompt = new TFile("MCfiles_nocentralityweight/Cut_distribution_MC_FONLLweight_Prompt_pt7to40_rapidity0to1_cent-0to100_sideband_dataptweight.root");
-  TFile * input_mc_BtoD = new TFile("MCfiles_nocentralityweight/Cut_distribution_MC_FONLLweight_BtoD_pt7to40_rapidity0to1_cent-0to100_sideband_dataptweight.root");
+  TFile * input_data = new TFile("datafiles/Cut_distribution_Data_sideband_pt7to40_rapidity0to1_cent30to100_0To1_cuts0.root");
+  TFile * input_mc_prompt = new TFile("MCfiles_nocentralityweight/Cut_distribution_MC_FONLLweight_Prompt_pt7to40_rapidity0to1_cent30to100_sideband_dataptweight.root");
+  TFile * input_mc_BtoD = new TFile("MCfiles_nocentralityweight/Cut_distribution_MC_FONLLweight_BtoD_pt7to40_rapidity0to1_cent30to100_sideband_dataptweight.root");
 
 //   Drawvariable("y","rapidity",input_data,input_mc_prompt, input_mc_BtoD, -1, 1, 2, -1, 1, -1, 1);
 //    Drawvariable("ffls3d","decay length sig",input_data,input_mc_prompt, input_mc_BtoD, 0.0, 40, 20, 0, 1000, 3.5, 1000);
 //	Drawvariable("alpha", "#alpha", input_data,input_mc_prompt, input_mc_BtoD, 0.0,3.14, 10, 0, 3.14, 0.0, 0.05);
-//	Drawvariable("alpha", "#alpha", input_data,input_mc_prompt, input_mc_BtoD, 0.0,0.2, 5, 0, 3.14, 0.0, 0.05);
-	Drawvariable("fprob", "vertex prob", input_data,input_mc_prompt, input_mc_BtoD, 0.0, 1.0, 50, 0.0, 1.0, 0.15, 1.0);
+    Drawvariable("alpha", "#alpha", input_data,input_mc_prompt, input_mc_BtoD, 0.0,0.2, 5, 0, 3.14, 0.0, 0.05);
+//	Drawvariable("fprob", "vertex prob", input_data,input_mc_prompt, input_mc_BtoD, 0.0, 1.0, 50, 0.0, 1.0, 0.15, 1.0);
 //	Drawvariable("fchi2", "vertex #chi2", input_data,input_mc_prompt, input_mc_BtoD, 0.0, 10, 5, 0.0, 100, 0.0, 3.0);
   output->Close();
 }

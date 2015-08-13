@@ -26,23 +26,25 @@
 double ptbins[NPT+1] = {0,3.5,4.5,5.5,7,9,11,13,16,20,28,40,100};
 
 double cut_ffls3d = 3.5;  //2.0
-double cut_falpha = 0.05;  //0.2
+double cut_falpha = 0.12;  //0.2
 double cut_fprob = 0.05;  //0.05
 
 double Ptcut_low = 7.0;
 double Ptcut_high = 40.0;
 
-float hiBin_low = -0.5;
-float hiBin_high = 59.5;
+float hiBin_low = 59.5;
+float hiBin_high = 199.5;
 
 double rapidity_low = 0.0;
 double rapidity_high = 1.0;
 float dautracketacut = 1.1;
+float dautrackptcut = 1.0;
 
 bool isPrompt = false;
+bool docentralityweight = true;
 bool loosealphacut = false;
 
-bool removedoublecountedD = true;
+bool removedoublecountedD = false;
 bool Allcuts = false;
 bool nocuts = false;
 
@@ -65,13 +67,15 @@ bool nosinglecut = true;
 //}
 //
 
-void Cut_distribution_MC_matched_sideband_dataptweight_y1()
+void Cut_distribution_MC_matched_sideband_dataptweight_y1()//bool isPrompt=true)
 {
 	TH1::SetDefaultSumw2();
 
 
     TH1D * mass = new TH1D("mass","mass",35,1.70,2.05);
 	TH1D * h_pt = new TH1D("h_pt","h_pt",NPT, ptbins);
+	TH1D * h_hiBin_reweightwithpt = new TH1D("h_hiBin_reweightwithpt","h_hiBin_reweightwithpt", 20, 0, 200);
+	TH1D * h_hiBin_reweight = new TH1D("h_hiBin_reweight","h_hiBin_reweight", 20, 0, 200);
 
     TH1D * mass_ffls3d = new TH1D("mass_ffls3d","mass_ffls3d", 35, 1.7, 2.05);
     TH1D * ffls3d_signal_data = new TH1D("ffls3d_signal_data","ffls3d_signal_data",1000,0.,100.);
@@ -135,8 +139,8 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()
     int cent_high = int(hiBin_high*0.5+0.5);
     int Nptbin;
 
-    if( cent_low == 0 && cent_high == 30  )  { cent_low = 0; cent_high = 20; Nptbin = 11; }
-    if( cent_low == 30 && cent_high == 100  )  { cent_low = 30; cent_high = 50; Nptbin = 7; }
+    if( ( cent_low == 0 && cent_high == 30 ) || ( cent_low == 10 && cent_high == 30 ) )  { cent_low = 0; cent_high = 20; Nptbin = 11; }
+    if( ( cent_low == 30 && cent_high == 100 ) || ( cent_low == 30 && cent_high == 80 ) )  { cent_low = 30; cent_high = 50; Nptbin = 7; }
     if( cent_low == 0 && cent_high == 100  )  { cent_low = 0; cent_high = 100; Nptbin = 12; }
 
     cout << " Nptbin: " << Nptbin << "  cent_low: " << cent_low << "  cent_high: " << cent_high << endl;
@@ -145,7 +149,7 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()
     cout << "p0:  " << fit_fun_datafitted->GetParameter(0) << "   p1: " << fit_fun_datafitted->GetParameter(1) << endl;
 
 
-	TFile * input = new TFile("/data/dmeson/Ntuple/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_0323_all_v1.root");
+	TFile * input = new TFile("/home/sun229/DmesonAna/sl6ana/v2_pbpb_08062015/CMSSW_5_3_24/src/UserCode/OpenHF/Dmesonana/Dmesonanarooffiles/Dmesonana_hiforest_PbPbD0tokaonpion_Pthat0153050_D0pt1p0_tkpt1p0eta1p1_2760GeV_0803_all_pt6p0.root");
 	TTree * recodmesontree = (TTree *) input->Get("recodmesontree");
     TTree * gendmesontree = (TTree *) input->Get("gendmesontree");
     recodmesontree->AddFriend(gendmesontree);
@@ -168,9 +172,9 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()
     int hiBin;
     double pthatweight;
     double trigweight;
-    vector<int> *dtype = 0, *passingcuts = 0;
+    vector<int> *dtype = 0;
     vector<float> *dcandmass = 0, *dcandpt = 0, *dcandy = 0, *dcandphi = 0, *dcandffls3d = 0, *dcandcosalpha = 0, *dcandfprob = 0, *dcandfchi2 = 0;
-    vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0;
+    vector<float> *dcanddau1eta = 0, *dcanddau2eta = 0, *dcanddau1pt = 0, *dcanddau2pt = 0;
 	vector<int> *dcanddau1q = 0, *dcanddau2q = 0;
 	vector<int>   *matchedtogen = 0, *nongendoublecounted = 0;
     vector<float> *matched_pt_Bmom = 0;
@@ -182,7 +186,6 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()
     recodmesontree->SetBranchAddress("trigweight", &trigweight);
     recodmesontree->SetBranchAddress("ndcand", &ndcand);
     recodmesontree->SetBranchAddress("dtype", &dtype);
-    recodmesontree->SetBranchAddress("passingcuts", &passingcuts);
     recodmesontree->SetBranchAddress("dcandmass", &dcandmass);
     recodmesontree->SetBranchAddress("dcandpt", &dcandpt);
     recodmesontree->SetBranchAddress("dcandy", &dcandy);
@@ -198,23 +201,35 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()
     recodmesontree->SetBranchAddress("matchedtogen", &matchedtogen);
     recodmesontree->SetBranchAddress("nongendoublecounted", &nongendoublecounted);
     recodmesontree->SetBranchAddress("matched_pt_Bmom", &matched_pt_Bmom);
+	recodmesontree->SetBranchAddress("dcanddau1pt", &dcanddau1pt);
+	recodmesontree->SetBranchAddress("dcanddau2pt", &dcanddau2pt);
+
+	TFile * input_centralityweight = new TFile("/home/sun229/DmesonAna/sl6ana/v2_pbpb_08062015/CMSSW_5_3_24/src/UserCode/OpenHF/Dmesonana/MCcentralityweight/output_hibin_mc_data.root");
+	TH1D * h_hibin_dataovermc = (TH1D *) input_centralityweight->Get("h_hibin_dataovermc");
     
    for ( int entry = 0; entry < recodmesontree->GetEntries(); entry++ )
    {
 	   recodmesontree->GetEntry(entry);
 	   if( entry % 1000000 == 0 )  cout << entry+1 << "st event" << endl;
 	   if( !MinBias ) continue;
-	   if( ndcand != dtype->size() || ndcand != passingcuts->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )    
+	   if( ndcand != dtype->size() || ndcand != dcandmass->size() || ndcand != dcandpt->size() )    
 		   cout << "Error!!!!!!!!" << endl;
 	   if( hiBin < hiBin_low || hiBin > hiBin_high )   continue;
 	
-	   double weight = pthatweight;
+//	   double weight = pthatweight;
+       double weight = 1.0;
+	   double weightcentrality = 1.0;
+
+	   if( docentralityweight ) weightcentrality = h_hibin_dataovermc->GetBinContent( h_hibin_dataovermc->FindBin( hiBin ) );
+	   h_hiBin_reweight->Fill( hiBin, weightcentrality);
+
 	   for( int icand = 0; icand < ndcand; icand++ )
 	   {
 		   
 		   if( dcandpt->at(icand) < Ptcut_low || dcandpt->at(icand) > Ptcut_high )  continue;
            if( TMath::Abs( dcandy->at(icand) ) > rapidity_high || TMath::Abs( dcandy->at(icand) ) < rapidity_low )  continue;
 		   if( TMath::Abs( dcanddau1eta->at(icand) ) > dautracketacut || TMath::Abs( dcanddau2eta->at(icand) ) > dautracketacut )   continue;
+		   if( dcanddau1pt->at(icand) < dautrackptcut || dcanddau2pt->at(icand) < dautrackptcut )   continue;
 
            if( isPrompt )
                { if( matchedtogen->at(icand) == 1 && matched_pt_Bmom->at(icand) > 0 )   continue; }
@@ -225,7 +240,9 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()
            
 		   weight = fonllweight->GetBinContent( fonllweight->FindBin( dcandpt->at(icand) ) );
            double weight_data_fonll = fit_fun_datafitted->Eval( dcandpt->at(icand) )/fonllspectrum->GetBinContent( fonllspectrum->FindBin( dcandpt->at(icand) ));
-           weight = weight * weight_data_fonll;
+           weight = weightcentrality * weight * weight_data_fonll;
+
+		   if( matchedtogen->at(icand) == 1 && nongendoublecounted->at(icand) == 1 )  h_hiBin_reweightwithpt->Fill( hiBin, weight);
 		   
            double dcandalpha = TMath::ACos(dcandcosalpha->at(icand));
 
@@ -317,6 +334,7 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()
 
 
            if( !( matchedtogen->at(icand) == 1 && nongendoublecounted->at(icand) == 1 ))   continue;
+//           if( !( matchedtogen->at(icand) == 1  ))   continue;
 		   
 		   h_pt->Fill(dcandpt->at(icand), weight);
 //alll loose or tight cuts applied?
@@ -383,6 +401,9 @@ void Cut_distribution_MC_matched_sideband_dataptweight_y1()
        sprintf(outputfile,"Cut_distribution_MC_FONLLweight_BtoD_pt%1.0fto%1.0f_rapidity%1.0fto%1.0f_cent%2.0fto%2.0f_sideband_dataptweight.root", Ptcut_low, Ptcut_high, rapidity_low, rapidity_high, hiBin_low * 0.5, hiBin_high * 0.5);
 
    TFile * output = new TFile(outputfile,"RECREATE");
+
+   h_hiBin_reweightwithpt->Write();
+   h_hiBin_reweight->Write();
 
    y_signalregionbkg->Write();
    ffls3d_signalregionbkg->Write();
