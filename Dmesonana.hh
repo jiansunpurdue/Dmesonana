@@ -12,12 +12,13 @@
 #include <TTree.h>
 #include <TCanvas.h>
 //#include "DataFormats/HLTReco/interface/TriggerObject.h"
-#include "UserCode/OpenHF/interface/hfcand_v1.hh"
+#include "UserCode/OpenHF/interface/hfcand_v2.hh"
 
 #define MAXPARTICLES 150000
 #define nch 3
 
 #define MAXGENDMESON 100
+#define MAXALLGEND0 100
 
 //typedef std::vector<trigger::TriggerObject> trigO;
 using namespace std;
@@ -35,8 +36,15 @@ class Dmesonana
         float fpt;
         float feta;
 		float fphi;
+		float svx;
+		float svy;
+		float svz;
         float ffls3d;
+		float ff3d;
         float cosalpha;
+		float ffxy;
+		float fflsxy;
+		float cosalphaxy;
         float fprob;
         float fdr;
         float fchi2;
@@ -52,10 +60,16 @@ class Dmesonana
 		vector<int>  gIndex2;
         vector<int>  gIndex_dau2;
 
+        Float_t genpvx;
+        Float_t genpvy;
+        Float_t genpvz;
         Int_t mult;
         Float_t genpt[MAXPARTICLES];
         Float_t geneta[MAXPARTICLES];
 		Float_t genphi[MAXPARTICLES];
+        Float_t genvx_production[MAXPARTICLES];
+        Float_t genvy_production[MAXPARTICLES];
+        Float_t genvz_production[MAXPARTICLES];
         Int_t genpdg[MAXPARTICLES];
         Int_t genchg[MAXPARTICLES];
         Int_t gensube[MAXPARTICLES];
@@ -76,6 +90,8 @@ class Dmesonana
         float maxJetTrgMass;
 
         float pthat;
+		float vx;
+		float vy;
 		float vz;
 
         //trig decison and trig Prescl, for pbpb
@@ -134,20 +150,40 @@ class Dmesonana
 		TTree * jettree;
 		TTree * skimtree;
 		TTree * HiTree;
-		hfcand_v1* hfcandidate;
+		hfcand_v2* hfcandidate;
 
     private:
 		//output trees
 		TTree * gendmesontree;
 		TTree * recodmesontree;
+		TTree * allgend0tree;
+
+		int nallgend0;
+		float alld0pt[MAXALLGEND0];
+		float alld0eta[MAXALLGEND0];
+		float alld0phi[MAXALLGEND0];
+		int   alld0pdg[MAXALLGEND0];
+		int   alld0sube[MAXALLGEND0];
+		int   alld0dnofdau[MAXALLGEND0];
+		float pt_alld0dau[MAXALLGEND0][10];
+		float eta_alld0dau[MAXALLGEND0][10];
+		float phi_alld0dau[MAXALLGEND0][10];
+		int   pdg_alld0dau[MAXALLGEND0][10];
+		int   pdg_alld0Bmom[MAXALLGEND0];
+		float pt_alld0Bmom[MAXALLGEND0];
 
 		int ngend;
 		double weight_pthat;
+		float gensvx[MAXGENDMESON];
+		float gensvy[MAXGENDMESON];
+		float gensvz[MAXGENDMESON];
 		float dpt[MAXGENDMESON];
+		float dgenff3d[MAXGENDMESON];
 		float deta[MAXGENDMESON];
 		float dy[MAXGENDMESON];
 		float dphi[MAXGENDMESON];
 		int    dpdg[MAXGENDMESON];
+		int    dsube[MAXGENDMESON];
 		int    dnofdau[MAXGENDMESON];
 		float pt_ddau[MAXGENDMESON][3];
 		float eta_ddau[MAXGENDMESON][3];
@@ -161,15 +197,31 @@ class Dmesonana
 
 		int ndcand;
 		int hiBin;
+		int run;
+		int evt;
+		float Ncoll;
+//		float pvx, pvy, pvz;  vx, vy, vz previously
+		float bsx, bsy, bsz;
 		double trigweight;
 		double pthatweight;
 		vector<int> dtype, passingcuts;
-		vector<float> dcandmass, dcandpt, dcandeta, dcandphi, dcandy, dcandffls3d, dcandcosalpha, dcandfprob, dcandfchi2;
+		vector<float> dcandmass, dcandpt, dcandeta, dcandphi, dcandy;
+		vector<float> dcandsvx, dcandsvy, dcandsvz;
+		vector<float> dcandff3d, dcandffls3d, dcandcosalpha, dcandfprob, dcandfchi2; //3D cut
+		vector<float> dcandffxy, dcandfflsxy, dcandcosalphaxy; //2D cut
 		vector<float> dcanddau1eta, dcanddau2eta;
 		vector<float> dcanddau1pt, dcanddau2pt;
+		vector<int> dcanddau1matchedpdg, dcanddau2matchedpdg;
+		vector<int> dcanddau1matchedmotherpdg, dcanddau2matchedmotherpdg;
+		vector<int> dcanddau1matchedmothersube, dcanddau2matchedmothersube;
+		vector<int> dcanddau1matchedmothernofdau, dcanddau2matchedmothernofdau;
+		vector<float> dcanddau1matchedmotherpt, dcanddau2matchedmotherpt;
+		vector<float> dcanddau1matchedmothereta, dcanddau2matchedmothereta;
+		vector<float> dcanddau1matchedmotherphi, dcanddau2matchedmotherphi;
 		vector<int> dcanddau1q, dcanddau2q;
 		vector<int>   matchedtogen, dcandmatchedpdg, nongendoublecounted;
-		vector<float> dcandmatchedpt, dcandmatchedeta, dcandmatchedphi, dcandmatchnofdau;
+		vector<float> dcandmatchedpt, dcandmatchedff3d, dcandmatchedy, dcandmatchedeta, dcandmatchedphi, dcandmatchnofdau;
+		vector<float> dcandmatchedsvx, dcandmatchedsvy, dcandmatchedsvz;
 		vector<float> dcandmatcheddau1pt, dcandmatcheddau2pt;
 		vector<int>   matched_pdg_Bmom;
 		vector<float> matched_pt_Bmom;
@@ -198,6 +250,7 @@ class Dmesonana
 		void LoopOverEvt();
 		void LoopOvercandidate();
 		void FindGenDmeson();
+		void FindAllGenD0();
 		double jettrigcomb();
 
     public:
