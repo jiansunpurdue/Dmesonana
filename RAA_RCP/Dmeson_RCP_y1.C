@@ -1,11 +1,11 @@
-double syserrorPer_upper_ptbin7_cent0to10_RCP[7] = { 0.282395 ,0.179764 ,0.171278 ,0.190331 ,0.171791 ,0.160817 ,0.284266};
-double syserrorPer_lower_ptbin7_cent0to10_RCP[7] = { 0.282395 ,0.179764 ,0.171278 ,0.190331 ,0.171791 ,0.160817 ,0.284266};
+double syserrorPer_upper_ptbin7_cent0to10_RCP[7] = { 0.277863 ,0.223157 ,0.208286 ,0.223361 ,0.186682 ,0.1648 ,0.273383};
+double syserrorPer_lower_ptbin7_cent0to10_RCP[7] = { 0.277863 ,0.223157 ,0.208286 ,0.223361 ,0.186682 ,0.1648 ,0.273383};
 
-double syserrorPer_upper_ptbin7_cent10to30_RCP[7] = { 0.249806 ,0.192808 ,0.184759 ,0.172902 ,0.160574 ,0.153581 ,0.302124};
-double syserrorPer_lower_ptbin7_cent10to30_RCP[7] = { 0.249806 ,0.192808 ,0.184759 ,0.172902 ,0.160574 ,0.153581 ,0.302124};
+double syserrorPer_upper_ptbin7_cent10to30_RCP[7] = { 0.281785 ,0.177403 ,0.211679 ,0.171167 ,0.156774 ,0.141021 ,0.280355};
+double syserrorPer_lower_ptbin7_cent10to30_RCP[7] = { 0.281785 ,0.177403 ,0.211679 ,0.171167 ,0.156774 ,0.141021 ,0.280355};
 
-double syserrorPer_upper_ptbin7_cent30to50_RCP[7] = { 0.207024 ,0.124483 ,0.109595 ,0.109576 ,0.104231 ,0.127977 ,0.268862};
-double syserrorPer_lower_ptbin7_cent30to50_RCP[7] = { 0.207024 ,0.124483 ,0.109595 ,0.109576 ,0.104231 ,0.127977 ,0.268862};
+double syserrorPer_upper_ptbin7_cent30to50_RCP[7] = { 0.247546 ,0.160509 ,0.144803 ,0.120975 ,0.114865 ,0.101931 ,0.24052};
+double syserrorPer_lower_ptbin7_cent30to50_RCP[7] = { 0.247546 ,0.160509 ,0.144803 ,0.120975 ,0.114865 ,0.101931 ,0.24052};
 
 double *syserrorPer_upper;
 double *syserrorPer_lower;
@@ -54,7 +54,7 @@ void Draw_RCP( TFile * input_pbpb_central, TFile * input_pbpb_perip, int cent_lo
         }
     }
 
-	TFile * fonllinput = new TFile("./../FONLL/fonll/outputDzero_y1_7ptbin_1p5to28.root");
+	TFile * fonllinput = new TFile("ppdatadrivenplusFONLL_7ptbin_y1.root");
     TGraphAsymmErrors * RCP_errorsys = ( TGraphAsymmErrors *) fonllinput->Get("gaeSigmaDzero");
     RCP_errorsys->SetName("RCP_errorsys");
 
@@ -65,7 +65,7 @@ void Draw_RCP( TFile * input_pbpb_central, TFile * input_pbpb_perip, int cent_lo
 	{
 		D0_pbpb_spectrum_central->SetBinContent(D0_pbpb_spectrum_central->FindBin(35), -9999999);
 	    D0_pbpb_spectrum_central->SetBinError(D0_pbpb_spectrum_central->FindBin(35), 0);
-		D0_pbpb_spectrum_central->GetYaxis()->SetRangeUser(4.0, 25);
+		D0_pbpb_spectrum_central->GetYaxis()->SetRangeUser(2.0, 25);
 	}
 
 	D0_pbpb_spectrum_central->Scale(1.0/TAA_central);
@@ -80,7 +80,6 @@ void Draw_RCP( TFile * input_pbpb_central, TFile * input_pbpb_perip, int cent_lo
 	    D0_pbpb_spectrum_perip->SetBinError(D0_pbpb_spectrum_perip->FindBin(35), 0);
 
 		D0_pbpb_spectrum_perip->SetBinContent(D0_pbpb_spectrum_perip->FindBin(2.0), -9);
-		D0_pbpb_spectrum_perip->SetBinContent(D0_pbpb_spectrum_perip->FindBin(3.0), -9);
 		D0_pbpb_spectrum_perip->GetYaxis()->SetRangeUser(2.0, 24);
 	}
 
@@ -108,9 +107,14 @@ void Draw_RCP( TFile * input_pbpb_central, TFile * input_pbpb_perip, int cent_lo
 
 	D0_Rcp_errorstats->Divide(D0_pbpb_spectrum_central, D0_pbpb_spectrum_perip, 1.0, 1.0);
 
+	cout << " Centrality: " << cent_low << "   to   " << cent_high << endl;
+	for( int i = 0; i < Nptbin + 1; i++ )
+	{
+		cout << " PbPb central spectrum: " << D0_pbpb_spectrum_central->GetBinContent(i+1) << endl;
+	}
+
     for( int i = 0; i < RCP_errorsys->GetN(); i++ )
     {
-//      cout << " RAA: " << D0_fonll_raa_errorsys->GetY()[i] << endl;
         double error_Per_lower = syserrorPer_lower[i];
         double error_Per_upper = syserrorPer_upper[i];
         double syserror_lower =  error_Per_lower * D0_Rcp_errorstats->GetBinContent(i+2);
@@ -143,7 +147,7 @@ void Draw_RCP( TFile * input_pbpb_central, TFile * input_pbpb_perip, int cent_lo
     Tl.SetTextAlign(12);
     Tl.SetTextSize(0.03);
     Tl.DrawLatex(0.3,0.8, "CMS Preliminary #sqrt{s_{NN}} = 2.76 TeV");
-    Tl.DrawLatex(0.3,0.75, "#left|y#right| < 1.0");
+    Tl.DrawLatex(0.3,0.75, "|y| < 1.0");
     TString centrality;
     centrality.Form("Centrality %d-%d%%", cent_low,cent_high);
     cout << centrality << endl;
@@ -169,6 +173,8 @@ void Draw_RCP( TFile * input_pbpb_central, TFile * input_pbpb_perip, int cent_lo
 	RCP_errorsys->Write();
 
 	output->Close();
+
+	cout << endl;
 	
 }
 
@@ -184,50 +190,6 @@ void Dmeson_RCP_y1()
 	int Nptbin;
 	TFile * input_pbpb_central;
 	TFile * input_pbpb_perip;
-//
-//   //centrality 0 to 20%
-//      input_pbpb_central = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent0to20_ptbin8.root");
-//	  input_pbpb_perip = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin8.root");
-//
-//	  TAA_central = 18.84e-9;   //CMS
-//	  cent_low = 0;
-//	  cent_high = 20;
-//	  Nptbin = 8;
-//
-//	  Draw_RCP(input_pbpb_central, input_pbpb_perip, cent_low, cent_high, Nptbin, TAA_central, TAA_perip);
-//
-//	  input_pbpb_central->Close();
-//	  input_pbpb_perip->Close();
-//      
-//   //centrality 10% to 30% 
-//	  input_pbpb_central = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent10to30_ptbin8.root");
-//	  input_pbpb_perip = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin8.root");
-//
-//      TAA_central = 11.64e-9;
-//	  cent_low = 10;
-//	  cent_high = 30;
-//	  Nptbin = 8;
-//
-//      Draw_RCP(input_pbpb_central, input_pbpb_perip, cent_low, cent_high, Nptbin, TAA_central, TAA_perip);
-//
-//	  input_pbpb_central->Close();
-//	  input_pbpb_perip->Close();
-//      
-//   //centrality 30% to 50% 
-//	  input_pbpb_central = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent30to50_ptbin8.root");
-//	  input_pbpb_perip = new TFile("Spectrum_centRecoeff_D0_PbPb_dpt_evtunprescaleMB0_cent50to100_ptbin8.root");
-//
-//      TAA_central = 3.92e-9;
-//	  cent_low = 30;
-//	  cent_high = 50;
-//	  Nptbin = 8;
-//
-//      Draw_RCP(input_pbpb_central, input_pbpb_perip, cent_low, cent_high, Nptbin, TAA_central, TAA_perip);
-//
-//	  input_pbpb_central->Close();
-//	  input_pbpb_perip->Close();
-//      
-// 5 ptbins, used for RAA vs Npart
    
    //centrality 0% to 10% 
 	  input_pbpb_central = new TFile("rootfiles/Prompt_Spectrum_centRecoeff_D0_PbPb_dpt_cent0to10_ptbin7_y1.root");

@@ -274,46 +274,70 @@ void Bfractioncal_method1_y1_ptbin1pt7to28()
 
     int Nptbin = 1;
 
-    cent_low = 0;
-    cent_high = 10;
-    NEVT = 3.07931000000000000e+06;
-    TAA = 23.20e-9;
-    ERROR_TAA_PERCEN = 0.043;
-    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_3_ptd_unpreMBtrig_0_cent0to10_y1.root");
-    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_3_ybin_6_Bfeeddown_FONLLweight_cent-0to10_RAAscale_y1.root");
-    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-0-10.root");
-    Calculate_Bfraction( Nptbin, input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
+//    cent_low = 0;
+//    cent_high = 10;
+//    NEVT = 3.07931000000000000e+06;
+//    TAA = 23.20e-9;
+//    ERROR_TAA_PERCEN = 0.043;
+//    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_3_ptd_unpreMBtrig_0_cent0to10_y1.root");
+//    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_3_ybin_6_Bfeeddown_FONLLweight_cent-0to10_RAAscale_y1.root");
+//    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-0-10.root");
+//    Calculate_Bfraction( Nptbin, input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
 //
 //    cent_low = 10;
+//    cent_high = 20;
+//    NEVT = 3.01404500000000000e+06;
+//    TAA = 14.48e-9;
+//    ERROR_TAA_PERCEN = 0.052;
+//    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_3_ptd_unpreMBtrig_0_cent10to20_y1.root");
+//    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_3_ybin_6_Bfeeddown_FONLLweight_cent10to20_RAAscale_y1.root");
+//    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-10-20.root");
+//    Calculate_Bfraction( Nptbin, input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
+//
+//
+//    cent_low = 20;
 //    cent_high = 30;
-//    NEVT = 6.09303800000000000e+06;
-//    TAA = 11.64e-9;
-//    ERROR_TAA_PERCEN = 0.057;
-//    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_9_ptd_unpreMBtrig_0_cent10to30_y1.root");
-//    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_9_ybin_6_Bfeeddown_FONLLweight_cent10to30_RAAscale_y1.root");
-//    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-10-30.root");
+//    NEVT = 3.08019200000000000e+06;
+//    TAA = 8.80e-9;
+//    ERROR_TAA_PERCEN = 0.066;
+//    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_3_ptd_unpreMBtrig_0_cent20to30_y1.root");
+//    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_3_ybin_6_Bfeeddown_FONLLweight_cent20to30_RAAscale_y1.root");
+//    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-20-30.root");
 //    Calculate_Bfraction( Nptbin, input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
 //
 //
 //    cent_low = 30;
-//    cent_high = 50;
-//    NEVT = 6.13955200000000000e+06;
-//    TAA = 3.92e-9;
-//    ERROR_TAA_PERCEN = 0.093;
-//    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_9_ptd_unpreMBtrig_0_cent30to50_y1.root");
-//    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_9_ybin_6_Bfeeddown_FONLLweight_cent30to50_RAAscale_y1.root");
-//    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-30-50.root");
+//    cent_high = 40;
+//    NEVT = 3.09926300000000000e+06;
+//    TAA = 5.09e-9;
+//    ERROR_TAA_PERCEN = 0.085;
+//    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_3_ptd_unpreMBtrig_0_cent30to40_y1.root");
+//    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_3_ybin_6_Bfeeddown_FONLLweight_cent30to40_RAAscale_y1.root");
+//    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-30-40.root");
 //    Calculate_Bfraction( Nptbin, input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
 //
+//
+
+    cent_low = 40;
+    cent_high = 50;
+    NEVT = 3.04151000000000000e+06;
+    TAA = 2.75e-9;
+    ERROR_TAA_PERCEN = 0.109;
+    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_3_ptd_unpreMBtrig_0_cent40to50_y1.root");
+    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_3_ybin_6_Bfeeddown_FONLLweight_cent40to50_RAAscale_y1.root");
+    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-40-50.root");
+    Calculate_Bfraction( Nptbin, input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
+
+
 //
 //    cent_low = 50;
 //    cent_high = 100;
-//    NEVT = 1.48603910000000000e+07;
+//    NEVT = 1.48631930000000000e+07;
 //    TAA = 0.47e-9;
-//    ERROR_TAA_PERCEN = 0.111;
-//    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_9_ptd_unpreMBtrig_0_cent50to100_y1.root");
-//    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_9_ybin_6_Bfeeddown_FONLLweight_cent50to100_RAAscale_y1.root");
+//    ERROR_TAA_PERCEN = 0.150;
+//    TFile * input_data_raw = new TFile("./../Datamassspectrumfit/rootfiles/Dspectrum_pbpb_data_ptbin_3_ptd_unpreMBtrig_0_cent50to100_y1.root");
+//    TFile * input_mc_BtoDeff = new TFile("./../rootfiles/D0_PbPb_acc_eff_ptbin_3_ybin_6_Bfeeddown_FONLLweight_cent50to100_RAAscale_y1.root");
 //    TFile * input_BtoD = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-50-100.root");
 //    Calculate_Bfraction( Nptbin, input_data_raw, input_mc_BtoDeff, input_BtoD, cent_low, cent_high, NEVT, TAA, ERROR_TAA_PERCEN);
-
+//
 }

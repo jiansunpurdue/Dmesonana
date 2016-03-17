@@ -1,0 +1,497 @@
+////Alice 356.6516957292244, 0.14555268462277304
+//260.60050594553644, 0.19425332449506905
+//186.20486735839614, 0.2526832699774082
+//129.13853979248114, 0.32339659907198204
+//85.02117125038892, 0.3589480661787583
+//33.3227364348426, 0.5895942966139527
+//
+//
+
+double AliceRAA_ptbin1pt8to16[6] = { 0.15, 0.19, 0.25, 0.32, 0.36, 0.59};
+
+void Dmeson_RAFONLL_Npart_y1_datapp_ptbin1pt8to16()
+{
+	gStyle->SetOptTitle(0);
+	gStyle->SetOptStat(0);
+
+    TGraphAsymmErrors * D0_fonll_raa_errorsys[6];
+	TGraphAsymmErrors * D0_fonll_raa_errordata[6];
+	TGraphAsymmErrors * D0_fonll_raa_errorfonll[6];
+
+	TFile * input_cent0to10 = new TFile("rootfiles/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent0to10_ptbin3_y1_dataplusfonll.root");
+	D0_fonll_raa_errorsys[0] = ( TGraphAsymmErrors * ) input_cent0to10->Get("D0_fonll_raa_errorsys");
+	D0_fonll_raa_errordata[0] = ( TGraphAsymmErrors * ) input_cent0to10->Get("D0_fonll_raa_errordata");
+	D0_fonll_raa_errorfonll[0] = ( TGraphAsymmErrors * ) input_cent0to10->Get("D0_fonll_raa_errorfonll");
+
+	TFile * input_cent10to20 = new TFile("rootfiles/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent10to20_ptbin3_y1_dataplusfonll.root");
+	D0_fonll_raa_errorsys[1] = ( TGraphAsymmErrors * ) input_cent10to20->Get("D0_fonll_raa_errorsys");
+	D0_fonll_raa_errordata[1] = ( TGraphAsymmErrors * ) input_cent10to20->Get("D0_fonll_raa_errordata");
+	D0_fonll_raa_errorfonll[1] = ( TGraphAsymmErrors * ) input_cent10to20->Get("D0_fonll_raa_errorfonll");
+
+	TFile * input_cent20to30 = new TFile("rootfiles/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent20to30_ptbin3_y1_dataplusfonll.root");
+	D0_fonll_raa_errorsys[2] = ( TGraphAsymmErrors * ) input_cent20to30->Get("D0_fonll_raa_errorsys");
+	D0_fonll_raa_errordata[2] = ( TGraphAsymmErrors * ) input_cent20to30->Get("D0_fonll_raa_errordata");
+	D0_fonll_raa_errorfonll[2] = ( TGraphAsymmErrors * ) input_cent20to30->Get("D0_fonll_raa_errorfonll");
+
+	TFile * input_cent30to40 = new TFile("rootfiles/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent30to40_ptbin3_y1_dataplusfonll.root");
+	D0_fonll_raa_errorsys[3] = ( TGraphAsymmErrors * ) input_cent30to40->Get("D0_fonll_raa_errorsys");
+	D0_fonll_raa_errordata[3] = ( TGraphAsymmErrors * ) input_cent30to40->Get("D0_fonll_raa_errordata");
+	D0_fonll_raa_errorfonll[3] = ( TGraphAsymmErrors * ) input_cent30to40->Get("D0_fonll_raa_errorfonll");
+
+	TFile * input_cent40to50 = new TFile("rootfiles/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent40to50_ptbin3_y1_dataplusfonll.root");
+	D0_fonll_raa_errorsys[4] = ( TGraphAsymmErrors * ) input_cent40to50->Get("D0_fonll_raa_errorsys");
+	D0_fonll_raa_errordata[4] = ( TGraphAsymmErrors * ) input_cent40to50->Get("D0_fonll_raa_errordata");
+	D0_fonll_raa_errorfonll[4] = ( TGraphAsymmErrors * ) input_cent40to50->Get("D0_fonll_raa_errorfonll");
+
+	TFile * input_cent50to100 = new TFile("rootfiles/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent50to100_ptbin3_y1_dataplusfonll.root");
+	D0_fonll_raa_errorsys[5] = ( TGraphAsymmErrors * ) input_cent50to100->Get("D0_fonll_raa_errorsys");
+	D0_fonll_raa_errordata[5] = ( TGraphAsymmErrors * ) input_cent50to100->Get("D0_fonll_raa_errordata");
+	D0_fonll_raa_errorfonll[5] = ( TGraphAsymmErrors * ) input_cent50to100->Get("D0_fonll_raa_errorfonll");
+
+	TCanvas * D0_RAFONLL_1ptbin = new TCanvas("D0_RAFONLL_1ptbin","D0_RAFONLL_1ptbin");
+
+    D0_fonll_raa_errorsys[0]->GetYaxis()->SetRangeUser(0,2.5);
+    D0_fonll_raa_errorsys[0]->Draw("A2");
+
+	D0_fonll_raa_errorfonll[0]->Draw("2");
+	D0_fonll_raa_errordata[0]->Draw("P");
+
+    D0_fonll_raa_errorfonll[1]->SetLineColor(4.0);
+	D0_fonll_raa_errordata[1]->SetLineColor(4.0);
+	D0_fonll_raa_errordata[1]->SetMarkerColor(4.0);
+	D0_fonll_raa_errorfonll[1]->Draw("2");
+	D0_fonll_raa_errordata[1]->Draw("P");
+
+    D0_fonll_raa_errorfonll[2]->SetLineColor(2.0);
+	D0_fonll_raa_errordata[2]->SetLineColor(2.0);
+	D0_fonll_raa_errordata[2]->SetMarkerColor(2.0);
+	D0_fonll_raa_errorfonll[2]->Draw("2");
+	D0_fonll_raa_errordata[2]->Draw("P");
+
+    D0_fonll_raa_errorfonll[3]->SetLineColor(kCyan+2);
+	D0_fonll_raa_errordata[3]->SetLineColor(kCyan+2);
+	D0_fonll_raa_errordata[3]->SetMarkerColor(kCyan+2);
+	D0_fonll_raa_errorfonll[3]->Draw("2");
+	D0_fonll_raa_errordata[3]->Draw("P");
+
+    TLegend * t = new TLegend(0.5, 0.7, 0.85, 0.85);
+	t->SetFillColor(0);
+	t->SetTextFont(42);
+	t->AddEntry(D0_fonll_raa_errordata[0], "Centrality 0-10%", "PL");
+	t->AddEntry(D0_fonll_raa_errordata[1], "Centrality 10-20%", "PL");
+    t->AddEntry(D0_fonll_raa_errordata[2], "Centrality 20-30%", "PL");
+    t->AddEntry(D0_fonll_raa_errordata[3], "Centrality 30-40%", "PL");
+	t->AddEntry(D0_fonll_raa_errordata[4], "Centrality 40-50%", "PL");
+	t->AddEntry(D0_fonll_raa_errordata[5], "Centrality 50-100%", "PL");
+	t->Draw();
+
+//	D0_RAFONLL_1ptbin->SaveAs("results/D0_RAFONLL_ptbin1pt8to16_cent01020304050100_y1_dataplusfonll.png");
+//	D0_RAFONLL_1ptbin->SaveAs("results/D0_RAFONLL_ptbin1pt8to16_cent01020304050100_y1_dataplusfonll.pdf");
+
+
+    double step = 10.;
+	double Npart_central[6] = {22.06, 86.23, 130.06, 187.35, 261.49, 355.45};
+	double Npart_error[6];
+	double Npart_pt8to16[6];
+	double Npart_npjpsi_pt6p5to30[6];
+
+	double RAA_D0_pt8to16[6];
+	double RAA_D0_pt8to16_errordata_yl[6];
+	double RAA_D0_pt8to16_errordata_yh[6];
+	double RAA_D0_pt8to16_errorfonll_yl[6];
+	double RAA_D0_pt8to16_errorfonll_yh[6];
+	double RAA_D0_pt8to16_errorsys_yl[6];
+	double RAA_D0_pt8to16_errorsys_yh[6];
+
+	double RAA_npjpsi_pt6p5to30[6] = { 0.79, 0.75, 0.59, 0.54, 0.49, 0.40};
+	double RAA_npjpsi_pt6p5to30_errordata_yl[6] = { 0.11, 0.09, 0.06, 0.05, 0.04, 0.03};
+	double RAA_npjpsi_pt6p5to30_errordata_yh[6] = { 0.11, 0.09, 0.06, 0.05, 0.04, 0.03};
+	double RAA_npjpsi_pt6p5to30_errorsys_yl[6] = { 0.08, 0.08, 0.06, 0.06, 0.05, 0.04};
+	double RAA_npjpsi_pt6p5to30_errorsys_yh[6] = { 0.08, 0.08, 0.06, 0.06, 0.05, 0.04};
+
+	for(int i = 0; i < 6; i++ )
+	{
+		cout << " np jpsi i = " << i << "  before: " << RAA_npjpsi_pt6p5to30_errorsys_yl[i] << endl;
+		RAA_npjpsi_pt6p5to30_errorsys_yl[i] = TMath::Sqrt( RAA_npjpsi_pt6p5to30_errorsys_yl[i] * RAA_npjpsi_pt6p5to30_errorsys_yl[i] + RAA_npjpsi_pt6p5to30[i] * RAA_npjpsi_pt6p5to30[i] * 0.09 * 0.09 ); // inlcude the global uncertainties
+		RAA_npjpsi_pt6p5to30_errorsys_yh[i] = RAA_npjpsi_pt6p5to30_errorsys_yl[i];
+		cout << " np jpsi i = " << i << "  after: " << RAA_npjpsi_pt6p5to30_errorsys_yl[i] << endl;
+	}
+
+	for( int i = 0; i < 6; i++ )
+	{
+//		Npart_error[i] = step/2.;
+//		Npart_pt8to16[i] = Npart_central[i] - 1.5 * step;
+//		Npart_pt8to16[i] = Npart_central[i] - 0.5 * step;
+//		Npart_pt7to11[i]  = Npart_central[i] + step * 0.5;
+//		Npart_pt11to16[i]  = Npart_central[i] + step * 1.5;
+//		Npart_pt16to28[i]  = Npart_central[i] + 2.5 * step;
+
+        step = 10.0;
+		Npart_error[i] = step/2.;
+//		Npart_pt8to16[i] = Npart_central[i] - 0.5 * step;
+//		Npart_npjpsi_pt6p5to30[i] = Npart_central[i] + 0.5 * step;
+        Npart_pt8to16[i] = Npart_central[i];
+//		Npart_npjpsi_pt6p5to30[i] = Npart_central[i] + step;
+        Npart_npjpsi_pt6p5to30[i] = Npart_central[i];
+	}
+
+	for( int i = 0; i < 6; i++ )
+	{
+		RAA_D0_pt8to16[i] = D0_fonll_raa_errordata[5-i]->GetY()[1];
+		cout << " RAA from CMS: " << RAA_D0_pt8to16[i] << endl;
+		cout << " RAA from Alice: " << AliceRAA_ptbin1pt8to16[5-i] << endl;
+		cout << " Ratio to Alice: " << RAA_D0_pt8to16[i]/AliceRAA_ptbin1pt8to16[5-i] << endl;
+		RAA_D0_pt8to16_errordata_yl[i] = D0_fonll_raa_errordata[5-i]->GetErrorYlow(1);
+		RAA_D0_pt8to16_errordata_yh[i] = D0_fonll_raa_errordata[5-i]->GetErrorYhigh(1);
+		RAA_D0_pt8to16_errorfonll_yl[i] = D0_fonll_raa_errorfonll[5-i]->GetErrorYlow(1);
+		RAA_D0_pt8to16_errorfonll_yh[i] = D0_fonll_raa_errorfonll[5-i]->GetErrorYhigh(1);
+		RAA_D0_pt8to16_errorsys_yl[i] = D0_fonll_raa_errorsys[5-i]->GetErrorYlow(1);
+		RAA_D0_pt8to16_errorsys_yh[i] = D0_fonll_raa_errorsys[5-i]->GetErrorYhigh(1);
+		
+	}
+
+    //systematic from TAA, NMB and Br
+
+	RAA_D0_pt8to16_errorsys_yl[0] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yl[0] * RAA_D0_pt8to16_errorsys_yl[0] + 0.151 * 0.151 + 0.03 * 0.03);
+    RAA_D0_pt8to16_errorsys_yl[1] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yl[1] * RAA_D0_pt8to16_errorsys_yl[1] + 0.110 * 0.110 + 0.03 * 0.03);
+	RAA_D0_pt8to16_errorsys_yl[2] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yl[2] * RAA_D0_pt8to16_errorsys_yl[2] + 0.086 * 0.086 + 0.03 * 0.03);
+    RAA_D0_pt8to16_errorsys_yl[3] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yl[3] * RAA_D0_pt8to16_errorsys_yl[3] + 0.067 * 0.067 + 0.03 * 0.03);
+	RAA_D0_pt8to16_errorsys_yl[4] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yl[4] * RAA_D0_pt8to16_errorsys_yl[4] + 0.054 * 0.054 + 0.03 * 0.03);
+    RAA_D0_pt8to16_errorsys_yl[5] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yl[5] * RAA_D0_pt8to16_errorsys_yl[5] + 0.045 * 0.045 + 0.03 * 0.03);
+	
+	RAA_D0_pt8to16_errorsys_yh[0] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yh[0] * RAA_D0_pt8to16_errorsys_yh[0] + 0.151 * 0.151 + 0.03 * 0.03);
+    RAA_D0_pt8to16_errorsys_yh[1] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yh[1] * RAA_D0_pt8to16_errorsys_yh[1] + 0.110 * 0.110 + 0.03 * 0.03);
+	RAA_D0_pt8to16_errorsys_yh[2] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yh[2] * RAA_D0_pt8to16_errorsys_yh[2] + 0.086 * 0.086 + 0.03 * 0.03);
+    RAA_D0_pt8to16_errorsys_yh[3] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yh[3] * RAA_D0_pt8to16_errorsys_yh[3] + 0.067 * 0.067 + 0.03 * 0.03);
+	RAA_D0_pt8to16_errorsys_yh[4] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yh[4] * RAA_D0_pt8to16_errorsys_yh[4] + 0.054 * 0.054 + 0.03 * 0.03);
+    RAA_D0_pt8to16_errorsys_yh[5] =  TMath::Sqrt( RAA_D0_pt8to16_errorsys_yh[5] * RAA_D0_pt8to16_errorsys_yh[5] + 0.045 * 0.045 + 0.03 * 0.03);
+
+
+	TGraphAsymmErrors * RAA_D0_pt8to16_errordata_Npart = new TGraphAsymmErrors( 6, Npart_pt8to16, RAA_D0_pt8to16, Npart_error, Npart_error, RAA_D0_pt8to16_errordata_yl, RAA_D0_pt8to16_errordata_yh);
+    TGraphAsymmErrors * RAA_D0_pt8to16_errorfonll_Npart = new TGraphAsymmErrors( 6, Npart_pt8to16, RAA_D0_pt8to16, Npart_error, Npart_error, RAA_D0_pt8to16_errorfonll_yl, RAA_D0_pt8to16_errorfonll_yh);
+    TGraphAsymmErrors * RAA_D0_pt8to16_errorsys_Npart = new TGraphAsymmErrors( 6, Npart_pt8to16, RAA_D0_pt8to16, Npart_error, Npart_error, RAA_D0_pt8to16_errorsys_yl, RAA_D0_pt8to16_errorsys_yh);
+
+    TCanvas * D0_RAFONLL_Npart = new TCanvas("D0_RAFONLL_Npart","D0_RAFONLL_Npart", 600, 600);
+
+//    TColor *col1 = gROOT->GetColor(13);
+//	col1->SetAlpha(0.7);
+  
+	RAA_D0_pt8to16_errorsys_Npart->GetYaxis()->SetRangeUser(0, 1.4);
+	RAA_D0_pt8to16_errorsys_Npart->GetYaxis()->SetTitle("R*_{#kern[-0.3]{AA}} , R_{AA}");
+	RAA_D0_pt8to16_errorsys_Npart->GetXaxis()->SetLimits(0, 401);
+	RAA_D0_pt8to16_errorsys_Npart->GetXaxis()->SetTitle("N_{part}");
+	RAA_D0_pt8to16_errorsys_Npart->SetFillStyle(1001);
+	RAA_D0_pt8to16_errorsys_Npart->SetFillColor(13);
+	RAA_D0_pt8to16_errorsys_Npart->SetLineColor(13);
+    RAA_D0_pt8to16_errorsys_Npart->Draw("A2");
+
+	RAA_D0_pt8to16_errorfonll_Npart->SetFillColor(0);
+	RAA_D0_pt8to16_errorfonll_Npart->SetFillStyle(0);
+	RAA_D0_pt8to16_errorfonll_Npart->SetLineColor(1.0);
+	RAA_D0_pt8to16_errorfonll_Npart->Draw("2");
+
+	RAA_D0_pt8to16_errordata_Npart->SetFillStyle(1001);
+	RAA_D0_pt8to16_errordata_Npart->SetFillColor(13);
+	RAA_D0_pt8to16_errordata_Npart->SetLineColor(13);
+	RAA_D0_pt8to16_errordata_Npart->SetMarkerStyle(20);
+	RAA_D0_pt8to16_errordata_Npart->SetMarkerSize(1.0);
+	RAA_D0_pt8to16_errordata_Npart->SetLineColor(1.0);
+	RAA_D0_pt8to16_errordata_Npart->SetMarkerColor(1.0);
+	RAA_D0_pt8to16_errordata_Npart->Draw("P");
+
+    TGraphAsymmErrors * RAA_npjpsi_pt6p5to30_errordata_Npart = new TGraphAsymmErrors( 6, Npart_npjpsi_pt6p5to30, RAA_npjpsi_pt6p5to30, Npart_error, Npart_error, RAA_npjpsi_pt6p5to30_errordata_yl, RAA_npjpsi_pt6p5to30_errordata_yh);
+    TGraphAsymmErrors * RAA_npjpsi_pt6p5to30_errorsys_Npart = new TGraphAsymmErrors( 6, Npart_npjpsi_pt6p5to30, RAA_npjpsi_pt6p5to30, Npart_error, Npart_error, RAA_npjpsi_pt6p5to30_errorsys_yl, RAA_npjpsi_pt6p5to30_errorsys_yh);
+
+//    TColor *col2 = gROOT->GetColor(kGreen-3);
+//	col2->SetAlpha(0.7);
+
+    RAA_npjpsi_pt6p5to30_errorsys_Npart->SetFillStyle(1001);
+    RAA_npjpsi_pt6p5to30_errorsys_Npart->SetFillColor(kGreen-3);
+    RAA_npjpsi_pt6p5to30_errorsys_Npart->SetLineColor(kGreen-3);
+    RAA_npjpsi_pt6p5to30_errorsys_Npart->Draw("2");
+
+    RAA_npjpsi_pt6p5to30_errordata_Npart->SetFillStyle(1001);
+    RAA_npjpsi_pt6p5to30_errordata_Npart->SetFillColor(kGreen-3);
+    RAA_npjpsi_pt6p5to30_errordata_Npart->SetLineColor(kGreen-3);
+    RAA_npjpsi_pt6p5to30_errordata_Npart->SetMarkerStyle(22);
+    RAA_npjpsi_pt6p5to30_errordata_Npart->SetMarkerSize(1.0);
+    RAA_npjpsi_pt6p5to30_errordata_Npart->SetLineColor(kGreen+3);
+    RAA_npjpsi_pt6p5to30_errordata_Npart->SetMarkerColor(kGreen+3);
+    RAA_npjpsi_pt6p5to30_errordata_Npart->Draw("P");
+
+
+  const int NUM_BIN_charged = 6;
+  Double_t Npart_charged[NUM_BIN_charged],raa_charged[NUM_BIN_charged],stat_charged[NUM_BIN_charged],syst_charged[NUM_BIN_charged];
+  Double_t global_uncertainties[NUM_BIN_charged] = {0.070, 0.080, 0.084, 0.092, 0.142, 0.186};
+  Double_t temp;
+  ifstream ifcharged("raacharged/RAAvsNpart_Hadron.txt");
+  for(int i=0;i<NUM_BIN_charged;i++)
+    {
+      ifcharged>>temp;
+      ifcharged>>temp;
+      ifcharged>>Npart_charged[i];
+      cout<<Npart_charged[i]<<"  ";
+      ifcharged>>temp;
+      ifcharged>>temp;
+      ifcharged>>raa_charged[i];
+      ifcharged>>stat_charged[i];
+      ifcharged>>syst_charged[i];
+      cout<<raa_charged[i]<<"  "<<stat_charged[i]<<"  "<<syst_charged[i]<<endl;
+    }
+  for( int i=0;i<NUM_BIN_charged;i++ ) // add global uncertainties
+  {
+	  cout << "charged particle i = " << i << " before: " << syst_charged[i] << endl;
+	  syst_charged[i] = TMath::Sqrt( syst_charged[i] * syst_charged[i] + raa_charged[i] * raa_charged[i] * global_uncertainties[i] * global_uncertainties[i] );
+	  cout << "charged particle i = " << i << " after: " << syst_charged[i] << endl;
+  }
+  TGraphAsymmErrors* RAA_npcharge_errordata_Npart = new TGraphAsymmErrors(NUM_BIN_charged, Npart_charged, raa_charged, Npart_error, Npart_error, stat_charged, stat_charged);
+  TGraphAsymmErrors* RAA_npcharge_errorsys_Npart = new TGraphAsymmErrors(NUM_BIN_charged, Npart_charged, raa_charged, Npart_error, Npart_error, syst_charged, syst_charged);
+//  TColor *col3 = gROOT->GetColor(Blue-4);
+//  col3->SetAlpha(0.7);
+  RAA_npcharge_errorsys_Npart->SetFillStyle(1001);
+  RAA_npcharge_errorsys_Npart->SetFillColor(kBlue-4);
+  RAA_npcharge_errorsys_Npart->SetLineColor(kBlue-4);
+  RAA_npcharge_errorsys_Npart->Draw("2");
+  RAA_npcharge_errordata_Npart->SetFillStyle(1001);
+  RAA_npcharge_errordata_Npart->SetFillColor(16);
+  RAA_npcharge_errordata_Npart->SetMarkerStyle(21);
+  RAA_npcharge_errordata_Npart->SetMarkerSize(1.0);
+  RAA_npcharge_errordata_Npart->SetLineColor(kBlue+2);
+  RAA_npcharge_errordata_Npart->SetMarkerColor(kBlue+2);
+  RAA_npcharge_errordata_Npart->Draw("P");
+
+  // Djordjevic model ..
+  TFile * file_Djordjevic_model = new TFile("Djordjevic_model.root");
+  TGraph* gra_DJ_DmesonLow = (TGraph*) file_Djordjevic_model->Get("gra_DJ_DmesonLow")->Clone();
+  TGraph* gra_DJ_DmesonHigh = (TGraph*) file_Djordjevic_model->Get("gra_DJ_DmesonHigh")->Clone();
+  TGraph* gra_DJ_BmesonLow = (TGraph*) file_Djordjevic_model->Get("gra_DJ_BmesonLow")->Clone();
+  TGraph* gra_DJ_BmesonHigh = (TGraph*) file_Djordjevic_model->Get("gra_DJ_BmesonHigh")->Clone();
+  TGraph* gra_DJ_BmesonCLossLow = (TGraph*) file_Djordjevic_model->Get("gra_DJ_BmesonCLossLow")->Clone();
+  TGraph* gra_DJ_BmesonCLossHigh = (TGraph*) file_Djordjevic_model->Get("gra_DJ_BmesonCLossHigh")->Clone();
+  TGraph* gra_DJ_RAA_DJ_piLow = (TGraph*) file_Djordjevic_model->Get("gra_DJ_RAA_DJ_piLow")->Clone();
+  TGraph* gra_DJ_RAA_DJ_piHigh = (TGraph*) file_Djordjevic_model->Get("gra_DJ_RAA_DJ_piHigh")->Clone();
+
+  gra_DJ_DmesonLow->Draw("c");
+  gra_DJ_DmesonHigh->Draw("c");
+  gra_DJ_BmesonLow->Draw("c");
+  gra_DJ_BmesonHigh->Draw("c");
+  gra_DJ_BmesonCLossLow->Draw("c");
+  gra_DJ_BmesonCLossHigh->Draw("c");
+  gra_DJ_RAA_DJ_piLow->Draw("c");
+  gra_DJ_RAA_DJ_piHigh->Draw("c");
+
+
+//    TBox *g = new TBox(1,1-0.09,11,1+0.09);
+//    g->SetLineColor(30);
+//    g->SetFillColor(30);
+//    g->Draw();
+//
+	TF1 * fun = new TF1("fun", "1.0", 0, 500);
+	fun->SetLineColor(1.0);
+	fun->SetLineStyle(3);
+	fun->SetLineWidth(0.1);
+	fun->Draw("same");
+
+	D0_RAFONLL_Npart->RedrawAxis();
+    
+	TLegend * t = new TLegend(0.16, 0.68, 0.45, 0.87);
+	t->SetFillColor(0);
+	t->SetTextSize(0.03);
+	t->SetTextFont(42);
+//	t->SetTextColor(kRed+2);
+    t->AddEntry(RAA_D0_pt8to16_errordata_Npart, "Prompt D^{0} R*_{#kern[-0.3]{AA}}", "PL");
+	t->AddEntry((TObject*)0, "#scale[0.7]{8.0 < p_{T} < 16.0 GeV/c, |y| < 1.0}","");
+//    t->AddEntry(RAA_D0_pt8to16_errorsys_Npart, "Syst._{} PbPb data+T_{AA}+N_{MB}+BR", "f");
+    t->AddEntry(RAA_D0_pt8to16_errorsys_Npart, "Syst._{} PbPb data+", "f");
+	t->AddEntry((TObject*)0, "T_{AA}+N_{MB}+BR","");
+	t->AddEntry(RAA_D0_pt8to16_errorfonll_Npart, "Err. pp reference", "f");
+	t->Draw();
+    
+	TLegend * tnp = new TLegend(0.50, 0.54, 0.80, 0.66);
+	tnp->SetFillColor(0);
+	tnp->SetTextSize(0.03);
+	tnp->SetTextFont(42);
+	tnp->SetTextAlign(12);
+//	tnp->SetTextColor(kRed+2);
+	tnp->AddEntry(RAA_npjpsi_pt6p5to30_errordata_Npart, "Non-prompt_{} J/#psi_{} R_{AA}", "PL");
+	tnp->AddEntry((TObject*)0, "#scale[0.7]{6.5 < p_{T} < 30.0 GeV/c, |y| < 1.2}","");
+	tnp->AddEntry(RAA_npjpsi_pt6p5to30_errorsys_Npart, "Total Syst.", "F");
+//	tnp->AddEntry(g, "Syst. pp luminosity", "F");
+	tnp->Draw();
+
+	TLegend * tchargedhardon = new TLegend(0.50, 0.75, 0.80, 0.87);
+	tchargedhardon->SetFillColor(0);
+	tchargedhardon->SetTextSize(0.03);
+	tchargedhardon->SetTextFont(42);
+	tchargedhardon->SetTextAlign(12);
+	tchargedhardon->AddEntry(RAA_npcharge_errordata_Npart, "Charged_{} particle_{} R_{AA}", "PL");
+	tchargedhardon->AddEntry((TObject*)0, "#scale[0.7]{7.2 < p_{T} < 9.6 GeV/c, |#eta| < 1.0}","");
+	tchargedhardon->AddEntry((TObject*)0, "#scale[0.7]{CMS, EPJC 72 (2012) 1945}","");
+	tchargedhardon->AddEntry(RAA_npcharge_errorsys_Npart, "Total Syst.", "F");
+	tchargedhardon->Draw();
+
+	TLegend * tmodel1 = new TLegend(0.16, 0.15, 0.35, 0.28);
+	tmodel1->SetFillColor(0);
+	tmodel1->SetTextSize(0.03);
+	tmodel1->SetTextFont(42);
+	tmodel1->SetTextAlign(12);
+	tmodel1->AddEntry((TObject*)0, "Djordjevic et al.","");
+	tmodel1->AddEntry((TObject*)0, "#scale[0.7]{Phys. Lett. B 737 (2014) 298}","");
+	tmodel1->AddEntry(gra_DJ_DmesonLow, "D mesons", "L");
+	tmodel1->AddEntry(gra_DJ_RAA_DJ_piLow,"#pi^{#pm}","L");
+	tmodel1->Draw();
+
+
+	TLegend * tmodel2 = new TLegend(0.36, 0.15, 0.55, 0.217);
+	tmodel2->SetFillColor(0);
+	tmodel2->SetTextSize(0.03);
+	tmodel2->SetTextFont(42);
+	tmodel2->SetTextAlign(12);
+	tmodel2->AddEntry(gra_DJ_BmesonLow, "Non-prompt J/#psi", "L");
+	tmodel2->AddEntry(gra_DJ_BmesonCLossLow,"Non-prompt J/#psi","L");
+	tmodel2->AddEntry((TObject*)0, "with c quark energy loss","");
+	tmodel2->Draw();
+
+
+//
+//    TLatex Tl;
+//    Tl.SetNDC();
+//    Tl.SetTextAlign(12);
+//    Tl.SetTextSize(0.04);
+//    Tl.SetTextFont(42);
+//	Tl.DrawLatex(0.125,0.93, "#scale[1.25]{CMS} Preliminary");
+//	Tl.DrawLatex(0.53,0.93, "PbPb #sqrt{s_{NN}} = 2.76 TeV");
+
+    TLatex Tl;
+    Tl.SetNDC();
+    Tl.SetTextAlign(12);
+    Tl.SetTextSize(0.04);
+    Tl.SetTextFont(42);
+    Tl.DrawLatex(0.125,0.93, "#scale[1.25]{CMS}");
+    Tl.DrawLatex(0.24,0.925, "Preliminary");//->SetTextColor(kRed+2);
+    Tl.DrawLatex(0.53,0.93, "PbPb #sqrt{s_{NN}} = 2.76 TeV");
+
+	D0_RAFONLL_Npart->RedrawAxis();
+
+//	D0_RAFONLL_Npart->SaveAs("results/D0_RAFONLL_Npart_ptbin1pt8to16_cent01020304050100_y1_dataplusfonll.png");
+	D0_RAFONLL_Npart->SaveAs("results/D0_RAFONLL_Npart_ptbin1pt8to16_cent01020304050100_y1_dataplusfonll_jpsi_chargedparticle_DJmodel.pdf");
+
+//// CMS: double Npart_central[6] = {22.06, 86.23, 130.06, 187.35, 261.49, 355.45};
+//    double Npart_alice_center[6] = {356, 260, 187, 129, 86, 33};
+//	double RAA_alice_center[6] = {0.15, 0.20, 0.25, 0.33, 0.36, 0.59};
+//	double RAA_alice_statistical_high[6] = {0.167, 0.23, 0.30, 0.39, 0.43, 0.72};
+//	double RAA_alice_unco_high[6] = {0.18, 0.24, 0.31, 0.39, 0.44, 0.73};
+//	double RAA_alice_unco_low[6] = {0.122, 0.16, 0.20, 0.26, 0.28, 0.45};
+//	double RAA_alice_co_high[6] = {0.18, 0.23, 0.29, 0.37, 0.41, 0.67};
+//
+//	double error_RAA_alice_statistical[6];
+//	double error_RAA_alice_unco_high[6];
+//	double error_RAA_alice_unco_low[6];
+//	double error_RAA_alice_co[6];
+//
+//	for( int i = 0; i < 6; i++ )
+//	{
+//		error_RAA_alice_statistical[i] = RAA_alice_statistical_high[i] - RAA_alice_center[i];
+//		error_RAA_alice_unco_high[i] = RAA_alice_unco_high[i] - RAA_alice_center[i];
+//		error_RAA_alice_unco_low[i] = RAA_alice_center[i] - RAA_alice_unco_low[i];
+//		error_RAA_alice_co[i] = RAA_alice_co_high[i] - RAA_alice_center[i];
+//	}
+//
+//	TCanvas * D0_Npart_compareAlice = new TCanvas("D0_Npart_compareAlice","D0_Npart_compareAlice",600,600);
+//
+//	RAA_D0_pt8to16_errorsys_Npart->Draw("A2");
+//	RAA_D0_pt8to16_errorfonll_Npart->Draw("2");
+//	RAA_D0_pt8to16_errordata_Npart->Draw("P");
+//
+//    TGraphAsymmErrors * RAA_D0_alice_pt8to16_errordata_Npart = new TGraphAsymmErrors( 6, Npart_alice_center, RAA_alice_center, Npart_error, Npart_error, error_RAA_alice_statistical, error_RAA_alice_statistical);
+//    TGraphAsymmErrors * RAA_D0_alice_pt8to16_errorcosys_Npart = new TGraphAsymmErrors( 6, Npart_alice_center, RAA_alice_center, Npart_error, Npart_error, error_RAA_alice_co, error_RAA_alice_co);
+//    TGraphAsymmErrors * RAA_D0_alice_pt8to16_errornocosys_Npart = new TGraphAsymmErrors( 6, Npart_alice_center, RAA_alice_center, Npart_error, Npart_error, error_RAA_alice_unco_low, error_RAA_alice_unco_high);
+//
+//
+//    RAA_D0_alice_pt8to16_errorcosys_Npart->SetFillStyle(1001);
+//    RAA_D0_alice_pt8to16_errorcosys_Npart->SetFillColor(kGreen-9);
+//    RAA_D0_alice_pt8to16_errorcosys_Npart->SetLineColor(kGreen-9);
+//    RAA_D0_alice_pt8to16_errorcosys_Npart->Draw("2");
+//
+//    RAA_D0_alice_pt8to16_errornocosys_Npart->SetFillColor(0);
+//    RAA_D0_alice_pt8to16_errornocosys_Npart->SetFillStyle(0);
+//    RAA_D0_alice_pt8to16_errornocosys_Npart->SetLineColor(kGreen+1);
+//    RAA_D0_alice_pt8to16_errornocosys_Npart->Draw("2");
+//
+//    RAA_D0_alice_pt8to16_errordata_Npart->SetFillStyle(1001);
+//    RAA_D0_alice_pt8to16_errordata_Npart->SetFillColor(kGreen-9);
+//    RAA_D0_alice_pt8to16_errordata_Npart->SetLineColor(kGreen-9);
+//    RAA_D0_alice_pt8to16_errordata_Npart->SetMarkerStyle(21);
+//    RAA_D0_alice_pt8to16_errordata_Npart->SetMarkerSize(1.0);
+//    RAA_D0_alice_pt8to16_errordata_Npart->SetLineColor(kGreen);
+//    RAA_D0_alice_pt8to16_errordata_Npart->SetMarkerColor(kGreen);
+//    RAA_D0_alice_pt8to16_errordata_Npart->Draw("P");
+//
+//    double Npart_alice_center_pt6to12[5] = {356, 260, 156, 67, 20};
+//	double RAA_alice_center_pt6to12[5] = {0.226, 0.253, 0.402,  0.534, 0.804};
+//	double RAA_alice_statistical_high_pt6to12[5] = {0.267, 0.293, 0.447, 0.609, 0.959};
+//	double RAA_alice_unco_high_pt6to12[5] = {0.280, 0.306, 0.492, 0.657, 0.988};
+//	double RAA_alice_unco_low_pt6to12[5] = {0.160, 0.181, 0.287, 0.385, 0.572};
+//	double RAA_alice_co_high_pt6to12[5] = {0.256, 0.282, 0.452, 0.598, 0.903};
+//	double RAA_alice_co_low_pt6to12[5] = {0.195, 0.213, 0.346, 0.459, 0.695};
+//
+//	double error_RAA_alice_statistical_pt6to12[5];
+//	double error_RAA_alice_unco_high_pt6to12[5];
+//	double error_RAA_alice_unco_low_pt6to12[5];
+//	double error_RAA_alice_co_high_pt6to12[5];
+//	double error_RAA_alice_co_low_pt6to12[5];
+//
+//	for( int i = 0; i < 5; i++ )
+//	{
+//		error_RAA_alice_statistical_pt6to12[i] = RAA_alice_statistical_high_pt6to12[i] - RAA_alice_center_pt6to12[i];
+//		error_RAA_alice_unco_high_pt6to12[i] = RAA_alice_unco_high_pt6to12[i] - RAA_alice_center_pt6to12[i];
+//		error_RAA_alice_unco_low_pt6to12[i] = RAA_alice_center_pt6to12[i] - RAA_alice_unco_low_pt6to12[i];
+//		error_RAA_alice_co_high_pt6to12[i] = RAA_alice_co_high_pt6to12[i] - RAA_alice_center_pt6to12[i];
+//		error_RAA_alice_co_low_pt6to12[i] = RAA_alice_center_pt6to12[i] - RAA_alice_co_low_pt6to12[i];
+//	}
+//
+//    TGraphAsymmErrors * RAA_D0_alice_pt6to12_errordata_Npart = new TGraphAsymmErrors( 5, Npart_alice_center_pt6to12, RAA_alice_center_pt6to12, Npart_error, Npart_error, error_RAA_alice_statistical_pt6to12, error_RAA_alice_statistical_pt6to12);
+//    TGraphAsymmErrors * RAA_D0_alice_pt6to12_errorcosys_Npart = new TGraphAsymmErrors( 5, Npart_alice_center_pt6to12, RAA_alice_center_pt6to12, Npart_error, Npart_error, error_RAA_alice_co_low_pt6to12, error_RAA_alice_co_high_pt6to12);
+//    TGraphAsymmErrors * RAA_D0_alice_pt6to12_errornocosys_Npart = new TGraphAsymmErrors( 5, Npart_alice_center_pt6to12, RAA_alice_center_pt6to12, Npart_error, Npart_error, error_RAA_alice_unco_low_pt6to12, error_RAA_alice_unco_high_pt6to12);
+//
+//
+//    RAA_D0_alice_pt6to12_errorcosys_Npart->SetFillStyle(1001);
+//    RAA_D0_alice_pt6to12_errorcosys_Npart->SetFillColor(kCyan-7);
+//    RAA_D0_alice_pt6to12_errorcosys_Npart->SetLineColor(kCyan-7);
+//    RAA_D0_alice_pt6to12_errorcosys_Npart->Draw("2");
+//
+//    RAA_D0_alice_pt6to12_errornocosys_Npart->SetFillColor(0);
+//    RAA_D0_alice_pt6to12_errornocosys_Npart->SetFillStyle(0);
+//    RAA_D0_alice_pt6to12_errornocosys_Npart->SetLineColor(kCyan+2);
+//    RAA_D0_alice_pt6to12_errornocosys_Npart->Draw("2");
+//
+//    RAA_D0_alice_pt6to12_errordata_Npart->SetFillStyle(1001);
+//    RAA_D0_alice_pt6to12_errordata_Npart->SetFillColor(kCyan-7);
+//    RAA_D0_alice_pt6to12_errordata_Npart->SetLineColor(kCyan-7);
+//    RAA_D0_alice_pt6to12_errordata_Npart->SetMarkerStyle(21);
+//    RAA_D0_alice_pt6to12_errordata_Npart->SetMarkerSize(1.0);
+//    RAA_D0_alice_pt6to12_errordata_Npart->SetLineColor(kCyan+1);
+//    RAA_D0_alice_pt6to12_errordata_Npart->SetMarkerColor(kCyan+1);
+//    RAA_D0_alice_pt6to12_errordata_Npart->Draw("P");
+//
+//
+//	TF1 * fun1 = new TF1("fun", "1.0", 0, 500);
+//	fun1->SetLineColor(1.0);
+//	fun1->SetLineStyle(3);
+//	fun1->SetLineWidth(0.1);
+//	fun1->Draw("same");
+//    
+//	TLegend * t = new TLegend(0.15, 0.65, 0.30, 0.85);
+//	t->SetFillColor(0);
+//	t->SetTextSize(0.034);
+//	t->AddEntry(RAA_D0_pt8to16_errordata_Npart, "CMS Preliminary, 8.0 < p_{T} < 16.0 GeV/c, |y| < 1.0", "PLF");
+//	t->AddEntry(RAA_D0_alice_pt8to16_errordata_Npart, "Alice Submitted, 8.0 < p_{T} < 16.0 GeV/c, |y| < 0.5", "PLF");
+//	t->AddEntry(RAA_D0_alice_pt6to12_errordata_Npart, "Alice Published, 6.0 < p_{T} < 12.0 GeV/c, |y| < 0.5");
+////	t->AddEntry(d, "Syst. TAA", "F");
+//	t->Draw();
+//
+//    D0_Npart_compareAlice->SaveAs("results/D0_RAFONLL_Npart_ptbin1pt8to16_compareAlice_cent01020304050100_y1_dataplusfonll.png");
+//    D0_Npart_compareAlice->SaveAs("results/D0_RAFONLL_Npart_ptbin1pt8to16_compareAlice_cent01020304050100_y1_dataplusfonll.pdf");
+//
+
+}

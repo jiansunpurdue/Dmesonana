@@ -1,0 +1,463 @@
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <TCanvas.h>
+#include <TH2F.h>
+#include <TGraph.h>
+#include <TGraphErrors.h>
+#include <TGraphAsymmErrors.h>
+#include <TMath.h>
+#include <TFile.h>
+#include <TLine.h>
+#include <TLegend.h>
+#include <TLatex.h>
+#include <TStyle.h>
+
+const int BIN_NUM_LANL = 1962;
+const int BIN_NUM_Frankfurt = 54;
+const int BIN_NUM_LBL = 35;
+const int BIN_NUM_TAMU = 30;
+const int BIN_NUM_WHDG = 49;
+
+int theoryComparison()
+{
+  gStyle->SetPadTickX(1);
+  gStyle->SetPadTickY(1);
+  Double_t aLANLzero[BIN_NUM_LANL];
+  Double_t aLANL10_eloss0_low_pt[BIN_NUM_LANL],aLANL10_eloss0_low_raa[BIN_NUM_LANL],aLANL10_eloss0_upp_pt[BIN_NUM_LANL],aLANL10_eloss0_upp_raa[BIN_NUM_LANL];
+  Double_t aLANL10_eloss1p5_low_pt[BIN_NUM_LANL],aLANL10_eloss1p5_low_raa[BIN_NUM_LANL],aLANL10_eloss1p5_upp_pt[BIN_NUM_LANL],aLANL10_eloss1p5_upp_raa[BIN_NUM_LANL];
+  Double_t aLANL20_eloss0_low_pt[BIN_NUM_LANL],aLANL20_eloss0_low_raa[BIN_NUM_LANL],aLANL20_eloss0_upp_pt[BIN_NUM_LANL],aLANL20_eloss0_upp_raa[BIN_NUM_LANL];
+  Double_t aLANL20_eloss1p5_low_pt[BIN_NUM_LANL],aLANL20_eloss1p5_low_raa[BIN_NUM_LANL],aLANL20_eloss1p5_upp_pt[BIN_NUM_LANL],aLANL20_eloss1p5_upp_raa[BIN_NUM_LANL];
+  Double_t aLANL100_eloss0_low_pt[BIN_NUM_LANL],aLANL100_eloss0_low_raa[BIN_NUM_LANL],aLANL100_eloss0_upp_pt[BIN_NUM_LANL],aLANL100_eloss0_upp_raa[BIN_NUM_LANL];
+  Double_t aLANL100_eloss1p5_low_pt[BIN_NUM_LANL],aLANL100_eloss1p5_low_raa[BIN_NUM_LANL],aLANL100_eloss1p5_upp_pt[BIN_NUM_LANL],aLANL100_eloss1p5_upp_raa[BIN_NUM_LANL];
+  Double_t aLANL10_eloss0_ctr_raa[BIN_NUM_LANL],aLANL10_eloss0_err_raa[BIN_NUM_LANL],aLANL10_eloss1p5_ctr_raa[BIN_NUM_LANL],aLANL10_eloss1p5_err_raa[BIN_NUM_LANL];
+  Double_t aLANL20_eloss0_ctr_raa[BIN_NUM_LANL],aLANL20_eloss0_err_raa[BIN_NUM_LANL],aLANL20_eloss1p5_ctr_raa[BIN_NUM_LANL],aLANL20_eloss1p5_err_raa[BIN_NUM_LANL];
+  Double_t aLANL100_eloss0_ctr_raa[BIN_NUM_LANL],aLANL100_eloss0_err_raa[BIN_NUM_LANL],aLANL100_eloss1p5_ctr_raa[BIN_NUM_LANL],aLANL100_eloss1p5_err_raa[BIN_NUM_LANL];
+  ifstream ifLANL10_eloss0_upp("TheoryPred/LANL/RAA_010_cron1_eloss0_2760GeV_up_evolve350");
+  ifstream ifLANL10_eloss0_low("TheoryPred/LANL/RAA_010_cron1_eloss0_2760GeV_low_evolve350");
+  ifstream ifLANL10_eloss1p5_upp("TheoryPred/LANL/RAA_010_cron1_eloss1p5_2760GeV_up_evolve350");
+  ifstream ifLANL10_eloss1p5_low("TheoryPred/LANL/RAA_010_cron1_eloss1p5_2760GeV_low_evolve350");
+  ifstream ifLANL20_eloss0_upp("TheoryPred/LANL/RAA_020_cron1_eloss0_2760GeV_up_evolve300");
+  ifstream ifLANL20_eloss0_low("TheoryPred/LANL/RAA_020_cron1_eloss0_2760GeV_low_evolve300");
+  ifstream ifLANL20_eloss1p5_upp("TheoryPred/LANL/RAA_020_cron1_eloss1p5_2760GeV_up_evolve300");
+  ifstream ifLANL20_eloss1p5_low("TheoryPred/LANL/RAA_020_cron1_eloss1p5_2760GeV_low_evolve300");
+  ifstream ifLANL100_eloss0_upp("TheoryPred/LANL/RAA_0100_cron1_eloss0_2760GeV_up_evolve100");
+  ifstream ifLANL100_eloss0_low("TheoryPred/LANL/RAA_0100_cron1_eloss0_2760GeV_low_evolve100");
+  ifstream ifLANL100_eloss1p5_upp("TheoryPred/LANL/RAA_0100_cron1_eloss1p5_2760GeV_up_evolve100");
+  ifstream ifLANL100_eloss1p5_low("TheoryPred/LANL/RAA_0100_cron1_eloss1p5_2760GeV_low_evolve100");
+
+  Double_t aFrankfurt10_pt[BIN_NUM_Frankfurt],aFrankfurt10_raa[BIN_NUM_Frankfurt];
+  ifstream ifFrankfurt10("TheoryPred/Frankfurt/BAMPS_el_rad_dmeson_raa_pt_lhc276_b36.dat");
+
+  Double_t aLBL10_pt[BIN_NUM_LBL],aLBL10_raa[BIN_NUM_LBL];
+  Double_t aLBL20_pt[BIN_NUM_LBL],aLBL20_raa[BIN_NUM_LBL];
+  Double_t aLBL80_pt[BIN_NUM_LBL],aLBL80_raa[BIN_NUM_LBL];
+  ifstream ifLBL10("TheoryPred/LBL/data-pT-dep/RAA_HMnoHI_cen-00-10.dat");
+  ifstream ifLBL20("TheoryPred/LBL/data-pT-dep/RAA_HMnoHI_cen-00-20.dat");
+  ifstream ifLBL80("TheoryPred/LBL/data-pT-dep/RAA_HMnoHI_cen-00-80.dat");
+
+  Double_t aTAMUzero[BIN_NUM_TAMU];
+  Double_t aTAMU10_pt[BIN_NUM_TAMU],aTAMU10_low_raa[BIN_NUM_TAMU],aTAMU10_upp_raa[BIN_NUM_TAMU];
+  Double_t aTAMU20_pt[BIN_NUM_TAMU],aTAMU20_low_raa[BIN_NUM_TAMU],aTAMU20_upp_raa[BIN_NUM_TAMU];
+  Double_t aTAMU80_pt[BIN_NUM_TAMU],aTAMU80_low_raa[BIN_NUM_TAMU],aTAMU80_upp_raa[BIN_NUM_TAMU];
+  Double_t aTAMU10_ctr_raa[BIN_NUM_TAMU],aTAMU10_err_raa[BIN_NUM_TAMU];
+  Double_t aTAMU20_ctr_raa[BIN_NUM_TAMU],aTAMU20_err_raa[BIN_NUM_TAMU];
+  Double_t aTAMU80_ctr_raa[BIN_NUM_TAMU],aTAMU80_err_raa[BIN_NUM_TAMU];
+  ifstream ifTAMU10("TheoryPred/TAMU/D0_RAAvspT_0_10.txt");
+  ifstream ifTAMU20("TheoryPred/TAMU/D0_RAAvspT_0_20.txt");
+  ifstream ifTAMU80("TheoryPred/TAMU/D0_RAAvspT_0_80.txt");
+
+  Double_t aWHDGzero[BIN_NUM_WHDG];
+  Double_t aWHDG10_ctr_pt[BIN_NUM_WHDG],aWHDG10_ctr_raa[BIN_NUM_WHDG],aWHDG10_low_pt[BIN_NUM_WHDG],aWHDG10_low_raa[BIN_NUM_WHDG],aWHDG10_upp_pt[BIN_NUM_WHDG],aWHDG10_upp_raa[BIN_NUM_WHDG];
+  Double_t aWHDG20_ctr_pt[BIN_NUM_WHDG],aWHDG20_ctr_raa[BIN_NUM_WHDG],aWHDG20_low_pt[BIN_NUM_WHDG],aWHDG20_low_raa[BIN_NUM_WHDG],aWHDG20_upp_pt[BIN_NUM_WHDG],aWHDG20_upp_raa[BIN_NUM_WHDG];
+  Double_t aWHDG80_ctr_pt[BIN_NUM_WHDG],aWHDG80_ctr_raa[BIN_NUM_WHDG],aWHDG80_low_pt[BIN_NUM_WHDG],aWHDG80_low_raa[BIN_NUM_WHDG],aWHDG80_upp_pt[BIN_NUM_WHDG],aWHDG80_upp_raa[BIN_NUM_WHDG];
+  Double_t aWHDG10_err_raa_low[BIN_NUM_WHDG],aWHDG10_err_raa_upp[BIN_NUM_WHDG];
+  Double_t aWHDG20_err_raa_low[BIN_NUM_WHDG],aWHDG20_err_raa_upp[BIN_NUM_WHDG];
+  Double_t aWHDG80_err_raa_low[BIN_NUM_WHDG],aWHDG80_err_raa_upp[BIN_NUM_WHDG];
+  ifstream ifWHDG10_ctr("TheoryPred/WHDG/WHDG0010D0b.dat");
+  ifstream ifWHDG10_low("TheoryPred/WHDG/WHDG0010D0l.dat");
+  ifstream ifWHDG10_upp("TheoryPred/WHDG/WHDG0010D0u.dat");
+  ifstream ifWHDG20_ctr("TheoryPred/WHDG/WHDG0020D0b.dat");
+  ifstream ifWHDG20_low("TheoryPred/WHDG/WHDG0020D0l.dat");
+  ifstream ifWHDG20_upp("TheoryPred/WHDG/WHDG0020D0u.dat");
+  ifstream ifWHDG80_ctr("TheoryPred/WHDG/WHDG0080D0b.dat");
+  ifstream ifWHDG80_low("TheoryPred/WHDG/WHDG0080D0l.dat");
+  ifstream ifWHDG80_upp("TheoryPred/WHDG/WHDG0080D0u.dat");
+
+  Double_t temp;
+
+  for(int i=0;i<BIN_NUM_LANL;i++)
+    {
+      ifLANL10_eloss0_low>>aLANL10_eloss0_low_pt[i];
+      ifLANL10_eloss0_low>>aLANL10_eloss0_low_raa[i];
+      ifLANL10_eloss0_upp>>aLANL10_eloss0_upp_pt[i];
+      ifLANL10_eloss0_upp>>aLANL10_eloss0_upp_raa[i];
+      aLANL10_eloss0_ctr_raa[i] = (aLANL10_eloss0_upp_raa[i]+aLANL10_eloss0_low_raa[i])/2.;
+      aLANL10_eloss0_err_raa[i] = (aLANL10_eloss0_upp_raa[i]-aLANL10_eloss0_low_raa[i])/2.;
+      ifLANL10_eloss1p5_low>>aLANL10_eloss1p5_low_pt[i];
+      ifLANL10_eloss1p5_low>>aLANL10_eloss1p5_low_raa[i];
+      ifLANL10_eloss1p5_upp>>aLANL10_eloss1p5_upp_pt[i];
+      ifLANL10_eloss1p5_upp>>aLANL10_eloss1p5_upp_raa[i];
+      aLANL10_eloss1p5_ctr_raa[i] = (aLANL10_eloss1p5_upp_raa[i]+aLANL10_eloss1p5_low_raa[i])/2.;
+      aLANL10_eloss1p5_err_raa[i] = (aLANL10_eloss1p5_upp_raa[i]-aLANL10_eloss1p5_low_raa[i])/2.;
+      ifLANL20_eloss0_low>>aLANL20_eloss0_low_pt[i];
+      ifLANL20_eloss0_low>>aLANL20_eloss0_low_raa[i];
+      ifLANL20_eloss0_upp>>aLANL20_eloss0_upp_pt[i];
+      ifLANL20_eloss0_upp>>aLANL20_eloss0_upp_raa[i];
+      aLANL20_eloss0_ctr_raa[i] = (aLANL20_eloss0_upp_raa[i]+aLANL20_eloss0_low_raa[i])/2.;
+      aLANL20_eloss0_err_raa[i] = (aLANL20_eloss0_upp_raa[i]-aLANL20_eloss0_low_raa[i])/2.;
+      ifLANL20_eloss1p5_low>>aLANL20_eloss1p5_low_pt[i];
+      ifLANL20_eloss1p5_low>>aLANL20_eloss1p5_low_raa[i];
+      ifLANL20_eloss1p5_upp>>aLANL20_eloss1p5_upp_pt[i];
+      ifLANL20_eloss1p5_upp>>aLANL20_eloss1p5_upp_raa[i];
+      aLANL20_eloss1p5_ctr_raa[i] = (aLANL20_eloss1p5_upp_raa[i]+aLANL20_eloss1p5_low_raa[i])/2.;
+      aLANL20_eloss1p5_err_raa[i] = (aLANL20_eloss1p5_upp_raa[i]-aLANL20_eloss1p5_low_raa[i])/2.;
+      ifLANL100_eloss0_low>>aLANL100_eloss0_low_pt[i];
+      ifLANL100_eloss0_low>>aLANL100_eloss0_low_raa[i];
+      ifLANL100_eloss0_upp>>aLANL100_eloss0_upp_pt[i];
+      ifLANL100_eloss0_upp>>aLANL100_eloss0_upp_raa[i];
+      aLANL100_eloss0_ctr_raa[i] = (aLANL100_eloss0_upp_raa[i]+aLANL100_eloss0_low_raa[i])/2.;
+      aLANL100_eloss0_err_raa[i] = (aLANL100_eloss0_upp_raa[i]-aLANL100_eloss0_low_raa[i])/2.;
+      ifLANL100_eloss1p5_low>>aLANL100_eloss1p5_low_pt[i];
+      ifLANL100_eloss1p5_low>>aLANL100_eloss1p5_low_raa[i];
+      ifLANL100_eloss1p5_upp>>aLANL100_eloss1p5_upp_pt[i];
+      ifLANL100_eloss1p5_upp>>aLANL100_eloss1p5_upp_raa[i];
+      aLANL100_eloss1p5_ctr_raa[i] = (aLANL100_eloss1p5_upp_raa[i]+aLANL100_eloss1p5_low_raa[i])/2.;
+      aLANL100_eloss1p5_err_raa[i] = (aLANL100_eloss1p5_upp_raa[i]-aLANL100_eloss1p5_low_raa[i])/2.;
+      aLANLzero[i]=0;
+    }
+  for(int i=0;i<BIN_NUM_Frankfurt;i++)
+    {
+      ifFrankfurt10>>aFrankfurt10_pt[i];
+      ifFrankfurt10>>aFrankfurt10_raa[i];
+    }
+  for(int i=0;i<BIN_NUM_LBL;i++)
+    {
+      ifLBL10>>aLBL10_pt[i];
+      ifLBL10>>aLBL10_raa[i];
+      ifLBL10>>temp;
+      ifLBL20>>aLBL20_pt[i];
+      ifLBL20>>aLBL20_raa[i];
+      ifLBL20>>temp;
+      ifLBL80>>aLBL80_pt[i];
+      ifLBL80>>aLBL80_raa[i];
+      ifLBL80>>temp;
+    }
+  for(int i=0;i<BIN_NUM_TAMU;i++)
+    {
+      ifTAMU10>>aTAMU10_pt[i];
+      ifTAMU10>>aTAMU10_low_raa[i];
+      ifTAMU10>>aTAMU10_upp_raa[i];
+      aTAMU10_ctr_raa[i] = (aTAMU10_upp_raa[i]+aTAMU10_low_raa[i])/2.;
+      aTAMU10_err_raa[i] = TMath::Abs(aTAMU10_upp_raa[i]-aTAMU10_low_raa[i])/2.;
+      ifTAMU20>>aTAMU20_pt[i];
+      ifTAMU20>>aTAMU20_low_raa[i];
+      ifTAMU20>>aTAMU20_upp_raa[i];
+      aTAMU20_ctr_raa[i] = (aTAMU20_upp_raa[i]+aTAMU20_low_raa[i])/2.;
+      aTAMU20_err_raa[i] = TMath::Abs(aTAMU20_upp_raa[i]-aTAMU20_low_raa[i])/2.;
+      ifTAMU80>>aTAMU80_pt[i];
+      ifTAMU80>>aTAMU80_low_raa[i];
+      ifTAMU80>>aTAMU80_upp_raa[i];
+      aTAMU80_ctr_raa[i] = (aTAMU80_upp_raa[i]+aTAMU80_low_raa[i])/2.;
+      aTAMU80_err_raa[i] = TMath::Abs(aTAMU80_upp_raa[i]-aTAMU80_low_raa[i])/2.;
+      aTAMUzero[i]=0;
+    }
+  for(int i=0;i<BIN_NUM_WHDG;i++)
+    {
+      ifWHDG10_ctr>>aWHDG10_ctr_pt[i];
+      ifWHDG10_ctr>>aWHDG10_ctr_raa[i];
+      ifWHDG10_low>>aWHDG10_low_pt[i];
+      ifWHDG10_low>>aWHDG10_low_raa[i];
+      ifWHDG10_upp>>aWHDG10_upp_pt[i];
+      ifWHDG10_upp>>aWHDG10_upp_raa[i];
+      aWHDG10_err_raa_low[i] = aWHDG10_ctr_raa[i]-aWHDG10_low_raa[i];
+      aWHDG10_err_raa_upp[i] = aWHDG10_upp_raa[i]-aWHDG10_ctr_raa[i];
+      ifWHDG20_ctr>>aWHDG20_ctr_pt[i];
+      ifWHDG20_ctr>>aWHDG20_ctr_raa[i];
+      ifWHDG20_low>>aWHDG20_low_pt[i];
+      ifWHDG20_low>>aWHDG20_low_raa[i];
+      ifWHDG20_upp>>aWHDG20_upp_pt[i];
+      ifWHDG20_upp>>aWHDG20_upp_raa[i];
+      aWHDG20_err_raa_low[i] = aWHDG20_ctr_raa[i]-aWHDG20_low_raa[i];
+      aWHDG20_err_raa_upp[i] = aWHDG20_upp_raa[i]-aWHDG20_ctr_raa[i];
+      ifWHDG80_ctr>>aWHDG80_ctr_pt[i];
+      ifWHDG80_ctr>>aWHDG80_ctr_raa[i];
+      ifWHDG80_low>>aWHDG80_low_pt[i];
+      ifWHDG80_low>>aWHDG80_low_raa[i];
+      ifWHDG80_upp>>aWHDG80_upp_pt[i];
+      ifWHDG80_upp>>aWHDG80_upp_raa[i];
+      aWHDG80_err_raa_low[i] = aWHDG80_ctr_raa[i]-aWHDG80_low_raa[i];
+      aWHDG80_err_raa_upp[i] = aWHDG80_upp_raa[i]-aWHDG80_ctr_raa[i];
+      aWHDGzero[i]=0;
+    }
+
+  TCanvas* c10 = new TCanvas("c10","",600,600);
+  c10->SetLogx();
+  TH2F* hempty10 = new TH2F("hempty10","",10,1.,100.,10.,0.,2.0);
+  hempty10->SetStats(0);
+  hempty10->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  hempty10->GetYaxis()->SetTitle("R*_{#kern[-0.3]{AA}} , R_{AA}");
+  hempty10->GetXaxis()->CenterTitle();
+  hempty10->GetYaxis()->CenterTitle();
+  hempty10->GetXaxis()->SetTitleOffset(1.1);
+  hempty10->GetYaxis()->SetTitleOffset(1.);
+  hempty10->GetXaxis()->SetTitleSize(0.04);
+  hempty10->GetYaxis()->SetTitleSize(0.04);
+  hempty10->GetXaxis()->SetTitleFont(42);
+  hempty10->GetYaxis()->SetTitleFont(42);
+  hempty10->GetXaxis()->SetLabelFont(42);
+  hempty10->GetYaxis()->SetLabelFont(42);
+  hempty10->GetXaxis()->SetLabelSize(0.04);
+  hempty10->GetYaxis()->SetLabelSize(0.04);  
+  hempty10->Draw();
+  TLine* l = new TLine(0,1,100,1);
+  l->SetLineStyle(2);
+  l->SetLineWidth(2);
+  l->SetLineColor(kGray);
+  l->Draw("same");
+  TFile* inputcms_10 = new TFile("DataValue/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent0to10_ptbin12_y1_dataplusfonll.root");
+  TGraphAsymmErrors* D0_fonll_raa_errorsys_10 = (TGraphAsymmErrors*)inputcms_10->Get("D0_fonll_raa_errorsys");
+  TGraphAsymmErrors* D0_fonll_raa_errorfonll_10 = (TGraphAsymmErrors*)inputcms_10->Get("D0_fonll_raa_errorfonll");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_10 = (TGraphAsymmErrors*)inputcms_10->Get("D0_fonll_raa_errordata");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_dataextraref_10 = (TGraphAsymmErrors*)inputcms_10->Get("D0_fonll_raa_errordata_dataextraref");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_FONLLref_10 = (TGraphAsymmErrors*)inputcms_10->Get("D0_fonll_raa_errordata_FONLLref");
+  D0_fonll_raa_errorsys_10->Draw("2same");
+  D0_fonll_raa_errorfonll_10->Draw("2same");
+  D0_fonll_raa_errordata_dataextraref_10->Draw("Psame");
+  D0_fonll_raa_errordata_FONLLref_10->Draw("Psame");
+  TGraphAsymmErrors* gWHDG10 = new TGraphAsymmErrors(BIN_NUM_WHDG, aWHDG10_ctr_pt, aWHDG10_ctr_raa, aWHDGzero, aWHDGzero, aWHDG10_err_raa_low, aWHDG10_err_raa_upp);
+  gWHDG10->SetLineWidth(0);
+  gWHDG10->SetFillColor(2);
+  gWHDG10->SetFillStyle(3001);
+  gWHDG10->Draw("3same");
+  TGraph* gWHDG10l = new TGraph(BIN_NUM_WHDG, aWHDG10_ctr_pt, aWHDG10_ctr_raa);
+  gWHDG10l->SetLineColor(2);
+  gWHDG10l->SetLineWidth(2);
+  gWHDG10l->Draw("lsame");
+  TGraphAsymmErrors* gTAMU10 = new TGraphAsymmErrors(BIN_NUM_TAMU, aTAMU10_pt, aTAMU10_ctr_raa, aTAMUzero, aTAMUzero, aTAMU10_err_raa, aTAMU10_err_raa);
+  gTAMU10->SetLineWidth(0);
+  gTAMU10->SetFillColor(3);
+  gTAMU10->SetFillStyle(3001);
+  gTAMU10->Draw("3same");
+  TGraphAsymmErrors* gLANL10eloss0 = new TGraphAsymmErrors(BIN_NUM_LANL, aLANL10_eloss0_low_pt, aLANL10_eloss0_ctr_raa, aLANLzero, aLANLzero, aLANL10_eloss0_err_raa, aLANL10_eloss0_err_raa);
+  gLANL10eloss0->SetLineWidth(0);
+  gLANL10eloss0->SetFillColor(7);
+  gLANL10eloss0->SetFillStyle(3001);
+  gLANL10eloss0->Draw("3same");
+  TGraphAsymmErrors* gLANL10eloss1p5 = new TGraphAsymmErrors(BIN_NUM_LANL, aLANL10_eloss1p5_low_pt, aLANL10_eloss1p5_ctr_raa, aLANLzero, aLANLzero, aLANL10_eloss1p5_err_raa, aLANL10_eloss1p5_err_raa);
+  gLANL10eloss1p5->SetLineWidth(0);
+  gLANL10eloss1p5->SetFillColor(9);
+  gLANL10eloss1p5->SetFillStyle(3001);
+  gLANL10eloss1p5->Draw("3same");
+  TGraph* gFrankfurt10 = new TGraph(BIN_NUM_Frankfurt, aFrankfurt10_pt, aFrankfurt10_raa);
+  gFrankfurt10->SetLineColor(6);
+  gFrankfurt10->SetLineWidth(2);
+  gFrankfurt10->Draw("lsame");
+  TGraph* gLBL10 = new TGraph(BIN_NUM_LBL, aLBL10_pt, aLBL10_raa);
+  gLBL10->SetLineColor(4);
+  gLBL10->SetLineWidth(2);
+  gLBL10->Draw("lsame");
+  TLegend *leg10 = new TLegend(0.12,0.63,0.41,0.88);
+  leg10->SetTextFont(42);
+  leg10->SetTextSize(0.034);
+  leg10->AddEntry(D0_fonll_raa_errordata_10,"Prompt D^{0} R*_{#kern[-0.3]{AA}}", "PL");
+  leg10->AddEntry((TObject*)0,"|y| < 1.0, Cent. 0-10%","");
+  leg10->AddEntry((TObject*)0,"CMS Preliminary","");
+  leg10->AddEntry(D0_fonll_raa_errorsys_10,"Syst. PbPb data","F");
+  leg10->AddEntry(D0_fonll_raa_errorfonll_10,"Err. pp reference","f");
+  leg10->SetBorderSize(0);
+  leg10->SetFillStyle(0);
+  leg10->Draw("same");
+  TLegend *legThy10 = new TLegend(0.51,0.55,0.86,0.88);
+  legThy10->SetBorderSize(0);
+  legThy10->SetFillStyle(0);
+  legThy10->SetTextFont(42);
+  legThy10->SetTextSize(0.034);
+  legThy10->AddEntry((TObject*)0,"Theory Prediction","");
+  legThy10->AddEntry((TObject*)0,"|y| < 2.0, Cent. 0-10%","");
+  legThy10->AddEntry(gWHDG10,"WHDG","f");
+  legThy10->AddEntry(gTAMU10,"TAMU","f");
+  legThy10->AddEntry(gLANL10eloss0,"LANL no eloss","f");
+  legThy10->AddEntry(gLANL10eloss1p5,"LANL small eloss","f");
+  legThy10->AddEntry(gFrankfurt10,"Frankfurt","l");
+  legThy10->AddEntry(gLBL10,"LBL","l");
+  legThy10->Draw("same");
+  leg10->SetBorderSize(0);
+  leg10->SetFillStyle(0);
+  TLatex* tex = new TLatex(0.52,0.92,"PbPb #sqrt{s_{NN}} = 2.76 TeV");
+  tex->SetNDC();
+  tex->SetTextFont(42);
+  tex->SetTextSize(0.045);
+  tex->SetLineWidth(2);
+  tex->Draw();
+  c10->SaveAs("plotstheoryComparison/ccentLog10.pdf");
+
+  TCanvas* c20 = new TCanvas("c20","",600,600);
+  c20->SetLogx();
+  TH2F* hempty20 = new TH2F("hempty20","",20,1.,100.,10.,0.,2.0);
+  hempty20->SetStats(0);
+  hempty20->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  hempty20->GetYaxis()->SetTitle("R*_{#kern[-0.3]{AA}} , R_{AA}");
+  hempty20->GetXaxis()->CenterTitle();
+  hempty20->GetYaxis()->CenterTitle();
+  hempty20->GetXaxis()->SetTitleOffset(1.1);
+  hempty20->GetYaxis()->SetTitleOffset(1.);
+  hempty20->GetXaxis()->SetTitleSize(0.045);
+  hempty20->GetYaxis()->SetTitleSize(0.045);
+  hempty20->GetXaxis()->SetTitleFont(42);
+  hempty20->GetYaxis()->SetTitleFont(42);
+  hempty20->GetXaxis()->SetLabelFont(42);
+  hempty20->GetYaxis()->SetLabelFont(42);
+  hempty20->GetXaxis()->SetLabelSize(0.04);
+  hempty20->GetYaxis()->SetLabelSize(0.04);  
+  hempty20->Draw();
+  l->Draw("same");
+  TFile* inputcms_20 = new TFile("DataValue/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent0to20_ptbin12_y1_dataplusfonll.root");
+  TGraphAsymmErrors* D0_fonll_raa_errorsys_20 = (TGraphAsymmErrors*)inputcms_20->Get("D0_fonll_raa_errorsys");
+  TGraphAsymmErrors* D0_fonll_raa_errorfonll_20 = (TGraphAsymmErrors*)inputcms_20->Get("D0_fonll_raa_errorfonll");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_20 = (TGraphAsymmErrors*)inputcms_20->Get("D0_fonll_raa_errordata");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_dataextraref_20 = (TGraphAsymmErrors*)inputcms_20->Get("D0_fonll_raa_errordata_dataextraref");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_FONLLref_20 = (TGraphAsymmErrors*)inputcms_20->Get("D0_fonll_raa_errordata_FONLLref");
+  D0_fonll_raa_errorsys_20->Draw("2same");
+  D0_fonll_raa_errorfonll_20->Draw("2same");
+  D0_fonll_raa_errordata_dataextraref_20->Draw("Psame");
+  D0_fonll_raa_errordata_FONLLref_20->Draw("Psame");
+  TGraphAsymmErrors* gWHDG20 = new TGraphAsymmErrors(BIN_NUM_WHDG, aWHDG20_ctr_pt, aWHDG20_ctr_raa, aWHDGzero, aWHDGzero, aWHDG20_err_raa_low, aWHDG20_err_raa_upp);
+  gWHDG20->SetFillColor(2);
+  gWHDG20->SetFillStyle(3001);
+  gWHDG20->Draw("3same");
+  TGraph* gWHDG20l = new TGraph(BIN_NUM_WHDG, aWHDG20_ctr_pt, aWHDG20_ctr_raa);
+  gWHDG20l->SetLineColor(2);
+  gWHDG20l->SetLineWidth(2);
+  gWHDG20l->Draw("lsame");
+  TGraphAsymmErrors* gTAMU20 = new TGraphAsymmErrors(BIN_NUM_TAMU, aTAMU20_pt, aTAMU20_ctr_raa, aTAMUzero, aTAMUzero, aTAMU20_err_raa, aTAMU20_err_raa);
+  gTAMU20->SetFillColor(3);
+  gTAMU20->SetFillStyle(3001);
+  gTAMU20->Draw("3same");
+  TGraphAsymmErrors* gLANL20eloss0 = new TGraphAsymmErrors(BIN_NUM_LANL, aLANL20_eloss0_low_pt, aLANL20_eloss0_ctr_raa, aLANLzero, aLANLzero, aLANL20_eloss0_err_raa, aLANL20_eloss0_err_raa);
+  gLANL20eloss0->SetFillColor(7);
+  gLANL20eloss0->SetFillStyle(3001);
+  gLANL20eloss0->Draw("3same");
+  TGraphAsymmErrors* gLANL20eloss1p5 = new TGraphAsymmErrors(BIN_NUM_LANL, aLANL20_eloss1p5_low_pt, aLANL20_eloss1p5_ctr_raa, aLANLzero, aLANLzero, aLANL20_eloss1p5_err_raa, aLANL20_eloss1p5_err_raa);
+  gLANL20eloss1p5->SetFillColor(9);
+  gLANL20eloss1p5->SetFillStyle(3001);
+  gLANL20eloss1p5->Draw("3same");
+  TGraph* gLBL20 = new TGraph(BIN_NUM_LBL, aLBL20_pt, aLBL20_raa);
+  gLBL20->SetLineColor(4);
+  gLBL20->SetLineWidth(2);
+  gLBL20->Draw("lsame");
+  TLegend *leg20 = new TLegend(0.12,0.63,0.41,0.88);
+  leg20->SetTextFont(42);
+  leg20->SetTextSize(0.034);
+  leg20->AddEntry(D0_fonll_raa_errordata_20,"Prompt D^{0} R*_{#kern[-0.3]{AA}}", "PL");
+  leg20->AddEntry((TObject*)0,"|y| < 1.0, Cent. 0-20%","");
+  leg20->AddEntry((TObject*)0,"CMS Preliminary","");
+  leg20->AddEntry(D0_fonll_raa_errorsys_20,"Syst. PbPb data","F");
+  leg20->AddEntry(D0_fonll_raa_errorfonll_20,"Err. pp reference","f");
+  leg20->SetBorderSize(0);
+  leg20->SetFillStyle(0);
+  leg20->Draw("same");
+  TLegend *legThy20 = new TLegend(0.51,0.55,0.86,0.88);
+  legThy20->SetBorderSize(0);
+  legThy20->SetFillStyle(0);
+  legThy20->SetTextFont(42);
+  legThy20->SetTextSize(0.034);
+  legThy20->AddEntry((TObject*)0,"Theory Prediction","");
+  legThy20->AddEntry((TObject*)0,"|y| < 2.0, Cent. 0-20%","");
+  legThy20->AddEntry(gWHDG20,"WHDG","f");
+  legThy20->AddEntry(gTAMU20,"TAMU","f");
+  legThy20->AddEntry(gLANL20eloss0,"LANL no eloss","f");
+  legThy20->AddEntry(gLANL20eloss1p5,"LANL small eloss","f");
+  legThy20->AddEntry(gLBL20,"LBL","l");
+  legThy20->Draw("same");
+  leg20->SetBorderSize(0);
+  leg20->SetFillStyle(0);
+  tex->Draw();
+  c20->SaveAs("plotstheoryComparison/ccentLog20.pdf");
+
+  TCanvas* c80 = new TCanvas("c80","",600,600);
+  c80->SetLogx();
+  TH2F* hempty80 = new TH2F("hempty80","",80,1.,100.,10.,0.,2.0);
+  hempty80->SetStats(0);
+  hempty80->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+  hempty80->GetYaxis()->SetTitle("R*_{#kern[-0.3]{AA}} , R_{AA}");
+  hempty80->GetXaxis()->CenterTitle();
+  hempty80->GetYaxis()->CenterTitle();
+  hempty80->GetXaxis()->SetTitleOffset(1.1);
+  hempty80->GetYaxis()->SetTitleOffset(1.);
+  hempty80->GetXaxis()->SetTitleSize(0.045);
+  hempty80->GetYaxis()->SetTitleSize(0.045);
+  hempty80->GetXaxis()->SetTitleFont(42);
+  hempty80->GetYaxis()->SetTitleFont(42);
+  hempty80->GetXaxis()->SetLabelFont(42);
+  hempty80->GetYaxis()->SetLabelFont(42);
+  hempty80->GetXaxis()->SetLabelSize(0.04);
+  hempty80->GetYaxis()->SetLabelSize(0.04);  
+  hempty80->Draw();
+  l->Draw("same");
+  TFile* inputcms_80 = new TFile("DataValue/PromptRAA_D0_PbPb_spectrum_fonll_effunpre_cent0to100_ptbin12_y1_dataplusfonll.root");
+  TGraphAsymmErrors* D0_fonll_raa_errorsys_80 = (TGraphAsymmErrors*)inputcms_80->Get("D0_fonll_raa_errorsys");
+  TGraphAsymmErrors* D0_fonll_raa_errorfonll_80 = (TGraphAsymmErrors*)inputcms_80->Get("D0_fonll_raa_errorfonll");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_80 = (TGraphAsymmErrors*)inputcms_80->Get("D0_fonll_raa_errordata");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_dataextraref_80 = (TGraphAsymmErrors*)inputcms_80->Get("D0_fonll_raa_errordata_dataextraref");
+  TGraphAsymmErrors* D0_fonll_raa_errordata_FONLLref_80 = (TGraphAsymmErrors*)inputcms_80->Get("D0_fonll_raa_errordata_FONLLref");
+  D0_fonll_raa_errorsys_80->Draw("2same");
+  D0_fonll_raa_errorfonll_80->Draw("2same");
+  D0_fonll_raa_errordata_dataextraref_80->Draw("Psame");
+  D0_fonll_raa_errordata_FONLLref_80->Draw("Psame");
+  TGraphAsymmErrors* gWHDG80 = new TGraphAsymmErrors(BIN_NUM_WHDG, aWHDG80_ctr_pt, aWHDG80_ctr_raa, aWHDGzero, aWHDGzero, aWHDG80_err_raa_low, aWHDG80_err_raa_upp);
+  gWHDG80->SetFillColor(2);
+  gWHDG80->SetFillStyle(3001);
+  gWHDG80->Draw("3same");
+  TGraph* gWHDG80l = new TGraph(BIN_NUM_WHDG, aWHDG80_ctr_pt, aWHDG80_ctr_raa);
+  gWHDG80l->SetLineColor(2);
+  gWHDG80l->SetLineWidth(2);
+  gWHDG80l->Draw("lsame");
+  TGraphAsymmErrors* gTAMU80 = new TGraphAsymmErrors(BIN_NUM_TAMU, aTAMU80_pt, aTAMU80_ctr_raa, aTAMUzero, aTAMUzero, aTAMU80_err_raa, aTAMU80_err_raa);
+  gTAMU80->SetFillColor(3);
+  gTAMU80->SetFillStyle(3001);
+  gTAMU80->Draw("3same");
+  TGraphAsymmErrors* gLANL100eloss0 = new TGraphAsymmErrors(BIN_NUM_LANL, aLANL100_eloss0_low_pt, aLANL100_eloss0_ctr_raa, aLANLzero, aLANLzero, aLANL100_eloss0_err_raa, aLANL100_eloss0_err_raa);
+  gLANL100eloss0->SetFillColor(7);
+  gLANL100eloss0->SetFillStyle(3001);
+  gLANL100eloss0->Draw("3same");
+  TGraphAsymmErrors* gLANL100eloss1p5 = new TGraphAsymmErrors(BIN_NUM_LANL, aLANL100_eloss1p5_low_pt, aLANL100_eloss1p5_ctr_raa, aLANLzero, aLANLzero, aLANL100_eloss1p5_err_raa, aLANL100_eloss1p5_err_raa);
+  gLANL100eloss1p5->SetFillColor(9);
+  gLANL100eloss1p5->SetFillStyle(3001);
+  gLANL100eloss1p5->Draw("3same");
+  TGraph* gLBL80 = new TGraph(BIN_NUM_LBL, aLBL80_pt, aLBL80_raa);
+  gLBL80->SetLineColor(4);
+  gLBL80->SetLineWidth(2);
+  gLBL80->Draw("lsame");
+  TLegend *leg80 = new TLegend(0.12,0.63,0.41,0.88);
+  leg80->SetTextFont(42);
+  leg80->SetTextSize(0.034);
+  leg80->AddEntry(D0_fonll_raa_errordata_80,"Prompt D^{0} R*_{#kern[-0.3]{AA}}", "PL");
+  leg80->AddEntry((TObject*)0,"|y| < 1.0, Cent. 0-100%","");
+  leg80->AddEntry((TObject*)0,"CMS Preliminary","");
+  leg80->AddEntry(D0_fonll_raa_errorsys_80,"Syst. PbPb data","F");
+  leg80->AddEntry(D0_fonll_raa_errorfonll_80,"Err. pp reference","f");
+  leg80->SetBorderSize(0);
+  leg80->SetFillStyle(0);
+  leg80->Draw("same");
+  TLegend *legThy80 = new TLegend(0.50,0.55,0.85,0.88);
+  legThy80->SetBorderSize(0);
+  legThy80->SetFillStyle(0);
+  legThy80->SetTextFont(42);
+  legThy80->SetTextSize(0.034);
+  legThy80->AddEntry((TObject*)0,"Theory Prediction","");
+  legThy80->AddEntry((TObject*)0,"|y| < 2.0, Cent. 0-100%","");
+  legThy80->AddEntry(gWHDG80,"WHDG","f");
+  legThy80->AddEntry(gTAMU80,"TAMU","f");
+  legThy80->AddEntry(gLANL100eloss0,"LANL no eloss","f");
+  legThy80->AddEntry(gLANL100eloss1p5,"LANL small eloss","f");
+  legThy80->AddEntry(gLBL80,"LBL","l");
+  legThy80->Draw("same");
+  leg80->SetBorderSize(0);
+  leg80->SetFillStyle(0);
+  tex->Draw();
+  c80->SaveAs("plotstheoryComparison/ccentLog100.pdf");
+
+
+  return 1;
+}

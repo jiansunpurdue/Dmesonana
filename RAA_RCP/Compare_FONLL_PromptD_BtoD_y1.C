@@ -72,9 +72,9 @@ int Compare_FONLL_PromptD_BtoD_y1()
   }
 
 
-  TFile * input_BFONLL = new TFile("./BtoD_fromyenjie/test/result-rap10/BtoD-0-100.root");
+  TFile * input_BFONLL = new TFile("./BtoD_fromyenjie/rapidity1p0/BtoD-0-100.root");
   TH1D * BtoD_central = (TH1D *) input_BFONLL->Get("hDFromBPt");
-  BtoD_central->Scale(0.5);
+  BtoD_central->Scale(0.5); //contain both D0 and anti-D0
   double bin_edge[BIN_NUM+1];
 
   for( int i = 0; i < BIN_NUM+1; i++ )
@@ -87,7 +87,7 @@ int Compare_FONLL_PromptD_BtoD_y1()
   BtoD_central_rebin->Scale(1.0/H_REBIN);
 
 
-  TFile * input_PbPb_MC = new TFile("./../rootfiles/Dmesonana_hiforest_official_PbPbD0tokaonpion_Pt0153050_2760GeV_tkpt0p4_topocutsforD0pt3p5.root");
+  TFile * input_PbPb_MC = new TFile("/home/sun229/store/v2_analysisfiles/Dmesonana_hiforest_PbPbD0tokaonpion_Pthat0153050_D0pt1p0_tkpt1p0eta1p1_2760GeV_0803_all.root");
   TTree * gendmesontree = ( TTree * ) input_PbPb_MC->Get("gendmesontree");
   
   float pthat;
@@ -169,7 +169,7 @@ int Compare_FONLL_PromptD_BtoD_y1()
 
   TLegend * t = new TLegend(0.22, 0.7, 0.85, 0.85);
   t->SetFillColor(0);
-  t->AddEntry((TObject*)0,"#left|y#right| < 1.0","");
+  t->AddEntry((TObject*)0,"|y| < 1.0","");
   t->AddEntry(hpt,"FONLL Prompt D0 Center Value");
   t->AddEntry(BtoD_central_rebin, "FONLL B Feed-down D0 Center Value");
   t->AddEntry(D0_pythiaspectrum, "Pythia Prompt D0, Pthat Weighted");

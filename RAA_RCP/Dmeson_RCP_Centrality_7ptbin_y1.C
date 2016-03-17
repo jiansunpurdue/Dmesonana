@@ -6,30 +6,34 @@ void Dmeson_RCP_Centrality_7ptbin_y1()
 	TH1D * D0_Rcp_errorstats[3];
 	TGraphAsymmErrors * RCP_errorsys[3];
 
-	TFile * input_cent0to10 = new TFile("RCP_D0_PbPb_effunpre_cent0to10_ptbin7_y1.root");
+	TFile * input_cent0to10 = new TFile("RCP_files/RCP_D0_PbPb_effunpre_cent0to10_ptbin7_y1.root");
 	D0_Rcp_errorstats[0] = ( TH1D * ) input_cent0to10->Get("D0_Rcp_errorstats");
 	RCP_errorsys[0] = ( TGraphAsymmErrors * ) input_cent0to10->Get("RCP_errorsys");
 
-	TFile * input_cent10to30 = new TFile("RCP_D0_PbPb_effunpre_cent10to30_ptbin7_y1.root");
+	TFile * input_cent10to30 = new TFile("RCP_files/RCP_D0_PbPb_effunpre_cent10to30_ptbin7_y1.root");
 	D0_Rcp_errorstats[1] = ( TH1D * ) input_cent10to30->Get("D0_Rcp_errorstats");
 	RCP_errorsys[1] = ( TGraphAsymmErrors * ) input_cent10to30->Get("RCP_errorsys");
 
-	TFile * input_cent30to50 = new TFile("RCP_D0_PbPb_effunpre_cent30to50_ptbin7_y1.root");
+	TFile * input_cent30to50 = new TFile("RCP_files/RCP_D0_PbPb_effunpre_cent30to50_ptbin7_y1.root");
 	D0_Rcp_errorstats[2] = ( TH1D * ) input_cent30to50->Get("D0_Rcp_errorstats");
 	RCP_errorsys[2] = ( TGraphAsymmErrors * ) input_cent30to50->Get("RCP_errorsys");
 
-	TCanvas * D0_RCP_7ptbin = new TCanvas("D0_RCP_7ptbin","D0_RCP_7ptbin");
+	TCanvas * D0_RCP_5ptbin = new TCanvas("D0_RCP_5ptbin","D0_RCP_5ptbin");
 
 //    RCP_errorsys[0]->SetFillColorAlpha(15, 0.5);
-//    TColor *col1 = gROOT->GetColor(15);
-//	col1->SetAlpha(0.2);
+    TColor *col1 = gROOT->GetColor(15);
+//	col1->SetAlpha(0.3);
     RCP_errorsys[0]->SetFillColor(15);
+	RCP_errorsys[0]->GetXaxis()->SetRangeUser(0.0, 28.0);
+	RCP_errorsys[0]->GetYaxis()->SetTitle("Prompt D^{0} R_{CP}");
     RCP_errorsys[0]->Draw("A2");
     D0_Rcp_errorstats[0]->SetMarkerStyle(20);
 	D0_Rcp_errorstats[0]->SetFillColor(15);
 	D0_Rcp_errorstats[0]->Draw("same");
 
 
+    TColor *col2 = gROOT->GetColor(kBlue-9);
+//	col2->SetAlpha(0.3);
     RCP_errorsys[1]->SetFillColor(kBlue-9);
     RCP_errorsys[1]->Draw("2same");
 	D0_Rcp_errorstats[1]->SetFillColor(kBlue-9);
@@ -38,6 +42,8 @@ void Dmeson_RCP_Centrality_7ptbin_y1()
 	D0_Rcp_errorstats[1]->SetMarkerStyle(21);
 	D0_Rcp_errorstats[1]->Draw("same");
 
+    TColor *col3 = gROOT->GetColor(kRed-7);
+//	col3->SetAlpha(0.3);
     RCP_errorsys[2]->SetFillColor(kRed-7);
 	RCP_errorsys[2]->Draw("2same");
 	D0_Rcp_errorstats[2]->SetFillColor(kRed-7);
@@ -52,11 +58,26 @@ void Dmeson_RCP_Centrality_7ptbin_y1()
     fun->SetLineWidth(0.1);
     fun->Draw("same");
 
+    TBox *a = new TBox(0.01,1-0.13,0.4,1+0.13);
+    a->SetLineColor(15);
+    a->SetFillColor(15);
+    a->Draw();
+
+    TBox *b = new TBox(0.4,1-0.11,0.8,1+0.11);
+    b->SetLineColor(kBlue-9);
+    b->SetFillColor(kBlue-9);
+    b->Draw();
+
+    TBox *c = new TBox(0.8,1-0.065,1.2,1+0.065);
+    c->SetLineColor(kRed-7);
+    c->SetFillColor(kRed-7);
+    c->Draw();
+
     TLegend * t = new TLegend(0.5, 0.65, 0.85, 0.8);
 	t->SetFillColor(0);
-	t->AddEntry(D0_Rcp_errorstats[0], "Centrality 0-10%", "PLf");
-	t->AddEntry(D0_Rcp_errorstats[1], "Centrality 10%-30%", "PLf");
-    t->AddEntry(D0_Rcp_errorstats[2], "Centrality 30%-50%", "PLf");
+	t->AddEntry(D0_Rcp_errorstats[0], "0-10% / 50-100%", "PLf");
+	t->AddEntry(D0_Rcp_errorstats[1], "10%-30% / 50-100%", "PLf");
+    t->AddEntry(D0_Rcp_errorstats[2], "30%-50% / 50-100%", "PLf");
 	t->Draw();
 
     TLatex Tl;
@@ -65,10 +86,10 @@ void Dmeson_RCP_Centrality_7ptbin_y1()
     Tl.SetTextSize(0.03);
     Tl.SetTextFont(62);
     Tl.DrawLatex(0.15,0.85, "CMS Preliminary #sqrt{s_{NN}} = 2.76 TeV");
-    Tl.DrawLatex(0.15,0.80, "#left|y#right| < 1.0");
+    Tl.DrawLatex(0.15,0.80, "|y| < 1.0");
 
-	D0_RCP_7ptbin->SaveAs("results/D0_RCP_7ptbin_cent0103050100_y1.png");
-	D0_RCP_7ptbin->SaveAs("results/D0_RCP_7ptbin_cent0103050100_y1.pdf");
+	D0_RCP_5ptbin->SaveAs("results/D0_RCP_7ptbin_cent0103050100_y1.png");
+	D0_RCP_5ptbin->SaveAs("results/D0_RCP_7ptbin_cent0103050100_y1.pdf");
 
 //
 //    double step = 5.;
